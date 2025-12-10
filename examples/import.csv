@@ -1,0 +1,2 @@
+first_name;last_name;company;tax_code;vat;address;zip;city;province;phone1;mobile;fax;email;website;skype;birth_place;birth_date;country;invoiceable;type;categories;interests;origins;newsletter
+John;Doe;Softrade;abcd-123;12345678901;fifth avenue;12345;New York;NY;12345666;123456788;333444556;a@b.com;https://cp-psource.github.io/ps-smart-crm;softrade;New York;20/12/1970;US;1;1;Company, Public Authority;Politics, Music ;Facebook, Search Engine;1

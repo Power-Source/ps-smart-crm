@@ -1,0 +1,103 @@
+﻿._smartcrm_service h1, ._smartcrm_service h2, ._smartcrm_service h3, ._smartcrm_service h4, ._smartcrm_service h5, ._smartcrm_service h6 {text-transform:uppercase;}
+._smartcrm_service h1{ padding-bottom:10px!important;border-bottom:1px solid #ccc;margin-bottom:10px }
+._smartcrm_service h3{float:left;width:100%}
+._smartcrm_service h5{padding:10px;border-bottom:1px solid #c3d0d8;margin:6px}
+._smartcrm_service .CRM_service_features{float:left;width:100%;border:1px solid #666;border-radius:4px;margin-top:10px;margin-bottom:24px}
+._smartcrm_service figure img{border:1px solid; padding:4px}
+._smartcrm_service .services_category{background:#fafafa}
+._smartcrm_service .services_category span{list-style:none;padding:4px;margin:6px;text-decoration:underline}
+._smartcrm_service figure{float:left}
+.services_title{text-transform:uppercase;font-size:3em;text-align:center;margin:14px 0}
+._smartcrm_service .CRM_main_show_price{background: #393939;
+    color: #fff!important;
+    width: 100%;
+    float: right;
+    text-align: right;
+    padding: 6px;
+    line-height: 2em;}
+._smartcrm_service .CRM_full_price{text-decoration:line-through;margin-right:10px;font-weight:400;font-size:1em}
+._smartcrm_service .CRM_sale_price{margin-right:10px;font-weight:800;font-size:1.2em;color:#c0ed78}
+._smartcrm_service .badge-discount{
+    background:url(img/special-discount-badge.png);    
+    position: relative;
+    top: -10px;
+    left: -90px;
+    width: 100px;
+    height: 100px;
+    z-index: 1000;
+    display: inline-block;}
+._smartcrm_service .button{
+    padding: 0px 20px;
+    font-size: 1.5em;
+    font-weight:500;
+    cursor:pointer;
+}
+._smartcrm_service .button.button-buy{
+
+    background-color: gold;
+    float:right;
+    margin-left: 6px;
+
+}
+._smartcrm_service #_register{background-color:gold;border:1px solid #393939;color:#000!important}
+._smartcrm_service #_send,._smartcrm_service #_send:hover{padding:0 3px;text-align:left;font-size: 1.2em;color:#000!important;width:340px!important;background: none!important;background-image: url('img/buy_button.png')!important;height:50px;background-repeat:no-repeat!important;}
+._smartcrm_service #CRM_service_gallery img{max-width:120px!important;padding:3px;margin:6px}
+._smartcrm_service #crmForm{margin-bottom: 20px;
+    padding-bottom: 30px;
+    position: relative;
+    float: left;
+    width: 100%;}
+._smartcrm_service #crmForm label{width:40%}
+._smartcrm_service #crmForm input:not([type="radio"]){width:40%}
+._smartcrm_service #crmForm #sendToPayment{background:#393939;display:none}
+._smartcrm_service #crmForm #sendToPayment input[type="submit"]{margin:20px;width:200px;font-size:1.5em;padding: 0px 20px;
+background-color: #393939;
+color:gold;
+font-size: 1.5em;
+font-weight: 500;
+cursor: pointer;}
+._smartcrm_service #crmForm input [type="radio"]{width:15%}
+._smartcrm_service #crmForm ul{top:20px;position:relative}
+._smartcrm_service #crmForm ul li{list-style:none}
+._smartcrm_service #crmForm .show_password{background:url(img/show-password.png); height:22px;width:32px;background-repeat:no-repeat;display:inline-block  }
+._smartcrm_service #crmForm label.error{color:red}
+._smartcrm_service #crmForm ._required{border-style: inset;border:1px solid red}
+._smartcrm_service #crmForm .show_login{cursor:pointer; }
+._smartcrm_service #crmForm .register_link{cursor:pointer;}
+._smartcrm_service #crmForm ._highlighted{background-color:#ccff00}
+._smartcrm_service .CRM_login{margin:0 auto;}
+.strength_meter{
+	height:23px;
+width: 154px;
+	background:silver;
+	
+}
+.strength_meter div{
+	height:23px;
+	width:100%;
+	height:23px;
+	text-align:center;
+	color:black;
+	font-weight:bold;
+	line-height:23px;
+}
+.veryweak{
+	background-color: #FFA0A0;
+border-color: #F04040!important
+}
+.weak{
+background-color: #FFB78C;
+border-color: #FF853C!important;
+}
+.medium{
+background-color: #FFEC8B;
+border-color: #FC0!important;
+}
+.strong{
+background-color: #C3FF88;
+border-color: #8DFF1C!important;
+}
+
+.left-menu .k-panelbar>.k-item>.k-link, .k-panel>.k-item>.k-link {line-height:1.5em!important}
+._login{display:none;line-height:inherit}
+._login form input{float:right}

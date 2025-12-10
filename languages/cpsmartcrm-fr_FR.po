@@ -1,0 +1,4016 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PS Smart CRM\n"
+"POT-Creation-Date: 2023-09-26 22:32+0200\n"
+"PO-Revision-Date: 2023-09-26 22:34+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: ps-smart-crm.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+
+#: ps-smart-crm.php:202
+#, fuzzy
+msgid "CRM Client"
+msgstr "Client CRM"
+
+#: ps-smart-crm.php:207
+#, fuzzy
+msgid "CRM Agent"
+msgstr "Agent CRM"
+
+#: ps-smart-crm.php:324
+#, fuzzy
+msgid "Achtung: Es sind einige Grundeinstellungen erforderlich"
+msgstr "Attention : certains réglages de base sont nécessaires"
+
+#: ps-smart-crm.php:326
+#, fuzzy
+msgid "auf dieser Seite"
+msgstr "sur cette page"
+
+#: ps-smart-crm.php:328
+#, fuzzy
+msgid "um PS Smart CRM zu verwenden "
+msgstr "pour utiliser PS Smart CRM"
+
+#: ps-smart-crm.php:388 ps-smart-crm.php:389
+msgid "Dokumentation"
+msgstr "Documentation"
+
+#: inc/classes/CRMmail.class.php:478
+#, fuzzy, php-format
+msgid "Termin mit Mitarbeiter %1$s am %2$s"
+msgstr "Rendez-vous avec le collaborateur %1$s le %2$s"
+
+#: inc/classes/CRMmail.class.php:482
+#, fuzzy, php-format
+msgid "%1$s: Auslaufender Dienst am %2$s"
+msgstr "%1$s : Service supprimé le %2$s"
+
+#: inc/classes/CRMmail.class.php:486 inc/classes/CRMmail.class.php:524
+#, fuzzy, php-format
+msgid "%1$s: Kauf am %2$s"
+msgstr "%1$s : Achat le %2$s"
+
+#: inc/classes/CRMmail.class.php:490 inc/classes/CRMmail.class.php:559
+#, fuzzy
+msgid "Neue Frist"
+msgstr "Nouveau délai"
+
+#: inc/classes/CRMmail.class.php:512
+#, fuzzy, php-format
+msgid ""
+"Hallo %1$s, wir erinnern Sie an den Termin mit unseren Mitarbeitern am %2$s "
+"bei %3$s"
+msgstr ""
+"Bonjour %1$s, nous vous rappelons le rendez-vous avec nos collaborateurs le "
+"%2$s à %3$s"
+
+#: inc/classes/CRMmail.class.php:514 inc/functions.php:3758
+#, fuzzy
+msgid "Mit freundlichen Grüßen"
+msgstr "Avec nos meilleures salutations"
+
+#: inc/classes/CRMmail.class.php:520
+#, fuzzy, php-format
+msgid ""
+"Hallo %1$s, %2$s erinnert Sie daran, dass der Dienst: %3$s am %4$s abläuft"
+msgstr "Bonjour %1$s, %2$s vous rappelle que le service : %3$s expire le %4$s"
+
+#: inc/classes/CRMmail.class.php:544
+#, fuzzy, php-format
+msgid "Termin am %1$s mit %2$s"
+msgstr "Rendez-vous le %1$s avec %2$s"
+
+#: inc/classes/CRMmail.class.php:547
+#, fuzzy, php-format
+msgid "Todo am %s"
+msgstr "Todo le %s"
+
+#: inc/classes/CRMmail.class.php:550
+#, fuzzy, php-format
+msgid "Auslaufender Dienst: %1$s auf %2$s"
+msgstr "Service en fin de vie : %1$s vers %2$s"
+
+#: inc/classes/CRMmail.class.php:553
+#, fuzzy, php-format
+msgid "Die Zahlung für %1$s Rechnung Nr. %2$s ist abgelaufen"
+msgstr "Le paiement de %1$s facture n° %2$s a expiré"
+
+#: inc/classes/CRMmail.class.php:556
+#, fuzzy, php-format
+msgid "Kauf am %1$s von %2$s"
+msgstr "Achat le %1$s de %2$s"
+
+#: inc/classes/CRMmail.class.php:578
+#, fuzzy, php-format
+msgid "Wir erinnern Sie an den Termin mit %1$s am %2$s um %3$s"
+msgstr "Nous vous rappelons le rendez-vous avec %1$s le %2$s à %3$s"
+
+#: inc/classes/CRMmail.class.php:581
+#, fuzzy, php-format
+msgid "Wir erinnern Sie an die Aktivität %1$s am %2$s"
+msgstr "Nous vous rappelons l'activité %1$s le %2$s"
+
+#: inc/classes/CRMmail.class.php:586
+#, fuzzy, php-format
+msgid "Wir erinnern Sie an die Frist %1$s am %2$s"
+msgstr "Nous vous rappelons l'échéance %1$s du %2$s"
+
+#: inc/classes/CRMmail.class.php:591
+#, fuzzy, php-format
+msgid "Wir erinnern Sie daran, dass der Dienst: %1$s von %2$s am %3$s abläuft"
+msgstr "Nous vous rappelons que le service : %1$s de %2$s expire le %3$s"
+
+#: inc/classes/CRMmail.class.php:594
+#, fuzzy, php-format
+msgid ""
+"Wir erinnern Sie daran, dass die Zahlung von Rechnung Nr. %1$s, Betrag %2$d, "
+"am %3$s abgelaufen ist"
+msgstr ""
+"Nous vous rappelons que le paiement de la facture n° %1$s, montant %2$d, a "
+"expiré le %3$s"
+
+#: inc/classes/CRMmail.class.php:597
+#, fuzzy, php-format
+msgid "Kaufen Sie am %1$s"
+msgstr "Acheter le %1$s"
+
+#: inc/crm/articoli/list.php:55
+#: inc/crm/documenti/accountabilities/accountability_0.php:23
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:20
+msgid "Code"
+msgstr "code"
+
+#: inc/crm/articoli/list.php:55 inc/crm/dashboard.php:225
+#: inc/crm/dashboard.php:365
+#: inc/crm/documenti/accountabilities/accountability_0.php:26
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:21
+#: inc/crm/main.php:136 inc/crm/scheduler/form.php:394 inc/functions.php:2325
+msgid "Beschreibung"
+msgstr "Description"
+
+#: inc/crm/articoli/list.php:55
+msgid "Preis"
+msgstr "Prix"
+
+#: inc/crm/articoli/list.php:58 inc/crm/documenti/advanced_print.php:25
+#: inc/crm/documenti/document_print.php:239
+#: inc/crm/documenti/form_credit_note.php:135
+#: inc/crm/documenti/form_invoice.php:157
+#: inc/crm/documenti/form_invoice_informal.php:142 inc/options.php:1075
+#: inc/options.php:1109 inc/options.php:1143 inc/options.php:1160
+#: inc/subscription_rules.php:254 inc/subscription_rules.php:773
+#: inc/subscription_rules.php:807
+msgid "Bearbeiten"
+msgstr "Modifier"
+
+#: inc/crm/articoli/list.php:79
+#, fuzzy
+msgid "Neuer Gegenstand"
+msgstr "Nouvel objet"
+
+#: inc/crm/c_menu.php:14
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+#: inc/crm/c_menu.php:18 inc/crm/c_menu.php:21 inc/options.php:168
+#: inc/setup.php:437
+msgid "Kunden"
+msgstr "Clients"
+
+#: inc/crm/c_menu.php:30 inc/crm/c_menu.php:67 inc/crm/c_menu.php:99
+#, fuzzy
+msgid "LISTE"
+msgstr "LISTE"
+
+#: inc/crm/c_menu.php:37
+#, fuzzy
+msgid "NEUKUNDE"
+msgstr "NOUVEAU CLIENT"
+
+#: inc/crm/c_menu.php:46
+msgid "Dienstleistungen"
+msgstr "Services"
+
+#: inc/crm/c_menu.php:55 inc/crm/c_menu.php:59 inc/setup.php:447
+#, fuzzy
+msgid "Planer"
+msgstr "Planificateur"
+
+#: inc/crm/c_menu.php:74 inc/crm/clienti/form.php:577
+#: inc/crm/clienti/form.php:936 inc/crm/documenti/form_invoice_informal.php:508
+#: inc/crm/documenti/form_quotation.php:392 inc/pluggable/clienti/list.php:282
+#, fuzzy
+msgid "NEUE TODO"
+msgstr "NOUVEAU TODO"
+
+#: inc/crm/c_menu.php:80 inc/crm/clienti/form.php:581
+#: inc/crm/clienti/form.php:940 inc/crm/documenti/form_credit_note.php:252
+#: inc/crm/documenti/form_credit_note.php:494
+#: inc/crm/documenti/form_invoice.php:252
+#: inc/crm/documenti/form_invoice.php:498
+#: inc/crm/documenti/form_invoice_informal.php:259
+#: inc/crm/documenti/form_invoice_informal.php:509
+#: inc/crm/documenti/form_quotation.php:159
+#: inc/crm/documenti/form_quotation.php:393 inc/crm/scheduler/form.php:19
+#: inc/pluggable/clienti/list.php:284
+#, fuzzy
+msgid "NEUER TERMIN"
+msgstr "NOUVELLE DATE"
+
+#: inc/crm/c_menu.php:90 inc/crm/c_menu.php:92 inc/options.php:177
+#: inc/setup.php:457
+#, fuzzy
+msgid "Dokumente"
+msgstr "Documents"
+
+#: inc/crm/c_menu.php:107 inc/crm/documenti/list.php:22
+#: inc/crm/documenti/list.php:337
+#, fuzzy
+msgid "NEUE RECHNUNG"
+msgstr "NOUVELLE FACTURE"
+
+#: inc/crm/c_menu.php:115 inc/crm/documenti/list.php:16
+#: inc/crm/documenti/list.php:331
+#, fuzzy
+msgid "NEUES ANGEBOT"
+msgstr "NOUVELLE OFFRE"
+
+#: inc/crm/c_menu.php:126
+#, fuzzy
+msgid "Dienstprogramme"
+msgstr "Utilitaires"
+
+#: inc/crm/c_menu.php:128
+#, fuzzy
+msgid "EINSTELLUNGEN"
+msgstr "PARAMÈTRES"
+
+#: inc/crm/c_menu.php:129
+#, fuzzy
+msgid "RECHNUNGEN REGISTRIEREN"
+msgstr "ENREGISTRER DES FACTURES"
+
+#: inc/crm/c_menu.php:130
+#, fuzzy
+msgid "KUNDEN IMPORTIEREN"
+msgstr "IMPORTER DES CLIENTS"
+
+#: inc/crm/c_menu.php:138
+#, fuzzy
+msgid "Abonnement-/Benachrichtigungsregeln"
+msgstr "Règles d'abonnement/de notification"
+
+#: inc/crm/c_menu.php:152
+#, fuzzy
+msgid "Du hast keine Berechtigung, diesen Abschnitt anzuzeigen"
+msgstr "Vous n'êtes pas autorisé à afficher cette section"
+
+#: inc/crm/clienti/form.php:255
+#, fuzzy
+msgid ""
+"Löschen bestätigen? Es ist weiterhin möglich, den gelöschten Kunden "
+"wiederherzustellen "
+msgstr ""
+"Confirmer la suppression ? Il est toujours possible de restaurer le client "
+"supprimé"
+
+#: inc/crm/clienti/form.php:482
+#, fuzzy
+msgid "Du solltest das Kundenland auswählen"
+msgstr "Vous devez sélectionner le pays du client"
+
+#: inc/crm/clienti/form.php:483
+#, fuzzy
+msgid ""
+"Du solltest die GÜLTIGE Steuernummer oder Umsatzsteuer-Identifikationsnummer "
+"des Kunden eingeben"
+msgstr ""
+"Vous devez saisir le numéro d'identification fiscale VALABLE ou le numéro de "
+"TVA du client"
+
+#: inc/crm/clienti/form.php:484
+#, fuzzy
+msgid "Du solltest den Vornamen oder den Firmennamen des Kunden eingeben."
+msgstr "Vous devez saisir le prénom ou le nom de l'entreprise du client."
+
+#: inc/crm/clienti/form.php:485
+#, fuzzy
+msgid "Du solltest den Nachnamen oder den Firmennamen des Kunden eingeben."
+msgstr ""
+"Vous devez saisir le nom de famille ou le nom de l'entreprise du client."
+
+#: inc/crm/clienti/form.php:486
+#, fuzzy
+msgid ""
+"Du solltest den Firmennamen oder den Vornamen und Nachnamen des Kunden "
+"eingeben"
+msgstr ""
+"Vous devez saisir le nom de l'entreprise ou le prénom et le nom du client"
+
+#: inc/crm/clienti/form.php:487
+#, fuzzy
+msgid ""
+"Wenn Du das Feld \"Firmenname\" verwendest, solltest Du die Umsatzsteuer-"
+"Identifikationsnummer eingeben"
+msgstr ""
+"Si vous utilisez le champ \"Nom de l'entreprise\", vous devez saisir le "
+"numéro de TVA"
+
+#: inc/crm/clienti/form.php:488
+#, fuzzy
+msgid ""
+"Um einen neuen Benutzer zu erstellen, musst Du E-Mail, Benutzername und "
+"Passwort festlegen"
+msgstr ""
+"Pour créer un nouvel utilisateur, vous devez définir une adresse e-mail, un "
+"nom d'utilisateur et un mot de passe"
+
+#: inc/crm/clienti/form.php:489
+#, fuzzy
+msgid "Bitte privat oder geschäftlich ankreuzen"
+msgstr "Veuillez cocher privé ou professionnel"
+
+#: inc/crm/clienti/form.php:512
+#, fuzzy
+msgid "Der Kunde wurde gespeichert"
+msgstr "Le client a été enregistré"
+
+#: inc/crm/clienti/form.php:529 inc/crm/documenti/form_invoice.php:626
+#: inc/crm/documenti/form_invoice_informal.php:628
+#: inc/crm/documenti/form_quotation.php:797
+#, fuzzy
+msgid "Etwas war falsch"
+msgstr "Quelque chose n'allait pas"
+
+#: inc/crm/clienti/form.php:551 inc/crm/dashboard.php:223
+#: inc/crm/dashboard.php:363 inc/crm/documenti/form_credit_note.php:268
+#: inc/crm/documenti/form_invoice_informal.php:275
+#: inc/crm/documenti/form_quotation.php:173 inc/crm/main.php:56
+#: inc/crm/scheduler/form.php:360 inc/functions.php:2313
+#: inc/pluggable/scheduler/list.php:113
+msgid "Kunde"
+msgstr "Client"
+
+#: inc/crm/clienti/form.php:553 inc/crm/dashboard.php:437
+#: inc/pluggable/clienti/list.php:13
+#, fuzzy
+msgid "Neukunde"
+msgstr "Nouveau client"
+
+#: inc/crm/clienti/form.php:564 inc/crm/clienti/form.php:923
+#: inc/crm/clienti/form_appuntamento.php:110
+#: inc/crm/clienti/form_attivita.php:28 inc/crm/clienti/form_todo.php:90
+#: inc/crm/documenti/form_credit_note.php:287
+#: inc/crm/documenti/form_credit_note.php:376
+#: inc/crm/documenti/form_invoice.php:281
+#: inc/crm/documenti/form_invoice.php:373
+#: inc/crm/documenti/form_invoice_informal.php:295
+#: inc/crm/documenti/form_invoice_informal.php:383
+#: inc/crm/documenti/form_quotation.php:190
+#: inc/crm/documenti/form_quotation.php:318
+#: inc/crm/register_invoices/form.php:86 inc/crm/scheduler/form.php:465
+#: inc/functions.php:2407 inc/options.php:327 inc/options.php:1363
+#: inc/options.php:1391 inc/options.php:1514
+msgid "Speichern"
+msgstr "Enregistrer"
+
+#: inc/crm/clienti/form.php:569 inc/crm/clienti/form.php:928
+#: inc/crm/clienti/form_appuntamento.php:111
+#: inc/crm/clienti/form_attivita.php:31 inc/crm/clienti/form_mail.php:66
+#: inc/crm/clienti/form_todo.php:91 inc/crm/documenti/form_credit_note.php:380
+#: inc/crm/documenti/form_credit_note.php:405
+#: inc/crm/documenti/form_invoice.php:410
+#: inc/crm/documenti/form_invoice_informal.php:387
+#: inc/crm/documenti/form_invoice_informal.php:412 inc/crm/import/form.php:151
+#: inc/crm/scheduler/form.php:468 inc/options.php:1360 inc/options.php:1388
+#: inc/subscription_rules.php:55 inc/subscription_rules.php:141
+#: inc/subscription_rules.php:160
+msgid "Zurücksetzen"
+msgstr "réinitialiser"
+
+#: inc/crm/clienti/form.php:574 inc/crm/clienti/form.php:933
+#: inc/crm/dashboard.php:257 inc/crm/dashboard.php:401
+#: inc/crm/documenti/accountabilities/accountability_0.php:74
+#: inc/crm/documenti/accountabilities/accountability_0.php:120
+#: inc/crm/documenti/accountabilities/accountability_0.php:212
+#: inc/crm/documenti/accountabilities/accountability_0.php:232
+#: inc/crm/documenti/accountabilities/accountability_0.php:479
+#: inc/crm/documenti/accountabilities/accountability_0.php:503
+#: inc/crm/documenti/accountabilities/accountability_0.php:519
+#: inc/pluggable/clienti/list.php:166 inc/pluggable/scheduler/list.php:156
+#: inc/subscription_rules.php:254 inc/subscription_rules.php:468
+#: inc/subscription_rules.php:773 inc/subscription_rules.php:807
+msgid "Löschen"
+msgstr "Supprimer"
+
+#: inc/crm/clienti/form.php:585 inc/crm/clienti/form.php:889
+#: inc/crm/clienti/form.php:944 inc/crm/documenti/form_credit_note.php:256
+#: inc/crm/documenti/form_invoice.php:256
+#: inc/crm/documenti/form_invoice_informal.php:263
+#: inc/crm/documenti/form_quotation.php:163
+#, fuzzy
+msgid "NEUE ANMERKUNG"
+msgstr "NOTE NOUVELLE"
+
+#: inc/crm/clienti/form.php:594
+msgid "Stammdaten"
+msgstr "Données de base"
+
+#: inc/crm/clienti/form.php:598
+msgid "Kontakte"
+msgstr "Contacts"
+
+#: inc/crm/clienti/form.php:599 inc/crm/clienti/form.php:885
+#: inc/crm/main.php:213
+#, fuzzy
+msgid "Angeboten"
+msgstr "Proposé"
+
+#: inc/crm/clienti/form.php:600
+msgid "Zusammenfassung"
+msgstr "Résumé"
+
+#: inc/crm/clienti/form.php:610 inc/crm/clienti/form_attivita.php:11
+#: inc/crm/clienti/script_mail.php:34 inc/crm/clienti/script_mail.php:45
+#: inc/crm/documenti/form_credit_note.php:147
+#: inc/crm/documenti/form_credit_note.php:151
+#: inc/crm/documenti/form_invoice.php:142
+#: inc/crm/documenti/form_invoice.php:146
+#: inc/crm/documenti/form_invoice_informal.php:154
+#: inc/crm/documenti/form_invoice_informal.php:158
+#: inc/crm/documenti/form_quotation.php:115
+#: inc/crm/documenti/form_quotation.php:116 inc/crm/main.php:78
+msgid "Datum"
+msgstr "Date"
+
+#: inc/crm/clienti/form.php:620
+#, fuzzy
+msgid "Rechnungspflichtig?"
+msgstr "Facturation obligatoire ?"
+
+#: inc/crm/clienti/form.php:623 inc/functions.php:2269
+msgid "Ja"
+msgstr "Oui"
+
+#: inc/crm/clienti/form.php:624 inc/functions.php:2269
+msgid "Nein"
+msgstr "Non"
+
+#: inc/crm/clienti/form.php:628 inc/pluggable/scheduler/list.php:112
+msgid "Typ"
+msgstr "Type"
+
+#: inc/crm/clienti/form.php:631
+msgid "Privat"
+msgstr "en privé"
+
+#: inc/crm/clienti/form.php:632 inc/options.php:140
+msgid "Business"
+msgstr "Entreprise"
+
+#: inc/crm/clienti/form.php:636 inc/options.php:285
+msgid "Land"
+msgstr "Pays"
+
+#: inc/crm/clienti/form.php:640 inc/options.php:257
+#: inc/pluggable/clienti/list.php:97
+msgid "Firmenname"
+msgstr "Nom de la société"
+
+#: inc/crm/clienti/form.php:646
+#, fuzzy
+msgid "Steuer-Code"
+msgstr "Code fiscal"
+
+#: inc/crm/clienti/form.php:648 inc/crm/clienti/form.php:652
+#: inc/crm/clienti/form.php:1221 inc/crm/clienti/form.php:1228
+#, fuzzy
+msgid "Wähle zuerst das Land aus"
+msgstr "Sélectionnez d'abord le pays"
+
+#: inc/crm/clienti/form.php:650
+#, fuzzy
+msgid "Umsatzsteuer-Identifikationsnummer"
+msgstr "Numéro d'identification de la taxe sur le chiffre d'affaires"
+
+#: inc/crm/clienti/form.php:656
+msgid "Vorname"
+msgstr "Prénom"
+
+#: inc/crm/clienti/form.php:660
+msgid "Nachname"
+msgstr "Nom"
+
+#: inc/crm/clienti/form.php:666 inc/crm/documenti/form_credit_note.php:291
+#: inc/crm/documenti/form_invoice.php:285
+#: inc/crm/documenti/form_invoice_informal.php:299
+#: inc/crm/documenti/form_quotation.php:194 inc/functions.php:47
+#: inc/pluggable/clienti/list.php:102
+#, fuzzy
+msgid "Addresse"
+msgstr "Adresse"
+
+#: inc/crm/clienti/form.php:670 inc/crm/documenti/form_invoice_informal.php:305
+#: inc/crm/documenti/form_quotation.php:200 inc/functions.php:49
+#: inc/options.php:277
+msgid "PLZ"
+msgstr "Code postal"
+
+#: inc/crm/clienti/form.php:676 inc/crm/documenti/form_credit_note.php:310
+#: inc/crm/documenti/form_invoice.php:304
+#: inc/crm/documenti/form_invoice_informal.php:318
+#: inc/crm/documenti/form_quotation.php:213 inc/functions.php:48
+#: inc/options.php:273
+msgid "Stadt"
+msgstr "Ville"
+
+#: inc/crm/clienti/form.php:680 inc/crm/documenti/form_credit_note.php:316
+#: inc/crm/documenti/form_invoice.php:310
+#: inc/crm/documenti/form_invoice_informal.php:324
+#: inc/crm/documenti/form_quotation.php:219
+#, fuzzy
+msgid "Staat/Prov."
+msgstr "État/Prov."
+
+#: inc/crm/clienti/form.php:687 inc/functions.php:53 inc/options.php:302
+#: inc/pluggable/clienti/list.php:116
+msgid "Telefon"
+msgstr "Téléphone"
+
+#: inc/crm/clienti/form.php:692 inc/functions.php:54 inc/options.php:306
+msgid "Fax"
+msgstr "Fax"
+
+#: inc/crm/clienti/form.php:700
+#, fuzzy
+msgid "Mobil"
+msgstr "Mobile"
+
+#: inc/crm/clienti/form.php:705 inc/functions.php:55 inc/options.php:310
+#: inc/pluggable/clienti/form.php:263 inc/pluggable/clienti/list.php:121
+msgid "Email"
+msgstr "E-mail"
+
+#: inc/crm/clienti/form.php:713
+msgid "Geburtsort"
+msgstr "Lieu de naissance"
+
+#: inc/crm/clienti/form.php:718
+#, fuzzy
+msgid "Skype"
+msgstr "Skype"
+
+#: inc/crm/clienti/form.php:725
+msgid "Geburtsdatum"
+msgstr "Date de naissance"
+
+#: inc/crm/clienti/form.php:729
+msgid "Kategorie"
+msgstr "Catégorie"
+
+#: inc/crm/clienti/form.php:753 inc/crm/clienti/form.php:795
+#: inc/crm/clienti/form.php:833 inc/crm/clienti/form_appuntamento.php:58
+#: inc/crm/clienti/form_todo.php:40 inc/crm/documenti/form_credit_note.php:178
+#: inc/crm/documenti/form_invoice.php:179
+#: inc/crm/documenti/form_invoice_informal.php:185 inc/crm/main.php:148
+#: inc/options.php:770 inc/subscription_rules.php:52
+#: inc/subscription_rules.php:70 inc/subscription_rules.php:114
+msgid "Wählen"
+msgstr "Sélectionner"
+
+#: inc/crm/clienti/form.php:754
+#, fuzzy
+msgid ""
+"Keine Kategorien; Erstelle Kategorien in den CRM-Einstellungen ->Seite "
+"„Kundeneinstellungen“."
+msgstr ""
+"Pas de catégories ; Créez des catégories dans les paramètres CRM ->Page "
+"\"Paramètres client\"."
+
+#: inc/crm/clienti/form.php:766 inc/functions.php:56 inc/options.php:314
+msgid "Webseite"
+msgstr "Site web"
+
+#: inc/crm/clienti/form.php:771 inc/pluggable/clienti/list.php:138
+#: inc/setup.php:354
+msgid "Interessen"
+msgstr "Centres d'intérêt"
+
+#: inc/crm/clienti/form.php:797
+#, fuzzy
+msgid ""
+"Keine Interessen; Erstelle Interessen in den CRM-Einstellungen ->Seite "
+"„Kundeneinstellungen“."
+msgstr ""
+"Pas d'intérêts ; Créez des intérêts dans les paramètres CRM ->Page "
+"\"Paramètres client\"."
+
+#: inc/crm/clienti/form.php:809
+#, fuzzy
+msgid "Agent"
+msgstr "Agent"
+
+#: inc/crm/clienti/form.php:813
+#, fuzzy
+msgid "Kommt von"
+msgstr "Vient de"
+
+#: inc/crm/clienti/form.php:835
+#, fuzzy
+msgid ""
+"Keine Quellen; erstelle Quellen in den CRM-Einstellungen -"
+">Kundeneinstellungen Seite"
+msgstr ""
+"Pas de sources ; créez des sources dans les paramètres CRM ->Paramètres "
+"client Page"
+
+#: inc/crm/clienti/form.php:855
+#, fuzzy
+msgid "Benutzer erstellen"
+msgstr "Créer un utilisateur"
+
+#: inc/crm/clienti/form.php:861
+msgid "Benutzername"
+msgstr "Nom d’utilisateur"
+
+#: inc/crm/clienti/form.php:865
+msgid "Passwort"
+msgstr "Mot de passe"
+
+#: inc/crm/clienti/form.php:888
+#, fuzzy
+msgid "Notizen-Zeitleiste"
+msgstr "Barre de temps des notes"
+
+#: inc/crm/clienti/form.php:996
+#, fuzzy
+msgid "Rechnung erstellen für"
+msgstr "Créer une facture pour"
+
+#: inc/crm/clienti/form.php:1011
+#, fuzzy
+msgid "Angebot erstellen für"
+msgstr "Créer un devis pour"
+
+#: inc/crm/clienti/form.php:1042
+#, fuzzy
+msgid "Anmerkung wurde gelöscht"
+msgstr "La remarque a été supprimée"
+
+#: inc/crm/clienti/form.php:1214 inc/options.php:335
+#, fuzzy
+msgid "Land auswählen"
+msgstr "Sélectionner un pays"
+
+#: inc/crm/clienti/form_appuntamento.php:24 inc/crm/main.php:98
+#: inc/crm/scheduler/form.php:369 inc/functions.php:2362
+msgid "Start"
+msgstr "Démarrer"
+
+#: inc/crm/clienti/form_appuntamento.php:28 inc/crm/main.php:115
+#: inc/crm/scheduler/form.php:372 inc/functions.php:2366
+msgid "Ende"
+msgstr "Fin"
+
+#: inc/crm/clienti/form_appuntamento.php:33 inc/crm/clienti/form_todo.php:15
+#: inc/crm/scheduler/form.php:400 inc/functions.php:2378
+msgid "Priorität"
+msgstr "priorité"
+
+#: inc/crm/clienti/form_appuntamento.php:40 inc/crm/clienti/form_mail.php:13
+#: inc/crm/clienti/form_todo.php:24 inc/crm/documenti/document_print.php:146
+#: inc/crm/documenti/form_quotation.php:128 inc/crm/main.php:70
+#: inc/crm/scheduler/form.php:387 inc/functions.php:2321 inc/functions.php:3333
+#: inc/functions.php:3642
+msgid "Betreff"
+msgstr "Objet"
+
+#: inc/crm/clienti/form_appuntamento.php:40 inc/crm/clienti/form_todo.php:25
+#, fuzzy
+msgid "Gib einen Betreff für dieses Element ein"
+msgstr "Saisissez un sujet pour cet élément"
+
+#: inc/crm/clienti/form_appuntamento.php:43
+#: inc/crm/clienti/form_attivita.php:21 inc/crm/clienti/form_todo.php:29
+#: inc/crm/documenti/form_credit_note.php:166
+#: inc/crm/documenti/form_invoice.php:167
+#: inc/crm/documenti/form_invoice_informal.php:173
+#: inc/crm/documenti/form_quotation.php:137
+msgid "Anmerkungen"
+msgstr "Commentaires"
+
+#: inc/crm/clienti/form_appuntamento.php:50
+#, fuzzy
+msgid "Benachrichtigungsregeln für diesen Termin"
+msgstr "Règles de notification pour ce rendez-vous"
+
+#: inc/crm/clienti/form_appuntamento.php:56 inc/crm/clienti/form_todo.php:38
+#: inc/crm/main.php:145 inc/crm/scheduler/form.php:410 inc/functions.php:2337
+#: inc/subscription_rules.php:70 inc/subscription_rules.php:113
+#: inc/subscription_rules.php:235 inc/subscription_rules.php:780
+#, fuzzy
+msgid "Tage im Voraus"
+msgstr "Jours à l'avance"
+
+#: inc/crm/clienti/form_appuntamento.php:63 inc/crm/clienti/form_todo.php:46
+#: inc/crm/main.php:164 inc/crm/scheduler/form.php:417
+#, fuzzy
+msgid "Sende auch eine Sofortbenachrichtigung"
+msgstr "Envoyez également une notification instantanée"
+
+#: inc/crm/clienti/form_appuntamento.php:72 inc/crm/scheduler/form.php:439
+#, fuzzy
+msgid "Wähle Konto für diesen Termin aus"
+msgstr "Sélectionner le compte pour cette date"
+
+#: inc/crm/clienti/form_appuntamento.php:77 inc/crm/scheduler/form.php:444
+#: inc/functions.php:2352
+#, fuzzy
+msgid "Im Konto-Dashboard veröffentlichen"
+msgstr "Publier dans le tableau de bord du compte"
+
+#: inc/crm/clienti/form_appuntamento.php:84
+#: inc/crm/documenti/form_credit_note.php:221
+#: inc/crm/documenti/form_invoice.php:222
+#: inc/crm/documenti/form_invoice_informal.php:228
+#: inc/crm/scheduler/form.php:450
+#, fuzzy
+msgid "An Gruppe senden"
+msgstr "Envoyer au groupe"
+
+#: inc/crm/clienti/form_appuntamento.php:89 inc/crm/clienti/form_todo.php:70
+#: inc/crm/scheduler/form.php:454 inc/functions.php:2356
+#: inc/subscription_rules.php:119
+#, fuzzy
+msgid "Im Gruppen-Dashboard veröffentlichen"
+msgstr "Publier dans le tableau de bord du groupe"
+
+#: inc/crm/clienti/form_appuntamento.php:97 inc/crm/clienti/form_mail.php:41
+#: inc/crm/clienti/form_todo.php:78 inc/crm/main.php:152
+#: inc/crm/scheduler/form.php:427 inc/functions.php:2342
+#: inc/subscription_rules.php:72 inc/subscription_rules.php:124
+#, fuzzy
+msgid "E-Mail an den Kunden senden"
+msgstr "Envoyer un e-mail au client"
+
+#: inc/crm/clienti/form_appuntamento.php:103
+#, fuzzy
+msgid "Sende E-Mails an ausgewählte Konten"
+msgstr "Envoyer des e-mails aux comptes sélectionnés"
+
+#: inc/crm/clienti/form_mail.php:15
+#, fuzzy
+msgid "Gib einen Betreff für diese E-Mail ein"
+msgstr "Saisissez un objet pour cet e-mail"
+
+#: inc/crm/clienti/form_mail.php:21
+msgid "Nachricht"
+msgstr "Message"
+
+#: inc/crm/clienti/form_mail.php:29
+#, fuzzy
+msgid "Jetzt E-Mail senden"
+msgstr "Envoyer un e-mail maintenant"
+
+#: inc/crm/clienti/form_mail.php:32
+#, fuzzy
+msgid "Geplante E-Mails"
+msgstr "E-mails programmés"
+
+#: inc/crm/clienti/form_mail.php:36
+#, fuzzy
+msgid ""
+"Bitte beachte, dass es zu erheblichen Verzögerungen bei der Genauigkeit der "
+"geplanten Sendung kommen kann. Wenn Du eine dringende Sendung benötigst, "
+"wähle „Jetzt E-Mail senden“ "
+msgstr ""
+"Veuillez noter qu'il peut y avoir des retards importants dans l'exactitude "
+"de l'envoi prévu. Si vous avez besoin d'un envoi urgent, sélectionnez "
+"\"Envoyer un e-mail maintenant\""
+
+#: inc/crm/clienti/form_mail.php:45 inc/subscription_rules.php:73
+#: inc/subscription_rules.php:74
+#, fuzzy
+msgid "E-Mails an Benutzer senden"
+msgstr "Envoyer des e-mails aux utilisateurs"
+
+#: inc/crm/clienti/form_mail.php:52
+#, fuzzy
+msgid "Wähle Benutzer aus"
+msgstr "Sélectionnez l'utilisateur"
+
+#: inc/crm/clienti/form_mail.php:56
+#, fuzzy
+msgid "Wähle Gruppen aus"
+msgstr "Sélectionnez des groupes"
+
+#: inc/crm/clienti/form_mail.php:63
+msgid "Senden"
+msgstr "Envoyer"
+
+#: inc/crm/clienti/form_todo.php:10 inc/crm/dashboard.php:226
+#: inc/crm/dashboard.php:366 inc/functions.php:2372
+#: inc/pluggable/scheduler/list.php:115
+#, fuzzy
+msgid "Ablauf"
+msgstr "Déroulement"
+
+#: inc/crm/clienti/form_todo.php:34
+#, fuzzy
+msgid "Benachrichtigungsregeln für dieses TODO"
+msgstr "Règles de notification pour ce TODO"
+
+#: inc/crm/clienti/form_todo.php:53 inc/crm/main.php:177
+#: inc/subscription_rules.php:240 inc/subscription_rules.php:786
+#: inc/subscription_rules.php:788
+#, fuzzy
+msgid "Benutzer benachrichtigen"
+msgstr "Notifier les utilisateurs"
+
+#: inc/crm/clienti/form_todo.php:58 inc/crm/scheduler/form.php:444
+#: inc/subscription_rules.php:118
+#, fuzzy
+msgid "Im Benutzer-Dashboard veröffentlichen"
+msgstr "Publier dans le tableau de bord de l'utilisateur"
+
+#: inc/crm/clienti/form_todo.php:65
+#, fuzzy
+msgid "Gruppe benachrichtigen"
+msgstr "Notifier le groupe"
+
+#: inc/crm/clienti/form_todo.php:84 inc/subscription_rules.php:131
+#, fuzzy
+msgid "Sende E-Mails an ausgewählte Empfänger"
+msgstr "Envoyer des e-mails aux destinataires sélectionnés"
+
+#: inc/crm/clienti/list.php:62
+msgid "KUNDEN"
+msgstr "Clients"
+
+#: inc/crm/clienti/script_appuntamento.php:9 inc/pluggable/clienti/list.php:200
+#, fuzzy
+msgid "Termin für Kunden hinzufügen:"
+msgstr "Ajouter un rendez-vous pour les clients :"
+
+#: inc/crm/clienti/script_appuntamento.php:69
+#, fuzzy
+msgid "Nutzer wählen"
+msgstr "Choisir les utilisateurs"
+
+#: inc/crm/clienti/script_appuntamento.php:85
+#, fuzzy
+msgid "Wähle die Gruppe"
+msgstr "Sélectionnez le groupe"
+
+#: inc/crm/clienti/script_appuntamento.php:213
+#, fuzzy
+msgid "Termin wurde hinzugefügt"
+msgstr "Le rendez-vous a été ajouté"
+
+#: inc/crm/clienti/script_appuntamento.php:351
+#: inc/crm/clienti/script_todo.php:354 inc/crm/scheduler/form.php:201
+#, fuzzy
+msgid ""
+"Du solltest auswählen, wie viele Tage im Voraus Du die Benachrichtigung "
+"aktivieren möchtest"
+msgstr ""
+"Vous devez choisir combien de jours à l'avance vous souhaitez activer les "
+"notifications"
+
+#: inc/crm/clienti/script_appuntamento.php:352
+#: inc/crm/clienti/script_todo.php:355
+#: inc/crm/documenti/form_credit_note.php:563
+#: inc/crm/documenti/form_invoice_informal.php:578
+#: inc/crm/scheduler/form.php:202
+#, fuzzy
+msgid ""
+"Du solltest einen Benutzer oder eine Gruppe von Benutzern auswählen, die "
+"benachrichtigt werden sollen"
+msgstr ""
+"Vous devez sélectionner un utilisateur ou un groupe d'utilisateurs à notifier"
+
+#: inc/crm/clienti/script_appuntamento.php:353
+#: inc/crm/clienti/script_todo.php:356
+#: inc/crm/documenti/form_credit_note.php:564
+#: inc/crm/documenti/form_credit_note.php:601
+#: inc/crm/documenti/form_invoice.php:568
+#: inc/crm/documenti/form_invoice.php:662
+#: inc/crm/documenti/form_invoice_informal.php:579
+#: inc/crm/documenti/form_invoice_informal.php:664
+#: inc/crm/documenti/form_quotation.php:738 inc/crm/scheduler/form.php:203
+#, fuzzy
+msgid "Du solltest einen Kunden auswählen"
+msgstr "Vous devez choisir un client"
+
+#: inc/crm/clienti/script_appuntamento.php:354
+#: inc/crm/clienti/script_mail.php:305 inc/crm/clienti/script_todo.php:357
+#, fuzzy
+msgid "Du solltest einen Betreff für dieses Element eingeben"
+msgstr "Vous devez saisir un sujet pour cet élément"
+
+#: inc/crm/clienti/script_appuntamento.php:355
+#: inc/crm/clienti/script_todo.php:358
+#, fuzzy
+msgid "Du solltest ein Datum für diese Veranstaltung auswählen"
+msgstr "Vous devez choisir une date pour cet événement"
+
+#: inc/crm/clienti/script_attivita.php:7 inc/crm/clienti/script_attivita.php:18
+#, fuzzy
+msgid "Aktivität für Kunde hinzufügen:"
+msgstr "Ajouter une activité pour le client :"
+
+#: inc/crm/clienti/script_attivita.php:45
+#, fuzzy
+msgid "Du solltest etwas Text eingeben"
+msgstr "Vous devriez saisir du texte"
+
+#: inc/crm/clienti/script_attivita.php:119
+#, fuzzy
+msgid "Anmerkung wurde hinzugefügt"
+msgstr "Une note a été ajoutée"
+
+#: inc/crm/clienti/script_mail.php:25
+#, fuzzy
+msgid "Dateien anhängen"
+msgstr "Joindre des fichiers"
+
+#: inc/crm/clienti/script_mail.php:31 inc/crm/clienti/script_mail.php:41
+#: inc/crm/documenti/document_print.php:76
+#: inc/crm/documenti/form_quotation.php:69 inc/crm/documenti/list.php:51
+#: inc/crm/documenti/list.php:347 inc/functions.php:3233 inc/functions.php:3563
+msgid "Angebot"
+msgstr "Offre"
+
+#: inc/crm/clienti/script_mail.php:31 inc/crm/clienti/script_mail.php:41
+#: inc/crm/documenti/document_print.php:86 inc/crm/documenti/list.php:50
+#: inc/functions.php:3243 inc/functions.php:3573
+msgid "Rechnung"
+msgstr "Facture"
+
+#: inc/crm/clienti/script_mail.php:32 inc/crm/clienti/script_mail.php:42
+#: inc/crm/clienti/script_mail.php:235
+#, fuzzy
+msgid "PDF generieren"
+msgstr "Générer un PDF"
+
+#: inc/crm/clienti/script_mail.php:32 inc/crm/clienti/script_mail.php:42
+#, fuzzy
+msgid "Dokument ansehen"
+msgstr "Voir le document"
+
+#: inc/crm/clienti/script_mail.php:32 inc/crm/clienti/script_mail.php:45
+msgid "Anfügen"
+msgstr "Joindre"
+
+#: inc/crm/clienti/script_mail.php:34
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:106
+msgid "Betrag"
+msgstr "Montant"
+
+#: inc/crm/clienti/script_mail.php:104 inc/crm/clienti/script_todo.php:71
+#: inc/crm/documenti/form_credit_note.php:864
+#: inc/crm/documenti/form_invoice.php:916
+#: inc/crm/documenti/form_invoice_informal.php:928
+#: inc/crm/scheduler/form.php:85 inc/subscription_rules.php:700
+#: inc/subscription_rules.php:730
+#, fuzzy
+msgid "Benutzer wählen"
+msgstr "Sélectionner un utilisateur"
+
+#: inc/crm/clienti/script_mail.php:120 inc/crm/clienti/script_todo.php:87
+#, fuzzy
+msgid "Wähle Gruppe"
+msgstr "Choisir le groupe"
+
+#: inc/crm/clienti/script_mail.php:213 inc/crm/clienti/script_mail.php:223
+#, fuzzy
+msgid "E-Mail an den Kunden senden:"
+msgstr "Envoyer un e-mail au client :"
+
+#: inc/crm/clienti/script_mail.php:306
+#, fuzzy
+msgid "Du solltest eine Inhaltsnachricht schreiben"
+msgstr "Vous devriez écrire un message de contenu"
+
+#: inc/crm/clienti/script_mail.php:351
+#, fuzzy
+msgid "E-Mail wurde geplant"
+msgstr "L'e-mail a été planifié"
+
+#: inc/crm/clienti/script_mail.php:351
+#, fuzzy
+msgid "Die Email wurde verschickt"
+msgstr "L'email a été envoyé"
+
+#: inc/crm/clienti/script_todo.php:9 inc/crm/clienti/script_todo.php:21
+#, fuzzy
+msgid "Aufgaben für den Kunden hinzufügen:"
+msgstr "Ajouter des tâches pour le client :"
+
+#: inc/crm/clienti/script_todo.php:213
+#, fuzzy
+msgid "TODO wurde hinzugefügt"
+msgstr "TODO a été ajouté"
+
+#: inc/crm/dashboard.php:139
+#, fuzzy
+msgid "Kein TODO zu zeigen"
+msgstr "Pas de TODO à afficher"
+
+#: inc/crm/dashboard.php:184
+#, fuzzy
+msgid ""
+"Ziehe die Spaltenüberschriften und lege sie hier ab, um nach dieser Spalte "
+"zu gruppieren."
+msgstr ""
+"Faites glisser les en-têtes de colonne et déposez-les ici pour les regrouper "
+"selon cette colonne."
+
+#: inc/crm/dashboard.php:192 inc/crm/dashboard.php:332
+#: inc/pluggable/clienti/list.php:59 inc/pluggable/scheduler/list.php:95
+#, fuzzy
+msgid "Zeige"
+msgstr "Afficher"
+
+#: inc/crm/dashboard.php:192 inc/crm/dashboard.php:193
+#: inc/crm/dashboard.php:332 inc/crm/dashboard.php:333
+#: inc/pluggable/clienti/list.php:59 inc/pluggable/clienti/list.php:60
+#: inc/pluggable/scheduler/list.php:95 inc/pluggable/scheduler/list.php:96
+msgid "von"
+msgstr "de"
+
+#: inc/crm/dashboard.php:192 inc/crm/dashboard.php:332
+#, fuzzy
+msgid "gesammt"
+msgstr "total"
+
+#: inc/crm/dashboard.php:194 inc/crm/dashboard.php:334
+#: inc/pluggable/scheduler/list.php:97
+#, fuzzy
+msgid "Beiträge pro Seite"
+msgstr "Messages par page"
+
+#: inc/crm/dashboard.php:195 inc/crm/dashboard.php:335
+#: inc/pluggable/clienti/list.php:62 inc/pluggable/scheduler/list.php:98
+msgid "Erste Seite"
+msgstr "Page suivante"
+
+#: inc/crm/dashboard.php:196 inc/crm/dashboard.php:336
+#: inc/pluggable/clienti/list.php:63 inc/pluggable/scheduler/list.php:99
+msgid "Letzte Seite"
+msgstr "Dernière page"
+
+#: inc/crm/dashboard.php:197 inc/crm/dashboard.php:337
+#: inc/pluggable/clienti/list.php:64 inc/pluggable/scheduler/list.php:100
+msgid "Nächste"
+msgstr "Plus"
+
+#: inc/crm/dashboard.php:198 inc/crm/dashboard.php:338
+#: inc/pluggable/clienti/list.php:65 inc/pluggable/scheduler/list.php:101
+msgid "Vorherige"
+msgstr "précédent"
+
+#: inc/crm/dashboard.php:199 inc/crm/dashboard.php:339
+#: inc/pluggable/clienti/list.php:66 inc/pluggable/scheduler/list.php:102
+#, fuzzy
+msgid "Neu laden"
+msgstr "Recharger"
+
+#: inc/crm/dashboard.php:200 inc/crm/dashboard.php:340
+#: inc/pluggable/clienti/list.php:67 inc/pluggable/scheduler/list.php:103
+msgid "Mehr"
+msgstr "Plus"
+
+#: inc/crm/dashboard.php:207 inc/crm/dashboard.php:347
+#: inc/pluggable/clienti/list.php:75
+msgid "Filtern nach"
+msgstr "Trier par"
+
+#: inc/crm/dashboard.php:214 inc/crm/dashboard.php:354
+#: inc/pluggable/clienti/list.php:82
+#, fuzzy
+msgid "Enthält"
+msgstr "Contient"
+
+#: inc/crm/dashboard.php:215 inc/crm/dashboard.php:355
+#: inc/pluggable/clienti/list.php:83
+#, fuzzy
+msgid "Beginnt mit"
+msgstr "Commence par"
+
+#: inc/crm/dashboard.php:216 inc/crm/dashboard.php:356
+#: inc/pluggable/clienti/list.php:84
+#, fuzzy
+msgid "Gleich"
+msgstr "Égal à"
+
+#: inc/crm/dashboard.php:217 inc/crm/dashboard.php:357
+#: inc/pluggable/clienti/list.php:85
+#, fuzzy
+msgid "Nicht gleich"
+msgstr "Pas tout de suite"
+
+#: inc/crm/dashboard.php:224 inc/crm/dashboard.php:364
+#: inc/pluggable/scheduler/list.php:114
+msgid "Objekt"
+msgstr "Objet"
+
+#: inc/crm/dashboard.php:227 inc/crm/dashboard.php:367
+#: inc/pluggable/scheduler/list.php:124
+msgid "Empfänger"
+msgstr "récipiendaire"
+
+#: inc/crm/dashboard.php:230 inc/crm/dashboard.php:370
+#: inc/pluggable/scheduler/list.php:129
+msgid "Offen"
+msgstr "garder l'esprit ouvert"
+
+#: inc/crm/dashboard.php:265 inc/crm/dashboard.php:407
+#: inc/pluggable/clienti/list.php:168 inc/pluggable/scheduler/list.php:164
+#, fuzzy
+msgid "Löschen bestätigen"
+msgstr "Confirmer la suppression"
+
+#: inc/crm/dashboard.php:273 inc/crm/dashboard.php:415
+#: inc/pluggable/clienti/form.php:156 inc/pluggable/scheduler/list.php:173
+msgid "Status"
+msgstr "Statut"
+
+#: inc/crm/dashboard.php:282
+#, fuzzy
+msgid "Keine TERMINE vorhanden"
+msgstr "Aucun rendez-vous disponible"
+
+#: inc/crm/dashboard.php:322 inc/pluggable/scheduler/list.php:87
+#, fuzzy
+msgid ""
+"Ziehe die Spaltenüberschriften und lege sie hier ab, um sie nach dieser "
+"Spalte zu gruppieren"
+msgstr ""
+"Faites glisser les en-têtes de colonne et déposez-les ici pour les regrouper "
+"selon cette colonne"
+
+#: inc/crm/dashboard.php:424
+#, fuzzy
+msgid "Schnellmenü"
+msgstr "Menu rapide"
+
+#: inc/crm/dashboard.php:429
+#, fuzzy
+msgid "Neues Todo"
+msgstr "Nouveau todo"
+
+#: inc/crm/dashboard.php:432
+#, fuzzy
+msgid "Neuer Termin"
+msgstr "Nouvelle date"
+
+#: inc/crm/dashboard.php:445
+msgid "Neues Angebot"
+msgstr "Nouvelle offre"
+
+#: inc/crm/dashboard.php:452
+#, fuzzy
+msgid "Neue Rechnung"
+msgstr "Nouvelle facture"
+
+#: inc/crm/dashboard.php:463 inc/options.php:1484
+msgid "Einstellungen"
+msgstr "Réglages"
+
+#: inc/crm/dashboard.php:471
+#, fuzzy
+msgid "Ihre aktuellen Benachrichtigungen"
+msgstr "Vos notifications actuelles"
+
+#: inc/crm/dashboard.php:474
+#, fuzzy
+msgid "Tagesansicht"
+msgstr "Vue du jour"
+
+#: inc/crm/dashboard.php:475
+#, fuzzy
+msgid "Wochenansicht"
+msgstr "Vue hebdomadaire"
+
+#: inc/crm/dashboard.php:484
+#, fuzzy
+msgid "ToDo"
+msgstr "ToDo"
+
+#: inc/crm/dashboard.php:488 inc/crm/dashboard.php:514
+#: inc/subscription_rules.php:91
+#, fuzzy
+msgid "Legende"
+msgstr "Légende"
+
+#: inc/crm/dashboard.php:491 inc/crm/dashboard.php:517 inc/crm/main.php:206
+#: inc/functions.php:2391
+msgid "Erledigt"
+msgstr "Achevé"
+
+#: inc/crm/dashboard.php:494 inc/crm/dashboard.php:520 inc/crm/main.php:204
+#: inc/crm/scheduler/list.php:162 inc/functions.php:2387
+#, fuzzy
+msgid "Noch zu erledigen"
+msgstr "Reste à faire"
+
+#: inc/crm/dashboard.php:497 inc/crm/dashboard.php:523 inc/crm/main.php:208
+#: inc/functions.php:2394
+#, fuzzy
+msgid "Abgesagt"
+msgstr "Annulé"
+
+#: inc/crm/dashboard.php:500
+#, fuzzy
+msgid "Maus darüber fahren, um Informationen anzuzeigen"
+msgstr "Passez la souris dessus pour afficher les informations"
+
+#: inc/crm/dashboard.php:500 inc/crm/dashboard.php:526
+#, fuzzy
+msgid "Info Tooltip"
+msgstr "Info-bulle"
+
+#: inc/crm/dashboard.php:510
+msgid "Termine"
+msgstr "Rappels"
+
+#: inc/crm/dashboard.php:526
+#, fuzzy
+msgid "Bewege die Maus darüber, um Informationen anzuzeigen"
+msgstr "Passez la souris dessus pour afficher des informations"
+
+#: inc/crm/dashboard.php:534
+#, fuzzy
+msgid ""
+"Du hast keine Berechtigung, auf den Benachrichtigungsbereich zuzugreifen"
+msgstr "Vous n'êtes pas autorisé à accéder à la zone de notification"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:5
+#, fuzzy
+msgid "Zeile mit Preis hinzufügen"
+msgstr "Ajouter une ligne avec le prix"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:8
+#, fuzzy
+msgid "Beschreibende Zeile hinzufügen"
+msgstr "Ajouter une ligne descriptive"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:29
+#, fuzzy
+msgid "Regel"
+msgstr "Règle"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:32
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:22
+msgid "Menge"
+msgstr "Quantité"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:35
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:23
+#, fuzzy
+msgid "Einzelpreis"
+msgstr "Prix unitaire"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:38
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:25
+msgid "Rabatt"
+msgstr "Réduction"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:44
+msgid "MwSt"
+msgstr "cuve"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:47
+msgid "Total"
+msgstr "Total"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:50
+#: inc/subscription_rules.php:71 inc/subscription_rules.php:109
+msgid "Aktionen"
+msgstr "Actions"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:136
+#, fuzzy
+msgid "Gesamtnetto"
+msgstr "Total net"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:142
+#, fuzzy
+msgid "Gesamtsteuer"
+msgstr "Impôt total"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:148
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:26
+msgid "Gesamt"
+msgstr "Total "
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:160
+#, fuzzy, no-php-format
+msgid ""
+"Der Rabattmodus ( % oder Wert) gilt für das gesamte Dokument und "
+"berücksichtigt selbstverständlich die Zeilenmengen (z. B. 5 Euro Rabatt auf "
+"10 Artikel = 50)"
+msgstr ""
+"Le mode de remise ( % ola valeur) s'applique à l'ensemble du document et "
+"tient bien sûr compte des quantités de lignes (ex. 5 euros de remise sur 10 "
+"articles = 50)"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:266
+#: inc/pluggable/clienti/form.php:79 inc/pluggable/clienti/form.php:280
+#: inc/pluggable/documenti/list.php:210
+#, fuzzy
+msgid "Delete"
+msgstr "Supprimer"
+
+#: inc/crm/documenti/accountabilities/accountability_0.php:417
+#, fuzzy
+msgid ""
+"Löschen bestätigen? Der Löschvorgang wird erst wirksam, wenn Du das Dokument "
+"speicherst"
+msgstr ""
+"Confirmer la suppression ? La suppression ne prend effet que lorsque vous "
+"enregistrez le document"
+
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:108
+#, fuzzy
+msgid "Steuer"
+msgstr "Taxe"
+
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:110
+#, fuzzy
+msgid "Erstattung"
+msgstr "Remboursement"
+
+#: inc/crm/documenti/accountabilities/accountability_print_0.php:112
+#, fuzzy
+msgid "Gesamtsumme"
+msgstr "Total"
+
+#: inc/crm/documenti/advanced_print.php:29
+#, fuzzy
+msgid "Nutze mehrseitigen Rechnungsdruck"
+msgstr "Utilisez l'impression de factures multi-pages"
+
+#: inc/crm/documenti/advanced_print.php:30
+#, fuzzy
+msgid "NEIN"
+msgstr "NON"
+
+#: inc/crm/documenti/advanced_print.php:31
+#, fuzzy
+msgid "JA"
+msgstr "OUI"
+
+#: inc/crm/documenti/document_print.php:96 inc/functions.php:3253
+#: inc/functions.php:3583
+#, fuzzy
+msgid "Informelle Rechnung"
+msgstr "Facture informelle"
+
+#: inc/crm/documenti/document_print.php:135
+#: inc/crm/documenti/form_credit_note.php:322
+#: inc/crm/documenti/form_invoice.php:316
+#: inc/crm/documenti/form_invoice_informal.php:330
+#: inc/crm/documenti/form_quotation.php:225 inc/functions.php:51
+#: inc/functions.php:3301 inc/functions.php:3316 inc/functions.php:3628
+#: inc/options.php:294
+#, fuzzy
+msgid "Umsatzsteuer-ID"
+msgstr "Code TVA"
+
+#: inc/crm/documenti/document_print.php:137 inc/functions.php:52
+#: inc/functions.php:3303 inc/functions.php:3318 inc/functions.php:3630
+#: inc/pluggable/clienti/list.php:106
+msgid "Steuernummer"
+msgstr "Taxe"
+
+#: inc/crm/documenti/document_print.php:139
+#: inc/crm/documenti/form_credit_note.php:162
+#: inc/crm/documenti/form_invoice.php:163
+#: inc/crm/documenti/form_invoice_informal.php:169
+#: inc/crm/documenti/form_quotation.php:132
+msgid "Referenz"
+msgstr "Référence"
+
+#: inc/crm/documenti/document_print.php:141 inc/functions.php:3297
+#: inc/functions.php:3324
+#, fuzzy
+msgid "ausgegeben am"
+msgstr "émis le"
+
+#: inc/crm/documenti/document_print.php:184 inc/functions.php:3363
+#: inc/functions.php:3671
+msgid "Zahlung"
+msgstr "Paiement"
+
+#: inc/crm/documenti/document_print.php:186
+#: inc/crm/documenti/form_quotation.php:119
+#, fuzzy
+msgid "Verfallsdatum"
+msgstr "Date d'expiration"
+
+#: inc/crm/documenti/document_print.php:192 inc/functions.php:3686
+msgid "Bedingungen"
+msgstr "Conditions"
+
+#: inc/crm/documenti/document_print.php:229
+#, fuzzy
+msgid "Hole PDF"
+msgstr "Obtenir un PDF"
+
+#: inc/crm/documenti/document_print.php:232
+msgid "Download"
+msgstr "Téléchargement"
+
+#: inc/crm/documenti/document_print.php:247
+msgid "Druckoptionen"
+msgstr "caractères"
+
+#: inc/crm/documenti/document_print.php:470
+#, fuzzy
+msgid ""
+"Das aktuelle Dokument wurde auf Ihren PC heruntergeladen und auf dem Server "
+"gespeichert"
+msgstr ""
+"Le document actuel a été téléchargé sur votre PC et enregistré sur le serveur"
+
+#: inc/crm/documenti/document_print.php:471
+#, fuzzy
+msgid "Send to customer"
+msgstr "Envoyer au client"
+
+#: inc/crm/documenti/form_credit_note.php:125
+#, fuzzy
+msgid "GUTSCHRIFT ERSTELLEN/BEARBEITEN"
+msgstr "CRÉER/TRAITER UN AVOIR"
+
+#: inc/crm/documenti/form_credit_note.php:128
+#, fuzzy
+msgid "GUTSCHRIFT"
+msgstr "BULLETIN"
+
+#: inc/crm/documenti/form_credit_note.php:129
+#: inc/crm/documenti/form_invoice.php:128
+#: inc/crm/documenti/form_invoice_informal.php:136
+#: inc/crm/documenti/form_quotation.php:104
+#, fuzzy
+msgid "KOMMENTARE UND INTERNE DATEN"
+msgstr "COMMENTAIRES ET DONNÉES INTERNES"
+
+#: inc/crm/documenti/form_credit_note.php:133
+#, fuzzy
+msgid "GUTSCHRIFTSDATEN"
+msgstr "DONNÉES DE CRÉDIT"
+
+#: inc/crm/documenti/form_credit_note.php:138
+#: inc/crm/documenti/form_credit_note.php:140
+#: inc/crm/documenti/form_invoice.php:150
+#: inc/crm/documenti/form_invoice.php:152
+#: inc/crm/documenti/form_invoice_informal.php:145
+#: inc/crm/documenti/form_invoice_informal.php:147
+#: inc/crm/documenti/form_quotation.php:111
+msgid "Nummer"
+msgstr "Nombre"
+
+#: inc/crm/documenti/form_credit_note.php:144
+#: inc/crm/documenti/form_invoice.php:139
+#: inc/crm/documenti/form_invoice_informal.php:151
+#, fuzzy
+msgid "Ausgabedatum"
+msgstr "Date d'émission"
+
+#: inc/crm/documenti/form_credit_note.php:156
+#: inc/crm/documenti/form_invoice.php:160
+#: inc/crm/documenti/form_invoice_informal.php:163
+#, fuzzy
+msgid ""
+"ACHTUNG: Das Bearbeiten von Datum und Nummer kann zu Unstimmigkeiten in "
+"Deiner Buchhaltung führen"
+msgstr ""
+"ATTENTION : La modification de la date et du numéro peut entraîner des "
+"incohérences dans votre comptabilité"
+
+#: inc/crm/documenti/form_credit_note.php:169
+#: inc/crm/documenti/form_invoice.php:170
+#: inc/crm/documenti/form_invoice_informal.php:176
+#, fuzzy
+msgid "Wird im Dokument angezeigt"
+msgstr "S'affiche dans le document"
+
+#: inc/crm/documenti/form_credit_note.php:174
+#: inc/crm/documenti/form_invoice.php:175
+#: inc/crm/documenti/form_invoice_informal.php:181 inc/options.php:923
+msgid "Zahlungsarten"
+msgstr "Modes de paiement"
+
+#: inc/crm/documenti/form_credit_note.php:183
+#: inc/crm/documenti/form_invoice.php:185
+#: inc/crm/documenti/form_invoice_informal.php:190 inc/options.php:1266
+#: inc/options.php:1274
+#, fuzzy
+msgid "dd"
+msgstr "dd"
+
+#: inc/crm/documenti/form_credit_note.php:195
+#, fuzzy
+msgid "Zahlung exp. Datum"
+msgstr "Paiement exp. Date"
+
+#: inc/crm/documenti/form_credit_note.php:203
+#: inc/crm/documenti/form_invoice.php:204
+#: inc/crm/documenti/form_invoice_informal.php:210
+#, fuzzy
+msgid "Bezahlt"
+msgstr "Payé"
+
+#: inc/crm/documenti/form_credit_note.php:210
+#: inc/crm/documenti/form_invoice.php:214
+#: inc/crm/documenti/form_invoice_informal.php:217
+#, fuzzy
+msgid "Benachrichtigen"
+msgstr "Notifier"
+
+#: inc/crm/documenti/form_credit_note.php:217
+#, fuzzy
+msgid "Zahlungserinnerung für die Gutschrift"
+msgstr "Rappel de paiement pour l'avoir"
+
+#: inc/crm/documenti/form_credit_note.php:220
+#: inc/crm/documenti/form_invoice.php:221
+#: inc/crm/documenti/form_invoice_informal.php:227
+#: inc/crm/scheduler/form.php:439
+#, fuzzy
+msgid "An Benutzer senden"
+msgstr "Envoyer à un utilisateur"
+
+#: inc/crm/documenti/form_credit_note.php:222
+#: inc/crm/documenti/form_invoice.php:223
+#: inc/crm/documenti/form_invoice_informal.php:229
+#, fuzzy
+msgid "Tage nach Ablauf"
+msgstr "Jours après l'expiration"
+
+#: inc/crm/documenti/form_credit_note.php:222
+#: inc/crm/documenti/form_invoice.php:223
+#: inc/crm/documenti/form_invoice_informal.php:229
+#, fuzzy
+msgid "Standardwert bearbeiten"
+msgstr "Modifier la valeur par défaut"
+
+#: inc/crm/documenti/form_credit_note.php:230
+#: inc/crm/documenti/form_invoice.php:231
+#: inc/crm/documenti/form_invoice_informal.php:237
+#: inc/crm/documenti/form_quotation.php:140
+#, fuzzy
+msgid "KUNDENDATEN"
+msgstr "DONNÉES CLIENTS"
+
+#: inc/crm/documenti/form_credit_note.php:241
+#: inc/crm/documenti/form_invoice.php:241
+#: inc/crm/documenti/form_invoice_informal.php:248
+#: inc/crm/documenti/form_quotation.php:149
+#, fuzzy
+msgid "KUNDENDATEN BEARBEITEN"
+msgstr "MODIFIER LES DONNÉES DU CLIENT"
+
+#: inc/crm/documenti/form_credit_note.php:245
+#: inc/crm/documenti/form_invoice.php:245
+#: inc/crm/documenti/form_invoice_informal.php:252
+#: inc/crm/documenti/form_quotation.php:152
+#, fuzzy
+msgid "EDITIEREN BEENDEN"
+msgstr "TERMINER L'ÉDITION"
+
+#: inc/crm/documenti/form_credit_note.php:248
+#: inc/crm/documenti/form_invoice.php:248
+#: inc/crm/documenti/form_invoice.php:497
+#: inc/crm/documenti/form_invoice_informal.php:255
+#: inc/crm/documenti/form_quotation.php:155 inc/crm/scheduler/form.php:16
+#, fuzzy
+msgid "NEUES TODO"
+msgstr "NOUVEAU TODO"
+
+#: inc/crm/documenti/form_credit_note.php:281
+#: inc/pluggable/documenti/list.php:158
+msgid "Contact"
+msgstr "Contact"
+
+#: inc/crm/documenti/form_credit_note.php:297
+#: inc/crm/documenti/form_invoice.php:291
+msgid "Postleitzahl"
+msgstr "Code Postal"
+
+#: inc/crm/documenti/form_credit_note.php:303
+#: inc/crm/documenti/form_invoice.php:297
+#: inc/crm/documenti/form_invoice_informal.php:311
+#: inc/crm/documenti/form_quotation.php:206
+#, fuzzy
+msgid "C.F."
+msgstr "C.F."
+
+#: inc/crm/documenti/form_credit_note.php:329
+#, fuzzy
+msgid "Produkte zur Gutschrift hinzufügen"
+msgstr "Ajouter des produits au crédit"
+
+#: inc/crm/documenti/form_credit_note.php:363
+#: inc/crm/documenti/form_invoice.php:357
+#: inc/crm/documenti/form_invoice_informal.php:370
+#: inc/crm/documenti/form_quotation.php:290
+msgid "Kommentare"
+msgstr "Commentaires"
+
+#: inc/crm/documenti/form_credit_note.php:390
+#: inc/crm/documenti/form_invoice.php:388
+#: inc/crm/documenti/form_invoice.php:393
+#: inc/crm/documenti/form_invoice_informal.php:397
+#: inc/crm/documenti/form_quotation.php:330
+#: inc/crm/documenti/form_quotation.php:335
+#, fuzzy
+msgid "Druckbare Version"
+msgstr "Version imprimable"
+
+#: inc/crm/documenti/form_credit_note.php:400
+#: inc/crm/documenti/form_invoice.php:405
+#: inc/crm/documenti/form_invoice_informal.php:407
+#, fuzzy
+msgid "Standardtage ändern"
+msgstr "Modifier les jours par défaut"
+
+#: inc/crm/documenti/form_credit_note.php:403
+#: inc/crm/documenti/form_invoice_informal.php:410
+#, fuzzy
+msgid "Standardwert ändern"
+msgstr "Modifier la valeur par défaut"
+
+#: inc/crm/documenti/form_credit_note.php:404
+#: inc/crm/documenti/form_invoice.php:409
+#: inc/crm/documenti/form_invoice_informal.php:411
+msgid "Bestätigen"
+msgstr "Confirmer"
+
+#: inc/crm/documenti/form_credit_note.php:447
+#, fuzzy
+msgid "Gib den vollen Betrag für die umgekehrte Berechnung ein:"
+msgstr "Saisissez le montant total pour le calcul inverse :"
+
+#: inc/crm/documenti/form_credit_note.php:450
+#, fuzzy
+msgid "Eingabe der Erstattung für die umgekehrte Berechnung:"
+msgstr "Saisie de la restitution pour le calcul inverse :"
+
+#: inc/crm/documenti/form_credit_note.php:453
+#: inc/crm/documenti/form_invoice.php:458
+#: inc/crm/documenti/form_invoice_informal.php:460
+#, fuzzy
+msgid "Berechnung:"
+msgstr "Calcul :"
+
+#: inc/crm/documenti/form_credit_note.php:462
+#, fuzzy
+msgid "Aus Gesamtmenge berechnen:"
+msgstr "Calculer à partir de la quantité totale :"
+
+#: inc/crm/documenti/form_credit_note.php:490
+#, fuzzy
+msgid "TASTEN-LEGENDE"
+msgstr "LÉGENDE DES TOUCHES"
+
+#: inc/crm/documenti/form_credit_note.php:493
+#, fuzzy
+msgid "NEUES TODONEUES TODO"
+msgstr "NOUVEAU TODONEUES TODO"
+
+#: inc/crm/documenti/form_credit_note.php:495
+#: inc/crm/documenti/form_invoice.php:499
+#: inc/crm/documenti/form_invoice_informal.php:510
+#: inc/crm/documenti/form_quotation.php:394 inc/crm/scheduler/form.php:22
+#: inc/pluggable/clienti/list.php:286
+#, fuzzy
+msgid "NEUE AKTIVITÄT"
+msgstr "NOUVELLE ACTIVITÉ"
+
+#: inc/crm/documenti/form_credit_note.php:496
+#: inc/crm/documenti/form_invoice.php:500
+#: inc/crm/documenti/form_invoice_informal.php:511
+#: inc/crm/documenti/form_quotation.php:395
+#, fuzzy
+msgid "NEUE MAIL"
+msgstr "NOUVEAU MAIL"
+
+#: inc/crm/documenti/form_credit_note.php:562
+#: inc/crm/documenti/form_invoice_informal.php:577
+#, fuzzy
+msgid ""
+"Du solltest ein Ablaufdatum auswählen; Wähle heute für eine nicht relevante "
+"aus "
+msgstr ""
+"Vous devez choisir une date d'expiration ; choisissez aujourd'hui pour un "
+"non pertinent"
+
+#: inc/crm/documenti/form_credit_note.php:565
+#: inc/crm/documenti/form_invoice.php:569
+#: inc/crm/documenti/form_invoice_informal.php:580
+#, fuzzy
+msgid "Du solltest dieser Rechnung mindestens eine Zeile hinzufügen"
+msgstr "Vous devriez ajouter au moins une ligne à cette facture"
+
+#: inc/crm/documenti/form_credit_note.php:566
+#: inc/crm/documenti/form_invoice.php:570
+#: inc/crm/documenti/form_invoice_informal.php:581
+#, fuzzy
+msgid "Beschreibung ist obligatorisch"
+msgstr "La description est obligatoire"
+
+#: inc/crm/documenti/form_credit_note.php:701
+#: inc/crm/documenti/form_invoice.php:760
+#: inc/crm/documenti/form_invoice_informal.php:764
+#: inc/crm/documenti/form_quotation.php:432
+#, fuzzy
+msgid "Du bearbeitest die Stammdaten für diesen Kunden"
+msgstr "Vous traitez les données de base pour ce client"
+
+#: inc/crm/documenti/form_credit_note.php:734
+#: inc/crm/documenti/form_invoice.php:791
+#: inc/crm/documenti/form_invoice_informal.php:797
+#: inc/crm/documenti/form_quotation.php:465
+#, fuzzy
+msgid "Daten wurden gespeichert"
+msgstr "Les données ont été enregistrées"
+
+#: inc/crm/documenti/form_credit_note.php:782
+#: inc/crm/documenti/form_invoice.php:836
+#: inc/crm/documenti/form_invoice_informal.php:846
+#: inc/crm/scheduler/form.php:54
+#, fuzzy
+msgid "Wähle Kunde aus"
+msgstr "Sélectionnez le client"
+
+#: inc/crm/documenti/form_credit_note.php:880
+#: inc/crm/documenti/form_invoice.php:932
+#: inc/crm/documenti/form_invoice_informal.php:944
+#: inc/crm/scheduler/form.php:119
+#, fuzzy
+msgid "Wähle Rolle aus"
+msgstr "Choisir le rôle"
+
+#: inc/crm/documenti/form_credit_note.php:952
+#: inc/crm/documenti/form_invoice.php:1004
+#: inc/crm/documenti/form_invoice_informal.php:1016
+#, fuzzy
+msgid "Option gespeichert"
+msgstr "Option enregistrée"
+
+#: inc/crm/documenti/form_credit_note.php:962
+#: inc/crm/documenti/form_invoice.php:1014
+#: inc/crm/documenti/form_invoice_informal.php:1026
+msgid "Ein Fehler ist aufgetreten"
+msgstr "Une erreur s'est produite"
+
+#: inc/crm/documenti/form_invoice.php:124
+#, fuzzy
+msgid "RECHNUNG ERSTELLEN/BEARBEITEN"
+msgstr "CRÉER/MODIFIER UNE FACTURE"
+
+#: inc/crm/documenti/form_invoice.php:127
+#: inc/crm/documenti/form_invoice_informal.php:135
+#, fuzzy
+msgid "RECHNUNG"
+msgstr "FACTURE"
+
+#: inc/crm/documenti/form_invoice.php:136
+#, fuzzy
+msgid "RECHNUNGSDATEN"
+msgstr "DONNÉES DE FACTURATION"
+
+#: inc/crm/documenti/form_invoice.php:197
+#: inc/crm/documenti/form_invoice_informal.php:202
+#, fuzzy
+msgid "Zahlungsexp. Datum"
+msgstr "Exp. de paiement Date"
+
+#: inc/crm/documenti/form_invoice.php:218
+#: inc/crm/documenti/form_invoice_informal.php:224
+#, fuzzy
+msgid "Zahlungserinnerung"
+msgstr "Rappel de paiement"
+
+#: inc/crm/documenti/form_invoice.php:268
+#, fuzzy
+msgid "Customer"
+msgstr "Client"
+
+#: inc/crm/documenti/form_invoice.php:323
+#: inc/crm/documenti/form_invoice_informal.php:337
+#, fuzzy
+msgid "Produkte zur Rechnung hinzufügen"
+msgstr "Ajouter des produits à la facture"
+
+#: inc/crm/documenti/form_invoice.php:378
+#: inc/crm/documenti/form_quotation.php:322 inc/pluggable/clienti/form.php:276
+msgid "Abbrechen"
+msgstr "Annuler"
+
+#: inc/crm/documenti/form_invoice.php:408
+#, fuzzy
+msgid "Change default value"
+msgstr "Modifier la valeur par défaut"
+
+#: inc/crm/documenti/form_invoice.php:452
+#: inc/crm/documenti/form_invoice_informal.php:454
+#, fuzzy
+msgid "Gib den Gesamtbetrag für die umgekehrte Berechnung ein:"
+msgstr "Saisissez le montant total pour le calcul inverse :"
+
+#: inc/crm/documenti/form_invoice.php:455
+#: inc/crm/documenti/form_invoice_informal.php:457
+#, fuzzy
+msgid "Eingaberückerstattung für Rückrechnung:"
+msgstr "Remboursement de la saisie pour le calcul rétroactif :"
+
+#: inc/crm/documenti/form_invoice.php:467
+#, fuzzy
+msgid "Berechne vom vollen Betrag:"
+msgstr "Calculez à partir du montant total :"
+
+#: inc/crm/documenti/form_invoice.php:494
+#: inc/crm/documenti/form_invoice_informal.php:505
+#: inc/crm/documenti/form_quotation.php:389
+#, fuzzy
+msgid "BUTTONS LEGENDE"
+msgstr "BOUTONS LÉGENDE"
+
+#: inc/crm/documenti/form_invoice.php:566
+#, fuzzy
+msgid ""
+"Du solltest ein Verfallsdatum wählen; Wähle \"heute\" für eine nicht "
+"relevante "
+msgstr ""
+"Vous devriez choisir une date d'expiration ; Choisissez \"aujourd'hui\" pour "
+"une date non pertinente"
+
+#: inc/crm/documenti/form_invoice.php:567
+#, fuzzy
+msgid ""
+"Du solltest einen Benutzer oder eine Gruppe von Benutzern auswählen, die Du "
+"benachrichtigen möchtest"
+msgstr ""
+"Vous devez sélectionner l'utilisateur ou le groupe d'utilisateurs que vous "
+"souhaitez avertir"
+
+#: inc/crm/documenti/form_invoice.php:607
+#: inc/crm/documenti/form_invoice_informal.php:609
+#: inc/crm/documenti/form_quotation.php:779
+#, fuzzy
+msgid "Dokument wurde gespeichert"
+msgstr "Le document a été enregistré"
+
+#: inc/crm/documenti/form_invoice_informal.php:132
+#, fuzzy
+msgid "INFORMELLE RECHNUNG ERSTELLEN/BEARBEITEN"
+msgstr "CRÉER/MODIFIER UNE FACTURE INFORMELLE"
+
+#: inc/crm/documenti/form_invoice_informal.php:140
+#, fuzzy
+msgid "INVOICE DATA"
+msgstr "INVOICE DATA"
+
+#: inc/crm/documenti/form_invoice_informal.php:289
+#: inc/crm/documenti/form_quotation.php:185 inc/functions.php:2317
+msgid "Kontakt"
+msgstr "Contact"
+
+#: inc/crm/documenti/form_invoice_informal.php:477
+#, fuzzy
+msgid "Aus Gesamtbetrag berechnen:"
+msgstr "Calculer à partir du montant total :"
+
+#: inc/crm/documenti/form_invoice_informal.php:1061
+#, fuzzy
+msgid "ACHTUNG: Du arbeitest an einer INFORMELLEN RECHNUNG"
+msgstr "ATTENTION : vous travaillez sur une FACTURE INFORMELLE"
+
+#: inc/crm/documenti/form_quotation.php:96
+#, fuzzy
+msgid "ANGEBOT ERSTELLEN/BEARBEITEN"
+msgstr "CRÉER/MODIFIER UNE OFFRE"
+
+#: inc/crm/documenti/form_quotation.php:99
+#, fuzzy
+msgid "DOKUMENT"
+msgstr "DOCUMENT"
+
+#: inc/crm/documenti/form_quotation.php:100
+#, fuzzy
+msgid "BODY"
+msgstr "BODY"
+
+#: inc/crm/documenti/form_quotation.php:102
+#, fuzzy
+msgid "DIENSTLEISTUNGEN/PRODUKTE"
+msgstr "SERVICES/PRODUITS"
+
+#: inc/crm/documenti/form_quotation.php:109
+#, fuzzy
+msgid "DOKUMENTENDATEN"
+msgstr "DONNÉES DU DOCUMENT"
+
+#: inc/crm/documenti/form_quotation.php:122
+#, fuzzy
+msgid "Akzeptiert"
+msgstr "Accepté"
+
+#: inc/crm/documenti/form_quotation.php:237
+#, fuzzy
+msgid "ANGEBOT TEXT"
+msgstr "TEXTE DE L'OFFRE"
+
+#: inc/crm/documenti/form_quotation.php:254
+#, fuzzy
+msgid "Füge Produkte zum Angebot hinzu"
+msgstr "Ajoutez des produits à l'offre"
+
+#: inc/crm/documenti/form_quotation.php:283
+#, fuzzy
+msgid "Angebotswert (erforderlich)"
+msgstr "Valeur de l'offre (obligatoire)"
+
+#: inc/crm/documenti/form_quotation.php:295
+#, fuzzy
+msgid "Prognostizierter Erfolgsprozentsatz"
+msgstr "Pourcentage de réussite prévisionnel"
+
+#: inc/crm/documenti/form_quotation.php:739
+#, fuzzy
+msgid "Dieses Zitat sollte einen Wert haben"
+msgstr "Cette citation devrait avoir une valeur"
+
+#: inc/crm/documenti/list.php:32
+#, fuzzy
+msgid "NEUE GUTSCHRIFT"
+msgstr "NOUVEAU CRÉDIT"
+
+#: inc/crm/documenti/list.php:38
+#, fuzzy
+msgid "NEUE FORMLOSE RECHNUNG"
+msgstr "NOUVELLE FACTURE INFORMELLE"
+
+#: inc/crm/documenti/list.php:49 inc/crm/documenti/list.php:345
+#, fuzzy
+msgid ""
+"Registrierte Rechnungen (unterstrichen) können nicht bearbeitet oder "
+"gelöscht werden."
+msgstr ""
+"Les factures enregistrées (soulignées) ne peuvent pas être modifiées ou "
+"supprimées."
+
+#: inc/crm/documenti/list.php:59
+#, fuzzy
+msgid "RECHNUNGEN"
+msgstr "FACTURES"
+
+#: inc/crm/documenti/list.php:62
+#, fuzzy
+msgid "ANGEBOTE"
+msgstr "OFFRES"
+
+#: inc/crm/documenti/list.php:194 inc/crm/documenti/list.php:234
+#, fuzzy
+msgid "Wähle Agent aus"
+msgstr "Sélectionnez l'agent"
+
+#: inc/crm/documenti/list.php:275
+#, fuzzy
+msgid "Du hast keine Berechtigung zum Bearbeiten dieses Datensatzes"
+msgstr "Vous n'êtes pas autorisé à modifier cet enregistrement"
+
+#: inc/crm/documenti/list.php:346
+#, fuzzy
+msgid "Invoice"
+msgstr "Facturation"
+
+#: inc/crm/documenti/stats.php:9
+#, fuzzy
+msgid "RECHNUNGSSTATISTIK"
+msgstr "STATISTIQUES COMPTABLES"
+
+#: inc/crm/documenti/stats.php:12
+#, fuzzy
+msgid "ANGEBOTE STATISTIK"
+msgstr "OFFRES STATISTIQUES"
+
+#: inc/crm/documenti/stats.php:116 inc/crm/documenti/stats.php:141
+#, fuzzy
+msgid "Wählen..."
+msgstr "Choisir..."
+
+#: inc/crm/import/form.php:53
+#, fuzzy
+msgid "Beim Import sind folgende Fehler aufgetreten"
+msgstr "Les erreurs suivantes sont survenues lors de l'importation"
+
+#: inc/crm/import/form.php:81
+#, fuzzy
+msgid "Importiere Kunden aus einer CSV-Datei"
+msgstr "Importer des clients depuis un fichier CSV"
+
+#: inc/crm/import/form.php:82
+#, fuzzy
+msgid ""
+"Wähle eine CVS-Datei aus, um Deine Kunden zu importieren. Beachte dass die "
+"erste Zeile der Datei die folgenden Header enthalten muss (genau so "
+"benannt), wie sie sind:"
+msgstr ""
+"Sélectionnez un fichier CVS pour importer vos clients. Notez que la première "
+"ligne du fichier doit contenir les en-têtes suivants (nommés exactement "
+"comme ils le sont) :"
+
+#: inc/crm/import/form.php:85
+#, fuzzy
+msgid "Die Felder müssen durch Semikolon (;) getrennt werden.."
+msgstr "Les champs doivent être séparés par un point-virgule ( ;)."
+
+#: inc/crm/import/form.php:87
+#, fuzzy
+msgid ""
+"Die einzigen Pflichtfelder sind: \"Vorname\"+\"Nachname\" oder alternativ "
+"\"Firma\"."
+msgstr ""
+"Les seuls champs obligatoires sont : \"Prénom \"+\"Nom\" ou, à défaut, "
+"\"Société\"."
+
+#: inc/crm/import/form.php:88
+#, fuzzy
+msgid ""
+"Das Geburtsdatum muss im Format jjjj-mm-tt vorliegen. fakturierbar kann 1 "
+"oder 0 sein (für Ja/Nein); Typ kann 1 oder 2 sein (für privat/geschäftlich); "
+"Kategorien, Interessen und Herkunft können durch Kommas getrennte "
+"Zeichenfolgen enthalten (siehe Beispieldatei) "
+msgstr ""
+"La date de naissance doit être au format aaaa-mm-jj. facturable peut être 1 "
+"ou 0 (pour oui/non) ; type peut être 1 ou 2 (pour privé/professionnel) ; les "
+"catégories, intérêts et origines peuvent contenir des chaînes de caractères "
+"séparées par des virgules (voir le fichier d'exemple)"
+
+#: inc/crm/import/form.php:93
+#, fuzzy
+msgid ""
+"Optional kannst Du Newsletter-Abonnenten in eine oder mehrere Listen "
+"importieren. Zu diesem Zweck musst Du Deiner CSV-Datei eine Spalte mit dem "
+"Namen \"Newsletter\" hinzufügen (mit den Werten 1/0) und optional die "
+"Liste(n) markieren, in die Du importieren möchtest"
+msgstr ""
+"Vous pouvez éventuellement importer des abonnés à la newsletter dans une ou "
+"plusieurs listes. Pour ce faire, vous devez ajouter à votre fichier CSV une "
+"colonne intitulée \"Newsletter\" (avec les valeurs 1/0) et, en option, "
+"sélectionner la ou les listes dans lesquelles vous souhaitez importer"
+
+#: inc/crm/import/form.php:95
+#, fuzzy
+msgid ""
+"Ein Bericht zeigt Deine Importfehler. Fehlerprotokolle findest Du unter wp-"
+"content/plugins/ps-smart-crm/logs"
+msgstr ""
+"Un rapport indique vos erreurs d'importation. Vous trouverez les journaux "
+"d'erreurs sous wp-content/plugins/ps-smart-crm/logs"
+
+#: inc/crm/import/form.php:96
+#, fuzzy
+msgid ""
+"Wenn Du die Option \"Überschreiben\" auswählst, werden die vorhandenen "
+"Datensätze gelöscht. Sei vorsichtig, wenn Du Operationen an Deinen Kunden "
+"durchgeführt hast: Alle zuvor gespeicherten Aktivitäten verlieren ihre "
+"Kundenzuordnung."
+msgstr ""
+"Si vous sélectionnez l'option \"Écraser\", les enregistrements existants "
+"seront supprimés. Soyez prudent si vous avez effectué des opérations sur vos "
+"clients : Toutes les activités enregistrées précédemment perdent leur "
+"association avec le client."
+
+#: inc/crm/import/form.php:98
+#, fuzzy
+msgid "Lade eine CSV-Beispieldatei herunter"
+msgstr "Téléchargez un exemple de fichier CSV"
+
+#: inc/crm/import/form.php:100
+#, fuzzy
+msgid "CSV hochladen"
+msgstr "Télécharger le CSV"
+
+#: inc/crm/import/form.php:106
+#, fuzzy
+msgid "Vorhandene Datensätze überschreiben"
+msgstr "Remplacer les enregistrements existants"
+
+#: inc/crm/import/form.php:110
+#, fuzzy
+msgid "Achtung: oben lesen"
+msgstr "Attention : lire ci-dessus"
+
+#: inc/crm/import/form.php:119 inc/functions.php:3930
+#, fuzzy
+msgid "Im Newsletter einfügen"
+msgstr "Insérer dans la newsletter"
+
+#: inc/crm/import/form.php:126
+#, fuzzy
+msgid ""
+"Wähle optional die Liste(n) aus, in die Du Datensätze importieren möchtest"
+msgstr ""
+"Sélectionnez éventuellement la ou les listes dans lesquelles vous souhaitez "
+"importer des enregistrements"
+
+#: inc/crm/import/form.php:147
+#, fuzzy
+msgid "Importieren"
+msgstr "mon pere"
+
+#: inc/crm/main.php:143 inc/crm/scheduler/form.php:406
+#, fuzzy
+msgid "Benachrichtigungsregeln"
+msgstr "Règles de notification"
+
+#: inc/crm/main.php:158 inc/crm/scheduler/form.php:433 inc/functions.php:2348
+#, fuzzy
+msgid "Sende E-Mails an Empfänger"
+msgstr "Envoyer des e-mails aux destinataires"
+
+#: inc/crm/main.php:171
+#, fuzzy
+msgid ""
+"Eine E-Mail wird sofort an alle ausgewählten Benutzer/Gruppen gesendet, wenn "
+"die Option „E-Mail an Empfänger senden“ unten aktiv ist"
+msgstr ""
+"Un e-mail est immédiatement envoyé à tous les utilisateurs/groupes "
+"sélectionnés si l'option \"Envoyer un e-mail aux destinataires\" ci-dessous "
+"est activée"
+
+#: inc/crm/main.php:187 inc/subscription_rules.php:245
+#: inc/subscription_rules.php:794 inc/subscription_rules.php:796
+#, fuzzy
+msgid "Gruppen benachrichtigen"
+msgstr "Notifier les groupes"
+
+#: inc/crm/main.php:200 inc/functions.php:2384
+#, fuzzy
+msgid "Ergebnis"
+msgstr "R&eacute;sultats"
+
+#: inc/crm/register_invoices/form.php:68
+#, fuzzy
+msgid "Register all invoices between two dates"
+msgstr "Enregistrer toutes les factures entre deux dates"
+
+#: inc/crm/register_invoices/form.php:70 inc/crm/scheduler/list.php:8
+#: inc/pluggable/documenti/list.php:242 inc/pluggable/documenti/list.php:254
+#: inc/pluggable/documenti/list.php:265
+#, fuzzy
+msgid "From"
+msgstr "De"
+
+#: inc/crm/register_invoices/form.php:72
+#, fuzzy
+msgid "You should select a date from"
+msgstr "Vous devez sélectionner une date dans"
+
+#: inc/crm/register_invoices/form.php:76 inc/crm/scheduler/list.php:10
+#: inc/pluggable/documenti/list.php:244 inc/pluggable/documenti/list.php:256
+#: inc/pluggable/documenti/list.php:267
+#, fuzzy
+msgid "To"
+msgstr "To"
+
+#: inc/crm/register_invoices/form.php:78
+#, fuzzy
+msgid "You should select a date to"
+msgstr "Vous devez sélectionner une date pour"
+
+#: inc/crm/register_invoices/form.php:83
+#, fuzzy
+msgid ""
+"WARNING: registered invoices cannot be edited any longer. These invoices "
+"exists as.pdf files in the folder: uploads/CRMdocuments"
+msgstr ""
+"WARNING : les factures enregistrées ne peuvent plus être éditées. Ces "
+"factures existent sous forme de fichiers .pdf dans le dossier : uploads/"
+"CRMdocuments"
+
+#: inc/crm/register_invoices/form.php:90 inc/subscription_rules.php:488
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: inc/crm/scheduler/form.php:203
+#, fuzzy
+msgid "Um eine interne Mitteilung zu versenden, wähle Dein Unternehmen aus"
+msgstr "Pour envoyer un message interne, choisissez votre entreprise"
+
+#: inc/crm/scheduler/form.php:204
+#, fuzzy
+msgid "Du solltest einen Betreff für dieses Ereignis eingeben"
+msgstr "Vous devez saisir un sujet pour cet événement"
+
+#: inc/crm/scheduler/form.php:205
+#, fuzzy
+msgid "Du solltest mindestens einen Benutzer auswählen"
+msgstr "Vous devez sélectionner au moins un utilisateur"
+
+#: inc/crm/scheduler/form.php:215
+#, fuzzy
+msgid "Speichern..."
+msgstr "Enregistrer..."
+
+#: inc/crm/scheduler/form.php:370
+#, fuzzy
+msgid "Du solltest ein Startdatum/eine Startzeit für diesen Termin auswählen"
+msgstr "Vous devez choisir une date/heure de début pour ce rendez-vous"
+
+#: inc/crm/scheduler/form.php:373
+#, fuzzy
+msgid "Du solltest ein Enddatum/eine Endzeit für diesen Termin auswählen"
+msgstr "Vous devez choisir une date/heure de fin pour ce rendez-vous"
+
+#: inc/crm/scheduler/form.php:379
+#, fuzzy
+msgid "TODO Datum"
+msgstr "TODO Date"
+
+#: inc/crm/scheduler/form.php:381
+#, fuzzy
+msgid "Du solltest ein Ablaufdatum für dieses Ereignis auswählen"
+msgstr "Vous devez choisir une date d'expiration pour cet événement"
+
+#: inc/crm/scheduler/form.php:385
+msgid "Inhalt"
+msgstr "contenu"
+
+#: inc/crm/scheduler/form.php:389
+#, fuzzy
+msgid "Gib einen Betreff für dieses Ereignis ein"
+msgstr "Saisissez un sujet pour cet événement"
+
+#: inc/crm/scheduler/form.php:413
+#, fuzzy
+msgid "Sel"
+msgstr "Sel"
+
+#: inc/crm/scheduler/form.php:420
+#, fuzzy
+msgid ""
+"Eine E-Mail wird sofort an alle ausgewählten Benutzer/Gruppen gesendet, wenn "
+"die Option \"E-Mail an Empfänger senden\" unten aktiv ist"
+msgstr ""
+"Un e-mail est immédiatement envoyé à tous les utilisateurs/groupes "
+"sélectionnés si l'option \"Envoyer un e-mail aux destinataires\" ci-dessous "
+"est activée"
+
+#: inc/crm/scheduler/list.php:7 inc/pluggable/documenti/list.php:241
+#: inc/pluggable/documenti/list.php:253 inc/pluggable/documenti/list.php:264
+#, fuzzy
+msgid "Filter by date"
+msgstr "Filtre par date"
+
+#: inc/crm/scheduler/list.php:12 inc/pluggable/documenti/list.php:246
+#: inc/pluggable/documenti/list.php:258 inc/pluggable/documenti/list.php:269
+msgid "Filter"
+msgstr "Filtre"
+
+#: inc/crm/scheduler/list.php:13 inc/pluggable/documenti/list.php:249
+#: inc/pluggable/documenti/list.php:261 inc/pluggable/documenti/list.php:272
+#, fuzzy
+msgid "Reset filters"
+msgstr "Réinitialiser les filtres"
+
+#: inc/crm/scheduler/list.php:143 inc/pluggable/clienti/form.php:311
+#, fuzzy
+msgid "NEW TODO"
+msgstr "NOUVEAU TODO"
+
+#: inc/crm/scheduler/list.php:146 inc/pluggable/clienti/form.php:312
+#, fuzzy
+msgid "NEW APPOINTMENT"
+msgstr "NOUVEAU RENDEZ-VOUS"
+
+#: inc/crm/scheduler/list.php:150 inc/pluggable/clienti/form.php:313
+#, fuzzy
+msgid "NEW ACTIVITY"
+msgstr "NOUVELLE ACTIVITÉ"
+
+#: inc/crm/scheduler/list.php:154
+#, fuzzy
+msgid "Legend"
+msgstr "Légende"
+
+#: inc/crm/scheduler/list.php:158
+msgid "Done"
+msgstr "Done"
+
+#: inc/crm/scheduler/list.php:166
+#, fuzzy
+msgid "Canceled"
+msgstr "Canceled"
+
+#: inc/crm/scheduler/list.php:169
+#, fuzzy
+msgid "Mouse over to display info"
+msgstr "Passez la souris pour afficher les informations"
+
+#: inc/functions.php:46 inc/pluggable/clienti/form.php:255
+msgid "Name"
+msgstr "Nom"
+
+#: inc/functions.php:50
+#, fuzzy
+msgid "Staat/Prov"
+msgstr "État/Prov"
+
+#: inc/functions.php:57
+msgid "IBAN"
+msgstr "IBAN"
+
+#: inc/functions.php:58
+#, fuzzy
+msgid "SWIFT"
+msgstr "SWIFT"
+
+#: inc/functions.php:553
+#, fuzzy
+msgid "Yes"
+msgstr "Yes"
+
+#: inc/functions.php:808 inc/functions.php:2289
+#: inc/pluggable/clienti/list.php:19
+#, fuzzy
+msgid "TODO"
+msgstr "TODO"
+
+#: inc/functions.php:812 inc/functions.php:2292
+msgid "Termin"
+msgstr "Date"
+
+#: inc/functions.php:816
+#, fuzzy
+msgid "Rechnungszahlung abgelaufen"
+msgstr "Paiement de facture expiré"
+
+#: inc/functions.php:819
+#, fuzzy
+msgid "Kaufen"
+msgstr "Acheter"
+
+#: inc/functions.php:822 inc/functions.php:2049 inc/functions.php:2050
+#, fuzzy
+msgid "Auslaufender Dienst"
+msgstr "Service en fin de vie"
+
+#: inc/functions.php:825
+#, fuzzy
+msgid "Frist"
+msgstr "Délai"
+
+#: inc/functions.php:1554
+#, fuzzy
+msgid "Generic error"
+msgstr "Erreur générique"
+
+#: inc/functions.php:1594 inc/functions.php:1596 inc/functions.php:1598
+#, fuzzy, php-format
+msgid "Fehlendes Feld: %s"
+msgstr "Champ manquant : %s"
+
+#: inc/functions.php:1606
+#, fuzzy
+msgid "Datei konnte nicht gelesen werden. Versuche es erneut."
+msgstr "Le fichier n'a pas pu être lu. Essayez à nouveau."
+
+#: inc/functions.php:1620
+#, fuzzy
+msgid "Import erfolgreich abgeschlossen."
+msgstr "Importation réussie."
+
+#: inc/functions.php:1781
+#, fuzzy
+msgid "Low"
+msgstr "Low"
+
+#: inc/functions.php:1781 inc/functions.php:2236 inc/functions.php:2242
+msgid "Normal"
+msgstr "Normal (-e/s)"
+
+#: inc/functions.php:1781
+msgid "High"
+msgstr "Haute"
+
+#: inc/functions.php:1828
+#, fuzzy
+msgid "Neue Benutzerregistrierung am"
+msgstr "Nouvel enregistrement d'utilisateur le"
+
+#: inc/functions.php:1832
+#, fuzzy
+msgid "Ein ganz besonderes Willkommen an Dich"
+msgstr "Un accueil tout particulier pour vous"
+
+#: inc/functions.php:1832
+#, fuzzy
+msgid "Danke, dass Du mitmachst"
+msgstr "Merci de votre participation"
+
+#: inc/functions.php:1835
+#, fuzzy
+msgid "Dein Passwort lautet"
+msgstr "Votre mot de passe est"
+
+#: inc/functions.php:1845 inc/functions.php:1848 inc/functions.php:1851
+#, fuzzy
+msgid "Deine Passwortstärke wurde erkannt als"
+msgstr "Votre force de mot de passe a été détectée comme"
+
+#: inc/functions.php:1845
+#, fuzzy
+msgid "sehr Schwach"
+msgstr "très faible"
+
+#: inc/functions.php:1845 inc/functions.php:1848 inc/functions.php:1851
+#, fuzzy
+msgid ""
+"Wir können keine Benutzer mit schwachen Passwörtern akzeptieren, da die "
+"Sicherheit der gesamten Webseite gefährdet sein könnte"
+msgstr ""
+"Nous ne pouvons pas accepter d'utilisateurs avec des mots de passe faibles, "
+"car la sécurité de l'ensemble du site pourrait être compromise"
+
+#: inc/functions.php:1845 inc/functions.php:1848 inc/functions.php:1851
+#, fuzzy
+msgid ""
+"Daher muss Dein Passwort mit Sonderzeichen, Großbuchstaben und normalen "
+"Buchstaben und Zahlen (mindestens 8) aenthalten. Klicke hier, um es zu "
+"aktualisieren"
+msgstr ""
+"Votre mot de passe doit donc contenir des caractères spéciaux, des "
+"majuscules et des lettres et chiffres normaux (au moins 8). Cliquez ici pour "
+"le mettre à jour"
+
+#: inc/functions.php:1845 inc/functions.php:1848 inc/functions.php:1851
+#, fuzzy
+msgid "Dein Profil"
+msgstr "Votre profil"
+
+#: inc/functions.php:1845 inc/functions.php:1848 inc/functions.php:1851
+#, fuzzy
+msgid "Danke"
+msgstr "Merci"
+
+#: inc/functions.php:1848
+#, fuzzy
+msgid "Schwach"
+msgstr "Faible"
+
+#: inc/functions.php:1851
+msgid "Mittel"
+msgstr "Moyenne"
+
+#: inc/functions.php:1860
+#, fuzzy
+msgid "Mit freundlichen Gruß"
+msgstr "Avec nos meilleures salutations"
+
+#: inc/functions.php:2052
+#, fuzzy
+msgid "Rechnung #"
+msgstr "Facture #"
+
+#: inc/functions.php:2054
+#, fuzzy
+msgid "zu"
+msgstr "sur"
+
+#: inc/functions.php:2233
+msgid "Niedrig"
+msgstr "Basse"
+
+#: inc/functions.php:2239
+msgid "Hoch"
+msgstr "Haute"
+
+#: inc/functions.php:2295
+msgid "Aktivität"
+msgstr "activité"
+
+#: inc/functions.php:2306
+#, fuzzy
+msgid "Aktivitätsdetails"
+msgstr "Détails de l'activité"
+
+#: inc/functions.php:2329
+msgid "Benutzer"
+msgstr "utilisateur"
+
+#: inc/functions.php:2333
+#, fuzzy
+msgid "Gruppen"
+msgstr "Groupes"
+
+#: inc/functions.php:2399 inc/functions.php:3365 inc/functions.php:3673
+msgid "Angebote"
+msgstr "Offers"
+
+#: inc/functions.php:2409
+#, fuzzy
+msgid "Stornieren"
+msgstr "Annuler"
+
+#: inc/functions.php:2629
+#, fuzzy
+msgid "Select..."
+msgstr "Select..."
+
+#: inc/functions.php:3307 inc/functions.php:3322 inc/functions.php:3634
+#, fuzzy
+msgid "Referenz #"
+msgstr "Référence #"
+
+#: inc/functions.php:3624
+#, fuzzy
+msgid "ausgestellt am"
+msgstr "délivré le"
+
+#: inc/functions.php:3753
+#, fuzzy, php-format
+msgid "Rechnung ausgestellt am %1$s von %2$s"
+msgstr "Facture émise le %1$s par %2$s"
+
+#: inc/functions.php:3755
+#, fuzzy
+msgid ""
+"Sehr geehrter Kunde, wir danken Ihnen für Ihren Einkauf. Ihre Rechnung ist "
+"beigefügt."
+msgstr ""
+"Cher client, nous vous remercions de votre achat. Votre facture est jointe."
+
+#: inc/functions.php:3777
+#, fuzzy
+msgid "Druck netto + Steuern"
+msgstr "Impression nette + taxes"
+
+#: inc/functions.php:3783
+#, fuzzy
+msgid "Bruttobetrag drucken"
+msgstr "Imprimer le montant brut"
+
+#: inc/functions.php:3789
+#, fuzzy
+msgid "Tabelle der Gesamtsumme anzeigen"
+msgstr "Afficher le tableau du total"
+
+#: inc/functions.php:3795
+#, fuzzy
+msgid "Do not print anyting"
+msgstr "Do not print anyting"
+
+#: inc/functions.php:3802
+#, fuzzy
+msgid "'PAID' drucken, wenn bezahlt"
+msgstr "imprimer 'PAID' si payé"
+
+#: inc/functions.php:3811
+#, fuzzy
+msgid "Drucken 'Nicht formell' "
+msgstr "Imprimer 'Non formel"
+
+#: inc/functions.php:3835
+#, fuzzy
+msgid "ID CRM"
+msgstr "ID CRM"
+
+#: inc/functions.php:3875
+#, fuzzy
+msgid ""
+"Ein Datensatz mit dieser E-Mail existiert bereits im Status \"Bestätigt\". "
+msgstr ""
+"Un enregistrement contenant cet e-mail existe déjà avec le statut "
+"\"Confirmé\"."
+
+#: inc/functions.php:3878
+#, fuzzy
+msgid ""
+"Ein Datensatz mit dieser E-Mail befindet sich bereits im Status \"Nicht "
+"bestätigt\". "
+msgstr ""
+"Un enregistrement contenant cet e-mail est déjà à l'état \"Non confirmé\"."
+
+#: inc/functions.php:3881
+#, fuzzy
+msgid ""
+"Ein Datensatz mit dieser E-Mail befindet sich bereits im Status "
+"\"Abgemeldet\". "
+msgstr ""
+"Un enregistrement contenant cet e-mail a déjà le statut \"Déconnecté\"."
+
+#: inc/functions.php:3884
+#, fuzzy
+msgid ""
+"Ein Datensatz mit dieser E-Mail ist bereits im Status \"Zurückgewiesen\" "
+"vorhanden. "
+msgstr ""
+"Un enregistrement contenant cet e-mail existe déjà avec le statut \"Rejeté\"."
+
+#: inc/functions.php:3887
+#, fuzzy
+msgid "Ein Datensatz mit dieser E-Mail ist bereits vorhanden "
+msgstr "Il existe déjà un enregistrement avec cet e-mail"
+
+#: inc/functions.php:3892 inc/functions.php:3926
+#, fuzzy
+msgid "Newsletter-Management"
+msgstr "Gestion de la newsletter"
+
+#: inc/functions.php:3894
+#, fuzzy
+msgid "Abonnenten verwalten"
+msgstr "Gérer les abonnés"
+
+#: inc/functions.php:3899
+#, fuzzy
+msgid "Füge einen Datensatz zu bestimmten Newsletter-Listen hinzu"
+msgstr "Ajouter un enregistrement à des listes de newsletters spécifiques"
+
+#: inc/options.php:129
+#, fuzzy
+msgid "PS Smart CRM Optionen und Einstellungen"
+msgstr "Options et paramètres de PS Smart CRM"
+
+#: inc/options.php:142
+#, fuzzy
+msgid "Business Einstellungen"
+msgstr "Paramètres professionnels"
+
+#: inc/options.php:147
+msgid "Allgemein"
+msgstr "Général"
+
+#: inc/options.php:149
+#, fuzzy
+msgid "Allgemeine CRM-Einstellungen"
+msgstr "Paramètres généraux du CRM"
+
+#: inc/options.php:150
+#, fuzzy
+msgid "Weiterleitung zu CRM"
+msgstr "Redirection vers CRM"
+
+#: inc/options.php:151
+#, fuzzy
+msgid "CMS-Menü minimieren"
+msgstr "Réduire le menu CMS"
+
+#: inc/options.php:153
+#, fuzzy
+msgid "Firmenlogo"
+msgstr "Logo de l'entreprise"
+
+#: inc/options.php:154
+#, fuzzy
+msgid "Logo in Dokumenten (Rechnungen, Angebote) verwenden"
+msgstr "Utiliser le logo dans les documents (factures, offres)"
+
+#: inc/options.php:155
+#, fuzzy
+msgid "Alle Benachrichtigungen für Administratoren anzeigen"
+msgstr "Afficher toutes les notifications pour les administrateurs"
+
+#: inc/options.php:156
+#, fuzzy
+msgid ""
+"Geschlossene vergangene Aktivitäten nicht im Planer und Dashboard anzeigen"
+msgstr ""
+"Ne pas afficher les activités passées clôturées dans le planificateur et le "
+"tableau de bord"
+
+#: inc/options.php:157
+#, fuzzy
+msgid "Löschen von Aktivitäten (Aufgaben, Termine) zulassen"
+msgstr "Autoriser la suppression d'activités (tâches, rendez-vous)"
+
+#: inc/options.php:158
+#, fuzzy
+msgid "Erweitere die Agentenfunktionen"
+msgstr "Développer les fonctionnalités des agents"
+
+#: inc/options.php:159
+#, fuzzy
+msgid "E-Mail-Absender für Benachrichtigung festlegen"
+msgstr "Définir l'expéditeur de l'e-mail de notification"
+
+#: inc/options.php:160
+#, fuzzy
+msgid "Lege den Absendernamen für die Benachrichtigung fest"
+msgstr "Définir le nom de l'expéditeur de la notification"
+
+#: inc/options.php:161
+#, fuzzy
+msgid "Rasterhöhe für Kunden festlegen"
+msgstr "Définir la hauteur de la grille pour les clients"
+
+#: inc/options.php:162
+#, fuzzy
+msgid "Rasterhöhe für Dokumente festlegen"
+msgstr "Définir la hauteur de la grille pour les documents"
+
+#: inc/options.php:170
+#, fuzzy
+msgid "Kundeneinstellungen"
+msgstr "Paramètres du client"
+
+#: inc/options.php:171
+#, fuzzy
+msgid "Kundenkategorien"
+msgstr "Catégories de clients"
+
+#: inc/options.php:179 inc/options.php:916
+#, fuzzy
+msgid "Dokumenteinstellungen"
+msgstr "Paramètres des documents"
+
+#: inc/options.php:188
+#, fuzzy
+msgid "Services"
+msgstr "Services"
+
+#: inc/options.php:195 inc/options.php:951
+#, fuzzy
+msgid "Währung"
+msgstr "Monnaie"
+
+#: inc/options.php:196
+#, fuzzy
+msgid "Zahlungsgateways"
+msgstr "Passerelles de paiement"
+
+#: inc/options.php:200 inc/options.php:202
+#, fuzzy
+msgid "Woocommerce Einstellungen"
+msgstr "Paramètres Woocommerce"
+
+#: inc/options.php:207 inc/options.php:209
+#, fuzzy
+msgid "Verantwortlichkeitseinstellungen"
+msgstr "Paramètres de responsabilité"
+
+#: inc/options.php:213 inc/options.php:215
+#, fuzzy
+msgid "Erweiterte Einstellungen"
+msgstr "Paramètres avancés"
+
+#: inc/options.php:219 inc/options.php:221
+#, fuzzy
+msgid "Agenteneinstellungen"
+msgstr "Paramètres de l'agent"
+
+#: inc/options.php:254
+#, fuzzy
+msgid "Geschäftliche Hauptdaten"
+msgstr "Principales données commerciales"
+
+#: inc/options.php:254
+#, fuzzy
+msgid ""
+"Mit diesen Informationen wird bei der Plugin-Aktivierung Kontakt Nr. 1 (zur "
+"Selbsterledigung) erstellt und in Dokumenten (Rechnungen, Kostenvoranschläge "
+"usw.) verwendet."
+msgstr ""
+"Ces informations sont utilisées lors de l'activation du plugin pour créer le "
+"contact n°1 (à faire soi-même) et l'utiliser dans les documents (factures, "
+"devis, etc.)."
+
+#: inc/options.php:263
+#, fuzzy
+msgid "Adresse (Straße)"
+msgstr "Adresse (rue)"
+
+#: inc/options.php:268
+#, fuzzy
+msgid "Adresse (Nummer)"
+msgstr "Adresse (numéro)"
+
+#: inc/options.php:281
+#, fuzzy
+msgid "Staat/Provinz"
+msgstr "État/Province"
+
+#: inc/options.php:298
+#, fuzzy
+msgid "Steuernummer"
+msgstr "Steuernummer"
+
+#: inc/options.php:303 inc/options.php:307 inc/options.php:311
+#: inc/options.php:315 inc/options.php:319 inc/options.php:323
+#, fuzzy
+msgid "Im Dokumentkopf anzeigen"
+msgstr "Afficher dans l'en-tête du document"
+
+#: inc/options.php:318
+#, fuzzy
+msgid "Bankkontonummer (IBAN)"
+msgstr "Numéro de compte bancaire (IBAN)"
+
+#: inc/options.php:322
+#, fuzzy
+msgid "Int. Kontocode (SWIFT)"
+msgstr "Code de compte international (SWIFT)"
+
+#: inc/options.php:418
+#, fuzzy
+msgid "Firmenname ist erforderlich"
+msgstr "Le nom de l'entreprise est requis"
+
+#: inc/options.php:419
+#, fuzzy
+msgid "Adresse ist erforderlich"
+msgstr "L'adresse est requise"
+
+#: inc/options.php:420
+#, fuzzy
+msgid "Stadt ist erforderlich"
+msgstr "La ville est nécessaire"
+
+#: inc/options.php:421
+#, fuzzy
+msgid "Postleitzahl ist erforderlich"
+msgstr "Le code postal est requis"
+
+#: inc/options.php:422
+#, fuzzy
+msgid "Umsatzsteuer-Code ist erforderlich"
+msgstr "Le code TVA est requis"
+
+#: inc/options.php:423
+#, fuzzy
+msgid "E-Mail ist erforderlich"
+msgstr "L'e-mail est requis"
+
+#: inc/options.php:445
+#, fuzzy
+msgid ""
+"ES SIND EINIGE GRUNDLEGENDE INFORMATIONEN ERFORDERLICH, UM FORTFAHREN ZU "
+"KÖNNEN"
+msgstr "CERTAINES INFORMATIONS DE BASE SONT NÉCESSAIRES POUR POUVOIR CONTINUER"
+
+#: inc/options.php:467
+#, fuzzy
+msgid "Activate services module"
+msgstr "Activer le module de services"
+
+#: inc/options.php:484
+#, fuzzy
+msgid "Wähle einen Stil..."
+msgstr "Choisissez un style..."
+
+#: inc/options.php:485
+#, fuzzy
+msgid "Dunkel"
+msgstr "Sombre"
+
+#: inc/options.php:486
+#, fuzzy
+msgid "Hell"
+msgstr "Lumineux"
+
+#: inc/options.php:505
+#, fuzzy
+msgid "Bei der Anmeldung zum CRM-Dashboard weiterleiten"
+msgstr "Transférer vers le tableau de bord CRM lors de la connexion"
+
+#: inc/options.php:525
+#, fuzzy
+msgid "Minimiere das CMS-Hauptmenü und verwende CRM ganzseitig (empfohlen)"
+msgstr ""
+"Réduire le menu principal du CMS et utiliser le CRM en pleine page "
+"(recommandé)"
+
+#: inc/options.php:543
+#, fuzzy
+msgid "Zeige Administratoren Benachrichtigungen für alle Agenten/Benutzer an"
+msgstr ""
+"Afficher les notifications des administrateurs pour tous les agents/"
+"utilisateurs"
+
+#: inc/options.php:561
+#, fuzzy
+msgid ""
+"Zeige im Dashboard und im Planer keine Aktivitäten an, die als FERTIG oder "
+"ABGESAGT markiert sind und älter als einen Tag sind"
+msgstr ""
+"Ne pas afficher dans le tableau de bord et le planificateur les activités "
+"marquées comme TERMINÉES ou ANNULÉES et qui ont plus d'un jour"
+
+#: inc/options.php:576 inc/options.php:584
+#, fuzzy
+msgid "Erlaube das Löschen von Aktivitäten nur Administratoren"
+msgstr ""
+"Autoriser la suppression d'activités uniquement pour les administrateurs"
+
+#: inc/options.php:579 inc/options.php:587
+#, fuzzy
+msgid "Erlaube Administratoren und Erstellern das Löschen von Aktivitäten"
+msgstr ""
+"Autoriser les administrateurs et les créateurs à supprimer des activités"
+
+#: inc/options.php:603 inc/options.php:611
+#, fuzzy
+msgid ""
+"Ermögliche Agenten, Dokumente und Kunden anzuzeigen, die anderen CRM-Agenten "
+"zugeordnet sind"
+msgstr ""
+"Permettre aux agents de voir les documents et les clients associés à "
+"d'autres agents CRM"
+
+#: inc/options.php:606 inc/options.php:614
+#, fuzzy
+msgid ""
+"Erlaube einem Agenten, nur Dokumente und Kunden zu sehen, die ihm zugeordnet "
+"sind"
+msgstr ""
+"Permettre à un agent de voir uniquement les documents et les clients qui lui "
+"sont associés"
+
+#: inc/options.php:631
+#, fuzzy
+msgid "Upload"
+msgstr "Téléchargement"
+
+#: inc/options.php:633
+#, fuzzy
+msgid ""
+"Wähle Dein Firmenlogo aus, das in Dokumenten (Rechnungen, "
+"Kostenvoranschlägen usw.) verwendet werden soll. Beste Ergebnisse erhätst Du "
+"mit einem quadratischen Bild von 100 x 100 Pixel"
+msgstr ""
+"Sélectionnez le logo de votre entreprise qui sera utilisé dans les documents "
+"(factures, devis, etc.). Vous obtiendrez de meilleurs résultats avec une "
+"image carrée de 100 x 100 pixels"
+
+#: inc/options.php:676
+#, fuzzy
+msgid "Logo in Dokumenten verwenden"
+msgstr "Utiliser le logo dans les documents"
+
+#: inc/options.php:693
+#, fuzzy
+msgid ""
+"Lege eine Absender-E-Mail-Adresse für CRM-Benachrichtigungs-E-Mails fest"
+msgstr ""
+"Définir une adresse e-mail d'expéditeur pour les e-mails de notification CRM"
+
+#: inc/options.php:693
+#, fuzzy
+msgid "Wenn leer, wird die Administrator-E-Mail verwendet"
+msgstr "Si vide, l'e-mail de l'administrateur est utilisé"
+
+#: inc/options.php:709
+#, fuzzy
+msgid "Lege einen Absendernamen für CRM-Benachrichtigungs-E-Mails fest"
+msgstr "Définir un nom d'expéditeur pour les e-mails de notification CRM"
+
+#: inc/options.php:709
+#, fuzzy
+msgid "Wenn leer, wird der Webseiten-Name verwendet"
+msgstr "Si vide, le nom de la page web est utilisé"
+
+#: inc/options.php:724
+#, fuzzy
+msgid "Lege die Rasterhöhe (in px) für Kunden fest"
+msgstr "Définir la hauteur de la grille (en px) pour les clients"
+
+#: inc/options.php:739
+#, fuzzy
+msgid "Lege die Rasterhöhe (in px) für Dokumente fest"
+msgstr "Définir la hauteur de la grille (en px) pour les documents"
+
+#: inc/options.php:752
+msgid "EUR"
+msgstr "EUR"
+
+#: inc/options.php:753
+#, fuzzy
+msgid "USD"
+msgstr "USD"
+
+#: inc/options.php:754
+#, fuzzy
+msgid "CHF"
+msgstr "CHF"
+
+#: inc/options.php:755
+#, fuzzy
+msgid "BRL"
+msgstr "BRL"
+
+#: inc/options.php:780
+#, fuzzy
+msgid "Stripe-Konfiguration"
+msgstr "Configuration de Stripe"
+
+#: inc/options.php:781
+#, fuzzy
+msgid "Verwende hier Deine Stripe-Kontoeinstellungen"
+msgstr "Utilisez ici les paramètres de votre compte Stripe"
+
+#: inc/options.php:869
+#, fuzzy
+msgid "Kundenkategorie im Raster anzeigen"
+msgstr "Afficher la catégorie de clients dans la grille"
+
+#: inc/options.php:880
+#, fuzzy
+msgid "Zeige Kundeninteressen am Raster"
+msgstr "Afficher les intérêts des clients sur la grille"
+
+#: inc/options.php:891
+#, fuzzy
+msgid "Kundenherkunft im Raster anzeigen"
+msgstr "Afficher l'historique du client dans la grille"
+
+#: inc/options.php:919
+#, fuzzy
+msgid "Dokumentkopf"
+msgstr "En-tête du document"
+
+#: inc/options.php:926
+#, fuzzy
+msgid "Messages"
+msgstr "Messages"
+
+#: inc/options.php:929
+#, fuzzy
+msgid "Signatur"
+msgstr "Signature"
+
+#: inc/options.php:932
+#, fuzzy
+msgid "Benutzerdefinierter Stil"
+msgstr "Style personnalisé"
+
+#: inc/options.php:943
+#, fuzzy
+msgid "Standardmäßige Mehrwertsteuer und Währung"
+msgstr "TVA et devise par défaut"
+
+#: inc/options.php:947
+#, fuzzy
+msgid "VAT"
+msgstr "TVA"
+
+#: inc/options.php:956
+#, fuzzy
+msgid "Select"
+msgstr "Sélectionner"
+
+#: inc/options.php:978
+#, fuzzy
+msgid "Tage nach Zahlungsbenachrichtigung"
+msgstr "Jours après la notification de paiement"
+
+#: inc/options.php:992
+#, fuzzy
+msgid "Nummerierungseinstellungen für Rechnungen"
+msgstr "Paramètres de numérotation des factures"
+
+#: inc/options.php:998
+#, fuzzy
+msgid "Rechnungspräfix"
+msgstr "Préfixe de facturation"
+
+#: inc/options.php:1002
+#, fuzzy
+msgid "Rechnungssuffix"
+msgstr "Suffixe de facturation"
+
+#: inc/options.php:1006
+#, fuzzy
+msgid "Rechnungen letzte Beilage"
+msgstr "Factures dernière annexe"
+
+#: inc/options.php:1018
+#, fuzzy
+msgid "Einstellungen für die Nummerierung von Angeboten"
+msgstr "Paramètres de numérotation des offres"
+
+#: inc/options.php:1024
+#, fuzzy
+msgid "Angebote Präfix"
+msgstr "Offres Préfixe"
+
+#: inc/options.php:1028
+#, fuzzy
+msgid "Angebote Suffix"
+msgstr "Offres Suffixe"
+
+#: inc/options.php:1032
+#, fuzzy
+msgid "Angebote letzter Einsatz"
+msgstr "Offres dernière utilisation"
+
+#: inc/options.php:1044
+#, fuzzy
+msgid ""
+"Warnung: Du gibst eine Nummer ein, die niedriger ist als die der zuletzt "
+"ausgestellten Rechnung. Sei vorsichtig, dies kann zu Problemen mit doppelten "
+"IDs führen"
+msgstr ""
+"Avertissement : vous saisissez un numéro inférieur à celui de la dernière "
+"facture émise. Soyez prudent, cela peut entraîner des problèmes d'ID en "
+"double"
+
+#: inc/options.php:1048
+#, fuzzy
+msgid ""
+"Warnung: Du gibst eine Zahl ein, die niedriger ist als die zuletzt "
+"ausgegebene Zahl. Sei vorsichtig, dies kann zu Problemen mit doppelten i "
+"führend"
+msgstr ""
+"Avertissement : Vous saisissez un nombre inférieur au dernier nombre "
+"affiché. Soyez prudent, cela peut entraîner des problèmes de double i"
+
+#: inc/options.php:1058
+#, fuzzy
+msgid ""
+"Ziehe Elemente (von links nach rechts), um sie in Dokumenten auszurichten "
+msgstr ""
+"Faire glisser des éléments (de gauche à droite) pour les aligner dans les "
+"documents"
+
+#: inc/options.php:1066 inc/options.php:1151
+msgid "Logo"
+msgstr "logo"
+
+#: inc/options.php:1083 inc/options.php:1118
+msgid "Header"
+msgstr "tête"
+
+#: inc/options.php:1216
+#, fuzzy
+msgid "Definitionen der Zahlungsmethoden"
+msgstr "Définitions des méthodes de paiement"
+
+#: inc/options.php:1223
+#, fuzzy
+msgid "Label"
+msgstr "Label"
+
+#: inc/options.php:1227
+msgid "Tage"
+msgstr "Jours"
+
+#: inc/options.php:1231
+msgid "Hinzufügen"
+msgstr "ajouter"
+
+#: inc/options.php:1294
+#, fuzzy
+msgid "INVOICES MESSAGES SETTINGS"
+msgstr "PARAMÈTRES DES MESSAGES D'INVOICES"
+
+#: inc/options.php:1298 inc/options.php:1322
+msgid "Hallo"
+msgstr "Bonjour"
+
+#: inc/options.php:1302
+#, fuzzy
+msgid "Rechnungen vor Text"
+msgstr "Factures avant texte"
+
+#: inc/options.php:1307
+#, fuzzy
+msgid "Rechnungen nach Text"
+msgstr "Factures par texte"
+
+#: inc/options.php:1316
+#, fuzzy
+msgid "ZITATE NACHRICHTEN EINSTELLUNGEN"
+msgstr "CITATIONS NOUVELLES PARAMÈTRES"
+
+#: inc/options.php:1326
+#, fuzzy
+msgid "Angebote vor dem Text"
+msgstr "Offres avant le texte"
+
+#: inc/options.php:1330
+#, fuzzy
+msgid "Angebote nach dem Text"
+msgstr "Offres après le texte"
+
+#: inc/options.php:1344
+#, fuzzy
+msgid "Signatureinstellungen"
+msgstr "Paramètres de signature"
+
+#: inc/options.php:1347
+#, fuzzy
+msgid ""
+"Zeichne Deine Signatur (Maus oder Touch), um sie in Anführungszeichen zu "
+"verwenden"
+msgstr ""
+"Dessinez votre signature (souris ou tactile) pour l'utiliser entre guillemets"
+
+#: inc/options.php:1367 inc/options.php:1396
+#, fuzzy
+msgid "Verwende diese Signatur"
+msgstr "Utiliser cette signature"
+
+#: inc/options.php:1376
+#, fuzzy
+msgid "Formatierte Signatur (z. B. Firmenname)"
+msgstr "Signature formatée (par exemple, nom de l'entreprise)"
+
+#: inc/options.php:1421
+#, fuzzy
+msgid "Benutzerdefinierte CSS"
+msgstr "CSS personnalisé"
+
+#: inc/options.php:1424
+#, fuzzy
+msgid ""
+"Füge einen vorhandenen Stil in PDF-Dokumenten hinzu oder überschreibe ihn"
+msgstr "Ajoutez ou remplacez un style existant dans les documents PDF"
+
+#: inc/options.php:1431
+#, fuzzy
+msgid ""
+"Verwende diese CSS-Regeln, um das Layout der druckbaren Version Deiner "
+"Dokumente anzupassen (verfügbar, nachdem ein Dokument erstellt wurde)."
+msgstr ""
+"Utilisez ces règles CSS pour personnaliser la mise en page de la version "
+"imprimable de vos documents (disponible après la création d'un document)."
+
+#: inc/options.php:1483
+#, fuzzy
+msgid "CP SMART CRM EINSTELLUNGEN"
+msgstr "CP SMART CRM PARAMÈTRES"
+
+#: inc/pluggable/clienti/form.php:31
+#, fuzzy
+msgid "No activity for this customer"
+msgstr "Aucune activité pour ce client"
+
+#: inc/pluggable/clienti/form.php:40 inc/pluggable/clienti/form.php:208
+#: inc/pluggable/documenti/list.php:95
+#, fuzzy
+msgid "Drag columns headers and drop it here to group by that column"
+msgstr ""
+"Faites glisser les en-têtes de colonne et déposez-les ici pour les regrouper "
+"par colonne"
+
+#: inc/pluggable/clienti/form.php:46 inc/pluggable/documenti/list.php:143
+msgid "Type"
+msgstr "type"
+
+#: inc/pluggable/clienti/form.php:47
+#, fuzzy
+msgid "Subject"
+msgstr "Sujet"
+
+#: inc/pluggable/clienti/form.php:48
+#, fuzzy
+msgid "Description"
+msgstr "Description"
+
+#: inc/pluggable/clienti/form.php:49
+#, fuzzy
+msgid "Exp. date"
+msgstr "Exp. date"
+
+#: inc/pluggable/clienti/form.php:52
+#, fuzzy
+msgid "Open"
+msgstr "Open"
+
+#: inc/pluggable/clienti/form.php:81 inc/pluggable/clienti/form.php:284
+#: inc/pluggable/documenti/list.php:219
+#, fuzzy
+msgid "Confirm delete"
+msgstr "Confirmer la suppression"
+
+#: inc/pluggable/clienti/form.php:203
+#, fuzzy
+msgid "No Contacts to show"
+msgstr "No Contacts to show"
+
+#: inc/pluggable/clienti/form.php:218 inc/pluggable/documenti/list.php:104
+#, fuzzy
+msgid "Showing"
+msgstr "Showing"
+
+#: inc/pluggable/clienti/form.php:218 inc/pluggable/clienti/form.php:219
+#: inc/pluggable/documenti/list.php:104 inc/pluggable/documenti/list.php:105
+msgid "of"
+msgstr "de"
+
+#: inc/pluggable/clienti/form.php:218 inc/pluggable/documenti/list.php:104
+#, fuzzy
+msgid "total"
+msgstr "total"
+
+#: inc/pluggable/clienti/form.php:220 inc/pluggable/documenti/list.php:106
+#, fuzzy
+msgid "Posts per page"
+msgstr "Posts par page"
+
+#: inc/pluggable/clienti/form.php:221 inc/pluggable/documenti/list.php:107
+#, fuzzy
+msgid "First page"
+msgstr "Première page"
+
+#: inc/pluggable/clienti/form.php:222 inc/pluggable/documenti/list.php:108
+#, fuzzy
+msgid "Last page"
+msgstr "Dernière page"
+
+#: inc/pluggable/clienti/form.php:223 inc/pluggable/documenti/list.php:109
+msgid "Next"
+msgstr "Next"
+
+#: inc/pluggable/clienti/form.php:224 inc/pluggable/documenti/list.php:110
+#, fuzzy
+msgid "Prev."
+msgstr "Prev."
+
+#: inc/pluggable/clienti/form.php:225 inc/pluggable/documenti/list.php:111
+#, fuzzy
+msgid "Reload"
+msgstr "Reload"
+
+#: inc/pluggable/clienti/form.php:226 inc/pluggable/documenti/list.php:112
+#, fuzzy
+msgid "More"
+msgstr "More"
+
+#: inc/pluggable/clienti/form.php:233 inc/pluggable/documenti/list.php:118
+#, fuzzy
+msgid "Filter by"
+msgstr "Filtre par"
+
+#: inc/pluggable/clienti/form.php:240 inc/pluggable/documenti/list.php:126
+#, fuzzy
+msgid "Contains"
+msgstr "Contient"
+
+#: inc/pluggable/clienti/form.php:241 inc/pluggable/documenti/list.php:127
+#, fuzzy
+msgid "Starts with"
+msgstr "Démarre avec"
+
+#: inc/pluggable/clienti/form.php:242 inc/pluggable/documenti/list.php:128
+#: inc/pluggable/documenti/list.php:134
+#, fuzzy
+msgid "Equal"
+msgstr "Equal"
+
+#: inc/pluggable/clienti/form.php:243 inc/pluggable/documenti/list.php:129
+#, fuzzy
+msgid "Not equal"
+msgstr "Pas égal"
+
+#: inc/pluggable/clienti/form.php:247
+#, fuzzy
+msgid "Add new contact"
+msgstr "Ajouter un nouveau contact"
+
+#: inc/pluggable/clienti/form.php:251 inc/pluggable/clienti/list.php:92
+msgid "ID"
+msgstr "Id"
+
+#: inc/pluggable/clienti/form.php:259
+#, fuzzy
+msgid "Last Name"
+msgstr "Dernier nom"
+
+#: inc/pluggable/clienti/form.php:267
+#, fuzzy
+msgid "Telephone"
+msgstr "Téléphone"
+
+#: inc/pluggable/clienti/form.php:271
+#, fuzzy
+msgid "Qualification"
+msgstr "Qualification"
+
+#: inc/pluggable/clienti/form.php:276 inc/pluggable/clienti/list.php:156
+#: inc/pluggable/documenti/list.php:192
+#, fuzzy
+msgid "Edit"
+msgstr "Edit"
+
+#: inc/pluggable/clienti/form.php:276
+msgid "Update"
+msgstr "Mise à jour"
+
+#: inc/pluggable/clienti/form.php:308
+#, fuzzy
+msgid "BUTTONS LEGEND"
+msgstr "BUTTONS LEGEND"
+
+#: inc/pluggable/clienti/list.php:22
+#, fuzzy
+msgid "TERMIN"
+msgstr "DATE"
+
+#: inc/pluggable/clienti/list.php:25
+#, fuzzy
+msgid "AKTIVITÄT"
+msgstr "ACTIVITÉ"
+
+#: inc/pluggable/clienti/list.php:49
+#, fuzzy
+msgid "Keine KUNDEN in der Datenbank"
+msgstr "Aucun client dans la base de données"
+
+#: inc/pluggable/clienti/list.php:59 inc/pluggable/scheduler/list.php:95
+#, fuzzy
+msgid "gesamt"
+msgstr "total"
+
+#: inc/pluggable/clienti/list.php:61
+#, fuzzy
+msgid "Kunden pro Seite"
+msgstr "Clients par page"
+
+#: inc/pluggable/clienti/list.php:111
+#, fuzzy
+msgid "Ust.-Identifikationsnummer"
+msgstr "Numéro d'identification TVA"
+
+#: inc/pluggable/clienti/list.php:129 inc/setup.php:375
+msgid "Kategorien"
+msgstr "Catégories"
+
+#: inc/pluggable/clienti/list.php:147
+msgid "Quelle"
+msgstr "source"
+
+#: inc/pluggable/clienti/list.php:185
+#, fuzzy
+msgid "ToDo für Kunden hinzufügen:"
+msgstr "Ajouter des tâches à faire pour les clients :"
+
+#: inc/pluggable/clienti/list.php:214
+#, fuzzy
+msgid "Aktivität für Kunden hinzufügen:"
+msgstr "Ajouter une activité pour les clients :"
+
+#: inc/pluggable/documenti/list.php:89
+#, fuzzy
+msgid ""
+"No documents to show. You can create new documents from the above menu; be "
+"sure to have some contacts archived before to create new documents"
+msgstr ""
+"Aucun document à afficher. Vous pouvez créer de nouveaux documents à partir "
+"du menu ci-dessus ; assurez-vous d'avoir archivé certains contacts avant de "
+"créer de nouveaux documents"
+
+#: inc/pluggable/documenti/list.php:132
+#, fuzzy
+msgid "Earlier than"
+msgstr "Plus tôt que"
+
+#: inc/pluggable/documenti/list.php:133
+#, fuzzy
+msgid "Later than"
+msgstr "Plus tard que"
+
+#: inc/pluggable/documenti/list.php:149
+#, fuzzy
+msgid "Date"
+msgstr "Date"
+
+#: inc/pluggable/documenti/list.php:159
+msgid "Amount"
+msgstr "Montant"
+
+#: inc/pluggable/documenti/list.php:162
+#, fuzzy
+msgid "Expiration Date"
+msgstr "Date d'expiration"
+
+#: inc/pluggable/documenti/list.php:172
+#, fuzzy
+msgid "Paid"
+msgstr "Paid"
+
+#: inc/pluggable/documenti/list.php:174
+#, fuzzy
+msgid "Accepted"
+msgstr "Accepté"
+
+#: inc/pluggable/documenti/list.php:183
+msgid "Print"
+msgstr "Imprimer"
+
+#: inc/pluggable/documenti/list.php:199
+#, fuzzy
+msgid "This invoice is registered and not editable"
+msgstr "Cette facture est enregistrée et non modifiable"
+
+#: inc/pluggable/documenti/list.php:216
+#, fuzzy
+msgid "This invoice is registered and not deletable"
+msgstr "Cette facture est enregistrée et non annulable"
+
+#: inc/pluggable/documenti/list.php:247 inc/pluggable/documenti/list.php:259
+#: inc/pluggable/documenti/list.php:270
+#, fuzzy
+msgid "Filter by agent"
+msgstr "Filtre par agent"
+
+#: inc/pluggable/scheduler/list.php:83
+#, fuzzy
+msgid ""
+"Keine AKTIVITÄTEN zum Anzeigen; Du kannst neue Aufgaben oder neue Termine "
+"hinzufügen. Stelle sicher, dass einige Kunden verfügbar sind, oder erstelle "
+"im Hauptmenü einen neuen Kunden"
+msgstr ""
+"Pas d'ACTIVITÉS à afficher ; vous pouvez ajouter de nouvelles tâches ou de "
+"nouveaux rendez-vous. Assurez-vous que certains clients sont disponibles ou "
+"créez un nouveau client dans le menu principal"
+
+#: inc/pluggable/scheduler/list.php:161
+#, fuzzy
+msgid "Du hast nicht die Berechtigung, dieses Ereignis zu löschen."
+msgstr "Vous n'êtes pas autorisé à supprimer cet événement."
+
+#: inc/setup.php:326
+#, fuzzy
+msgid "Clienti"
+msgstr "Clienti"
+
+#: inc/setup.php:327
+#, fuzzy
+msgid "Cliente"
+msgstr "Cliente"
+
+#: inc/setup.php:328
+#, fuzzy
+msgid "Modifica cliente"
+msgstr "Modifica cliente"
+
+#: inc/setup.php:329
+#, fuzzy
+msgid "Aggiungi cliente"
+msgstr "Aggiungi client"
+
+#: inc/setup.php:330
+#, fuzzy
+msgid "Nuovo cliente"
+msgstr "Nuovo client"
+
+#: inc/setup.php:346
+msgctxt "taxonomy general name"
+msgid "Interessen"
+msgstr "Centres d'intérêt"
+
+#: inc/setup.php:347
+msgctxt "taxonomy singular name"
+msgid "Interesse"
+msgstr "intérêt"
+
+#: inc/setup.php:348
+#, fuzzy
+msgid "Suche Interesse"
+msgstr "Recherche d'intérêt"
+
+#: inc/setup.php:349
+#, fuzzy
+msgid "Alle Interessen"
+msgstr "Tous les intérêts"
+
+#: inc/setup.php:350
+#, fuzzy
+msgid "Interesse bearbeiten"
+msgstr "Modifier l'intérêt"
+
+#: inc/setup.php:351
+#, fuzzy
+msgid "Interesse aktualisieren"
+msgstr "Actualiser l'intérêt"
+
+#: inc/setup.php:352
+#, fuzzy
+msgid "Interesse hinzufügen"
+msgstr "Ajouter un intérêt"
+
+#: inc/setup.php:353
+#, fuzzy
+msgid "Neues Interesse"
+msgstr "Nouvel intérêt"
+
+#: inc/setup.php:367
+msgctxt "taxonomy general name"
+msgid "Kategorien"
+msgstr "Catégories"
+
+#: inc/setup.php:368
+msgctxt "taxonomy singular name"
+msgid "Kategorie"
+msgstr "Catégorie"
+
+#: inc/setup.php:369
+#, fuzzy
+msgid "Suche Kategorie"
+msgstr "Recherche de catégorie"
+
+#: inc/setup.php:370
+msgid "Alle Kategorien"
+msgstr "Toutes les catégories"
+
+#: inc/setup.php:371
+#, fuzzy
+msgid "Kategorie bearbeiten"
+msgstr "Modifier la catégorie"
+
+#: inc/setup.php:372
+#, fuzzy
+msgid "Kategorie aktualisieren"
+msgstr "Mettre à jour la catégorie"
+
+#: inc/setup.php:373
+msgid "Kategorie hinzufügen"
+msgstr "Ajouter la catégorie"
+
+#: inc/setup.php:374
+#, fuzzy
+msgid "Neue Kategorie"
+msgstr "Nouvelle catégorie"
+
+#: inc/setup.php:388
+msgctxt "taxonomy general name"
+msgid "Quellen"
+msgstr "à verser"
+
+#: inc/setup.php:389
+msgctxt "taxonomy singular name"
+msgid "Quelle"
+msgstr "source"
+
+#: inc/setup.php:390
+#, fuzzy
+msgid "Quelle suchen"
+msgstr "Rechercher une source"
+
+#: inc/setup.php:391
+#, fuzzy
+msgid "Alle Quellen"
+msgstr "Toutes les sources"
+
+#: inc/setup.php:392
+#, fuzzy
+msgid "Quelle bearbeiten"
+msgstr "Modifier la source"
+
+#: inc/setup.php:393
+#, fuzzy
+msgid "Quelle aktualisieren"
+msgstr "Mettre à jour la source"
+
+#: inc/setup.php:394
+#, fuzzy
+msgid "Neue Quelle hinzufügen"
+msgstr "Ajouter une nouvelle source"
+
+#: inc/setup.php:395
+#, fuzzy
+msgid "Neue Quelle"
+msgstr "Nouvelle source"
+
+#: inc/setup.php:396
+msgid "Quellen"
+msgstr "à verser"
+
+#: inc/setup.php:427
+#, fuzzy
+msgid "CP SMART CRM BENACHRICHTIGUNGSREGELN"
+msgstr "CP SMART CRM RÈGLES DE NOTIFICATION"
+
+#: inc/setup.php:428
+#, fuzzy
+msgid "Benachrichtigungen"
+msgstr "Notifications"
+
+#: inc/setup.php:436
+#, fuzzy
+msgid "CP SMART CRM Kunden"
+msgstr "CP SMART CRM Clients"
+
+#: inc/setup.php:446
+#, fuzzy
+msgid "CP SMART CRM Planer"
+msgstr "Planificateur CP SMART CRM"
+
+#: inc/setup.php:456
+#, fuzzy
+msgid "CP SMART CRM Dokumente"
+msgstr "Documents CP SMART CRM"
+
+#: inc/subscription_rules.php:40
+#, fuzzy
+msgid "PS Smart CRM-Abonnementregeln"
+msgstr "Règles d'abonnement PS Smart CRM"
+
+#: inc/subscription_rules.php:40
+#, fuzzy
+msgid "Regel hinzufügen"
+msgstr "Ajouter une règle"
+
+#: inc/subscription_rules.php:45
+#, fuzzy
+msgid "Neue Regel hinzufügen"
+msgstr "Ajouter une nouvelle règle"
+
+#: inc/subscription_rules.php:48 inc/subscription_rules.php:156
+#, fuzzy
+msgid "Regelname"
+msgstr "Nom de la règle"
+
+#: inc/subscription_rules.php:51 inc/subscription_rules.php:157
+#, fuzzy
+msgid "Monate Länge"
+msgstr "Mois Longueur"
+
+#: inc/subscription_rules.php:56 inc/subscription_rules.php:159
+#, fuzzy
+msgid "Regel speichern"
+msgstr "Enregistrer la règle"
+
+#: inc/subscription_rules.php:61
+#, fuzzy
+msgid "Regelschritte"
+msgstr "Étapes de contrôle"
+
+#: inc/subscription_rules.php:61 inc/subscription_rules.php:810
+#, fuzzy
+msgid "Schritt hinzufügen"
+msgstr "Ajouter une étape"
+
+#: inc/subscription_rules.php:63
+#, fuzzy
+msgid "Vorhandene Schritte"
+msgstr "Étapes existantes"
+
+#: inc/subscription_rules.php:73 inc/subscription_rules.php:74
+#, fuzzy
+msgid "Im Dashboard veröffentlichen"
+msgstr "Publier dans le tableau de bord"
+
+#: inc/subscription_rules.php:78 inc/subscription_rules.php:140
+#, fuzzy
+msgid "Schritt speichern"
+msgstr "Enregistrer l'étape"
+
+#: inc/subscription_rules.php:90
+#, fuzzy
+msgid "Bestehende Regeln"
+msgstr "Règles existantes"
+
+#: inc/subscription_rules.php:91
+#, fuzzy
+msgid "Tage im Voraus über den Ablauf informieren"
+msgstr "Informer des jours à l'avance sur le déroulement"
+
+#: inc/subscription_rules.php:91
+#, fuzzy
+msgid "E-Mail-Benachrichtigung an Kunden und/oder CRM-Benutzer ausgewählt"
+msgstr ""
+"Notification par e-mail aux clients et/ou aux utilisateurs CRM sélectionnée"
+
+#: inc/subscription_rules.php:91
+#, fuzzy
+msgid "Geplant für ausgewählte CRM-Benutzer/-Gruppen"
+msgstr "Planifié pour les utilisateurs/groupes CRM sélectionnés"
+
+#: inc/subscription_rules.php:91
+#, fuzzy
+msgid ""
+"Zur schnellen Erinnerung im Dashboard ausgewählter CRM-Benutzer/-Gruppen "
+"veröffentlicht"
+msgstr ""
+"Publié sur le tableau de bord des utilisateurs/groupes CRM sélectionnés pour "
+"un rappel rapide"
+
+#: inc/subscription_rules.php:103
+#, fuzzy
+msgid "Schritt bearbeiten"
+msgstr "Modifier l'étape"
+
+#: inc/subscription_rules.php:103
+#, fuzzy
+msgid "für Regel"
+msgstr "pour règle"
+
+#: inc/subscription_rules.php:118
+#, fuzzy
+msgid "Notify to Users"
+msgstr "Notifier les utilisateurs"
+
+#: inc/subscription_rules.php:119
+#, fuzzy
+msgid "Notify to Groups"
+msgstr "Notifier aux groupes"
+
+#: inc/subscription_rules.php:152
+#, fuzzy
+msgid "Regel bearbeiten"
+msgstr "Modifier la règle"
+
+#: inc/subscription_rules.php:157
+#, fuzzy
+msgid "Unlimited"
+msgstr "Illimité"
+
+#: inc/subscription_rules.php:216
+#, fuzzy
+msgid "Du solltest Tage im Voraus auswählen"
+msgstr "Vous devez choisir des jours à l'avance"
+
+#: inc/subscription_rules.php:217 inc/subscription_rules.php:218
+#, fuzzy
+msgid "Du solltest mindestens einen Benutzer oder eine Gruppe auswählen"
+msgstr "Vous devez sélectionner au moins un utilisateur ou un groupe"
+
+#: inc/subscription_rules.php:237
+#, fuzzy
+msgid "Sende eine E-Mail an den Kunden"
+msgstr "Envoyer un e-mail au client"
+
+#: inc/subscription_rules.php:239 inc/subscription_rules.php:782
+#: inc/subscription_rules.php:784
+#, fuzzy
+msgid "E-Mail an den Kunden"
+msgstr "E-mail au client"
+
+#: inc/subscription_rules.php:242 inc/subscription_rules.php:244
+#, fuzzy
+msgid "Dashboard-Benutzerbenachrichtigung"
+msgstr "Notification d'utilisateur du tableau de bord"
+
+#: inc/subscription_rules.php:247 inc/subscription_rules.php:249
+#: inc/subscription_rules.php:798 inc/subscription_rules.php:800
+#, fuzzy
+msgid "Dashboard-Gruppenbenachrichtigung"
+msgstr "Notification de groupe du tableau de bord"
+
+#: inc/subscription_rules.php:251 inc/subscription_rules.php:253
+#, fuzzy
+msgid "E-Mail an Empfänger"
+msgstr "E-mail au destinataire"
+
+#: inc/subscription_rules.php:461
+#, fuzzy
+msgid ""
+"Bitte beachte, dass das Löschen einer bestehenden Regel zu Problemen bei der "
+"Rechnungserstellung führen kann, wenn Du Produkte und Dienstleistungen hast, "
+"die diese bereits verwenden: Überprüfe unbedingt die fehlenden Regeln und "
+"weise ihnen gegebenenfalls eine neue Regel zu"
+msgstr ""
+"Veuillez noter que la suppression d'une règle existante peut entraîner des "
+"problèmes de facturation si vous avez des produits et services qui "
+"l'utilisent déjà : Assurez-vous de vérifier les règles manquantes et de leur "
+"attribuer une nouvelle règle si nécessaire"
+
+#: inc/subscription_rules.php:484
+#, fuzzy
+msgid "Regel gelöscht"
+msgstr "Règle supprimée"
+
+#: inc/subscription_rules.php:602
+#, fuzzy
+msgid "Edit step"
+msgstr "Edit step"
+
+#: inc/subscription_rules.php:635
+#, fuzzy
+msgid "New Notification Step"
+msgstr "Nouvelle étape de notification"
+
+#: inc/subscription_rules.php:715 inc/subscription_rules.php:745
+#, fuzzy
+msgid "Rolle auswählen"
+msgstr "Sélectionner un rôle"
+
+#: inc/subscription_rules.php:773
+#, fuzzy
+msgid "Abonnementregel"
+msgstr "Règle d'abonnement"
+
+#: inc/subscription_rules.php:773
+#, fuzzy
+msgid "Länge"
+msgstr "Longueur"
+
+#: inc/subscription_rules.php:773
+msgid "Monate"
+msgstr "Mois"
+
+#: inc/subscription_rules.php:774
+#, fuzzy
+msgid "Benachrichtigungsschritte"
+msgstr "Étapes de notification"
+
+#: inc/subscription_rules.php:790 inc/subscription_rules.php:792
+#, fuzzy
+msgid "Benachrichtigung für Dashboard-Benutzer"
+msgstr "Notification pour les utilisateurs du tableau de bord"
+
+#: inc/subscription_rules.php:803 inc/subscription_rules.php:805
+#, fuzzy
+msgid "Email Benachrichtigung"
+msgstr "Notification par e-mail"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:56
+#, fuzzy
+msgid "View details"
+msgstr "Voir les détails"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:79
+#, fuzzy, php-format
+msgid "Weitere Informationen zu %s"
+msgstr "Plus d'informations sur %s"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:130
+#, fuzzy
+msgid "Auf neuere Version prüfen"
+msgstr "Vérifier la disponibilité d'une version plus récente"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:217
+#, fuzzy, php-format
+msgctxt "the plugin title"
+msgid "Keine neuere Version von %s im PSOURCE REPO gefunden."
+msgstr "Aucune version plus récente de %s n'a été trouvée dans PSOURCE REPO."
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:219
+#, fuzzy, php-format
+msgctxt "the plugin title"
+msgid "Im PSOURCE REPO ist eine <b>neuere Version von %s</b> verfügbar!."
+msgstr ""
+"Une <b>version plus récente de %s</b> est disponible dans PSOURCE REPO !"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:221
+#, fuzzy, php-format
+msgctxt "the plugin title"
+msgid ""
+"Entschuldige, es konnte nicht festgestellt werden, ob Updates für %s "
+"verfügbar sind."
+msgstr ""
+"Désolé, il n'a pas été possible de déterminer si des mises à jour étaient "
+"disponibles pour %s."
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:227
+#, fuzzy, php-format
+msgid "Unbekannter PSOURCE-UPDATTER-Status \"%s\""
+msgstr "Statut inconnu de PSOURCE-UPDATTER \"%s\""
+
+#: psource/psource-plugin-update/Puc/v5p0/Vcs/PluginUpdateChecker.php:98
+#, fuzzy
+msgid "There is no changelog available."
+msgstr "Il n'y a pas de journal des modifications disponible."
+
+#. Plugin Name of the plugin/theme
+#, fuzzy
+msgid "PS Smart CRM"
+msgstr "PS Smart CRM"
+
+#. Plugin URI of the plugin/theme
+#, fuzzy
+msgid "https://cp-psource.github.io/ps-smart-crm/wordpress-crm-invoices-plugin"
+msgstr "https://cp-psource.github.io/ps-smart-crm/wordpress-crm-invoices-plugin"
+
+#. Description of the plugin/theme
+#, fuzzy
+msgid ""
+"Adds a powerful CRM to wp-admin. Manage Customers, Invoices, TODO, "
+"Appointments and future Notifications to Agents, Users and Customers"
+msgstr ""
+"Ajoute un CRM puissant à wp-admin. Gérez les clients, les factures, les "
+"tâches à faire, les rendez-vous et les futures notifications aux agents, aux "
+"utilisateurs et aux clients"
+
+#. Author of the plugin/theme
+msgid "PSOURCE"
+msgstr "PSOURCE"
+
+#. Author URI of the plugin/theme
+#, fuzzy
+msgid "https://cp-psource.github.io/ps-smart-crm"
+msgstr "https://cp-psource.github.io/ps-smart-crm"
