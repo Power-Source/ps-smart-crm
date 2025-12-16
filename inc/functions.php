@@ -561,86 +561,48 @@ function WPsCRM_get_documents() {
     $current_user = wp_get_current_user();
     $user_id = $current_user->ID;
     $tipo = $_REQUEST['type'];
-    $where = "tipo=" . $tipo;
-    if (WPsCRM_is_agent() && !WPsCRM_agent_can()) {
-      $from = ", $c_table";
-      $where .= " and fk_clienti=ID_clienti and agente=$user_id";
-    } else {
-      $from = ", $c_table";
-      $where .= " and fk_clienti=ID_clienti";
-    }
-    $sql = "SELECT * FROM " . $table . " $from where $where order by data desc";
-    foreach ($wpdb->get_results($sql) as $record) {
-      if ($record->agente != 0) {
-        $user = get_userdata((int) $record->agente);
-        $agenteID = (int) $record->agente;
-        $agenteName = isset($user->display_name) ? $user->display_name : $user->nickname;
-      } else {
-        $agenteID = "";
-        $agenteName = "";
-      }
-      $id = $record->id;
-      $data = $record->data;
-      $data_scadenza = $record->data_scadenza;
-      $oggetto = $record->oggetto;
-      $progressivo = $record->progressivo;
-      $totale = $record->totale_imponibile;
-      $registrato = $record->registrato;
-      $origine_proforma = $record->origine_proforma;
-      $pagato = $record->pagato ? __('Yes', 'cpsmartcrm') : "";
-      $fk_clienti = $record->fk_clienti;
-      if ($_email = $record->email)
-        $email = $record->email;
-      else
-        $email = "";
-
-      if ($filename = $record->filename) {
-        //echo $filename;
-        $documentSent = 0;
-        $upload_dir = wp_upload_dir();
-        $document = $upload_dir['baseurl'] . "/CRMdocuments/" . $filename;
-        //echo $document;
-        //if (!file_exists($document))
-        //  $document="";
-        if ($email != "") {
-          $sqlm = "SELECT COUNT(*) FROM " . WPsCRM_TABLE . "emails  where e_to = '$email' AND attachments LIKE '%" . str_replace(".pdf", "", $filename) . "%' AND e_sent > 0";
-          //echo $sqlm.PHP_EOL;
-          if ($wpdb->get_var($sqlm) > 0)
-            $documentSent = 1;
-        } else
-          $documentSent = -1;
-      }
-      else {
-        $document = "";
-        $documentSent = 0;
-      }
-      if (WPsCRM_advanced_print() == false) {
-        $document = "";
-      }
-      $tipo = "";
-      if ($record->tipo == 1) {
-        $tipo = "P";
-        // $pagato="";
-      } elseif ($record->tipo == 2)
-        $tipo = "F";
-      elseif ($record->tipo == 3)
-        $tipo = "N";
-      if ($fk_clienti) {
-        $sqlc = "SELECT nome, cognome, ragione_sociale FROM " . WPsCRM_TABLE . "clienti  where ID_clienti=$fk_clienti";
-        $qc = $wpdb->get_row($sqlc);
-        if ($qc->ragione_sociale)
-          $cliente = $qc->ragione_sociale;
-        else
-          $cliente = $qc->nome . " " . $qc->cognome;
-
-        //echo $sqlm;
-      }
-
-      $arr[] = array("ID" => $id, "tipo" => $tipo, "progressivo" => (int) $progressivo, "datao" => $data, "cliente" => stripslashes($cliente), "email" => $email, "documentSent" => $documentSent, "ID_clienti" => (int) $fk_clienti, "agente" => $agenteID, "agenteName" => $agenteName, "oggetto" => stripslashes($oggetto), "importo" => floatval($totale), "filename" => $document, "pagato" => $pagato, "registrato" => $registrato, 'data_scadenza' => $data_scadenza, 'origine_proforma' => $origine_proforma);
-    }
+    $from = ", $c_table";
+    $where = "tipo=" . $tipo . " and fk_clienti=ID_clienti";
+    // TEST: ALLE Dokumente ohne User/Agenten-Filter
+      $sql = "SELECT * FROM " . $table . " $from where $where order by data desc";
+      $results = $wpdb->get_results($sql);
+      $debug = array(
+        'sql' => $sql,
+        'count' => count($results),
+        'first' => isset($results[0]) ? $results[0] : null
+      );
+      header('Content-type: application/json');
+      echo json_encode([
+        'documents' => [
+          [
+            'ID'=>1,
+            'cliente'=>'TEST-DUMMY-DATENSATZ',
+            'importo'=>99.99,
+            'tipo'=>'P',
+            'progressivo'=>1,
+            'datao'=>date('Y-m-d'),
+            'data_scadenza'=>date('Y-m-d'),
+            'pagato'=>'Yes',
+            'registrato'=>0,
+            'oggetto'=>'Test',
+            'email'=>'test@example.com',
+            'documentSent'=>1,
+            'ID_clienti'=>1,
+            'agente'=>1,
+            'agenteName'=>'Test Agent',
+            'filename'=>'',
+            'origine_proforma'=>''
+          ]
+        ],
+        '_debug'=>'WPsCRM_get_documents() wurde am '.date('Y-m-d H:i:s').' aufgerufen!'
+      ]);
+      die();
     //var_dump(json_encode($arr ));
     header("Content-type: application/json");
-    echo "{\"documents\":" . json_encode($arr) . "}";
+    echo json_encode(array(
+      'documents' => $arr,
+      '_debug' => $debug
+    ));
     //echo json_encode($arr );
     die();
   }
