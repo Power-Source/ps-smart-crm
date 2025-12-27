@@ -3887,10 +3887,10 @@ function SOFT_user_CRM_ID($user) {
   <?php
 }
 
-// Hook is used to save custom fields that have been added to the WordPress profile page (if current user)
+// Hook is used to save custom fields that have been added to the ClassicPress profile page (if current user)
 add_action('personal_options_update', 'update_extra_profile_fields');
 
-// Hook is used to save custom fields that have been added to the WordPress profile page (if not current user)
+// Hook is used to save custom fields that have been added to the ClassicPress profile page (if not current user)
 add_action('edit_user_profile_update', 'update_extra_profile_fields');
 
 function update_extra_profile_fields($user_id) {

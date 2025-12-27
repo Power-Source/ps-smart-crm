@@ -1,15 +1,15 @@
 <?php
 /*
 Plugin Name: PS Smart CRM
-Plugin URI: https://cp-psource.github.io/ps-smart-crm/wordpress-crm-invoices-plugin
-Description: Fügt WordPress ein leistungsstarkes CRM hinzu. Verwalten Sie Kunden, Rechnungen, TODO, Termine und zukünftige Benachrichtigungen an Agenten, Benutzer und Kunden
+Plugin URI: https://power-source.github.io/ps-smart-crm/
+Description: Fügt ClassicPress ein leistungsstarkes CRM hinzu. Verwalten Sie Kunden, Rechnungen, TODO, Termine und zukünftige Benachrichtigungen an Agenten, Benutzer und Kunden
 Version: 1.0.0
-Author:       Karner Oliver
-Author URI:   https://nerdservice.eimen.net
+Author:       PSOURCE
+Author URI:   https://github.com/Power-Source
 Text Domain: cpsmartcrm
 Domain Path: /languages
  **************************************************************************
-Copyright (C) 2023-2025 PSOURCE
+Copyright (C) 2023-2026 PSOURCE
 
 
 This program is free software: you can redistribute it and/or modify

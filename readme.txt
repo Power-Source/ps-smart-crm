@@ -1,5 +1,4 @@
 ﻿=== PS Smart CRM ===
-
 Author: PSOURCE
 Tags: crm, invoices, todo
 Requires at least: 4.2
@@ -8,7 +7,7 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
  
-PS Smart CRM erweitert Classic/WordPress um ein leistungsstarkes CRM mit vielen Funktionen. Verwalte Kunden, Rechnungen, TODO, Termine und Benachrichtigungen.
+PS Smart CRM erweitert Classic/ClassicPress um ein leistungsstarkes CRM mit vielen Funktionen. Verwalte Kunden, Rechnungen, TODO, Termine und Benachrichtigungen.
 
 == Description ==
 
