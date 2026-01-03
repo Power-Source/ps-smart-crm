@@ -921,13 +921,30 @@ function WPsCRM_get_scheduler() {
       $fk_kunde = $r_scheduler->fk_kunde;
       $start_date = $r_scheduler->start_date;
       $end_date = $r_scheduler->end_date;
-      list ($anno, $mese, $giorno) = explode("-", $start_date);
+      
+      // Initialize variables
+      $cliente = "";
+      $destinatari = "";
+      $groups = "";
+      $arr_users = array();
+      $arr_usersgroup = array();
+      $rowClass = "";
+      
+      $date_parts = explode("-", $start_date);
+      if (count($date_parts) >= 3) {
+        list ($anno, $mese, $giorno) = $date_parts;
+      } else {
+        $anno = date("Y");
+        $mese = date("m");
+        $giorno = date("d");
+      }
+      
       if ($fk_kunde) {
         $sqlc = "SELECT name, nachname, firmenname FROM " . WPsCRM_TABLE . "kunde  where ID_kunde=$fk_kunde";
         $qc = $wpdb->get_row($sqlc);
-        if ($qc->firmenname)
+        if ($qc && $qc->firmenname)
           $cliente = $qc->firmenname;
-        else
+        elseif ($qc)
           $cliente = $qc->name . " " . $qc->nachname;
       }
 
@@ -935,42 +952,57 @@ function WPsCRM_get_scheduler() {
       //echo $sql;
       if ($record = $wpdb->get_row($sql)) {
         $steps = json_decode($record->steps);
-        foreach ($steps as $step) {
-          $arr_users = array();
-          $arr_usersgroup = array();
-
-          //  print_r($step);echo "<br>";
-          $rulestep = $step->ruleStep;
-          $users = $step->selectedUsers;
-          $groups = $step->selectedGroups;
-          if ($users) {
-            $arr_users = explode(",", $users);
+        if ($steps && is_array($steps)) {
+          foreach ($steps as $step) {
+            $arr_users = array();
+            $arr_usersgroup = array();
             $destinatari = "";
-            foreach ($arr_users as $user) {
-              $user_info = get_userdata($user);
-              //var_dump($user_info);
-              ($user_info->first_name != "" && $user_info->last_name != "") ? $u_name = $user_info->first_name . " " . $user_info->last_name : $u_name = $user_info->user_nicename;
-              $destinatari .= $u_name . ", ";
+
+            //  print_r($step);echo "<br>";
+            $rulestep = $step->ruleStep;
+            $users = $step->selectedUsers;
+            $groups = $step->selectedGroups;
+            if ($users) {
+              $arr_users = explode(",", $users);
+              foreach ($arr_users as $user) {
+                $user_info = get_userdata($user);
+                //var_dump($user_info);
+                if ($user_info) {
+                  ($user_info->first_name != "" && $user_info->last_name != "") ? $u_name = $user_info->first_name . " " . $user_info->last_name : $u_name = $user_info->user_nicename;
+                  $destinatari .= $u_name . ", ";
+                }
+              }
+              if (!empty($destinatari)) {
+                $destinatari = substr($destinatari, 0, -2);
+              }
             }
-            $destinatari = substr($destinatari, 0, -2);
-          }
-          if ($groups) {
-            $arr_groups = explode(",", $groups);
-            foreach ($arr_groups as $group) {
-              $arr_usersgroup += get_users(array('fields' => 'ID', 'role' => $group));
+            if ($groups) {
+              $arr_groups = explode(",", $groups);
+              foreach ($arr_groups as $group) {
+                $users_in_group = get_users(array('fields' => 'ID', 'role' => $group));
+                if ($users_in_group) {
+                  $arr_usersgroup = array_merge($arr_usersgroup, $users_in_group);
+                }
+              }
             }
+            $total_users = array_unique(array_merge($arr_usersgroup, $arr_users));
+            $data_agenda = date("Y-m-d", mktime(0, 0, 0, $mese, $giorno - $rulestep, $anno));
+            if ($view == "day")
+              $cond = ($data_agenda <= date("Y-m-d"));
+            elseif ($view == "week") {
+              $sett = date("w");
+              $primo = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d") - ($sett - 1), date("Y")));
+              $ultimo = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d") + (5 - $sett), date("Y")));
+              $cond = ($data_agenda <= $ultimo);
+            } else
+              $cond = true;
+            $activity_owner = array();
+            if ((!in_array($r_scheduler->fk_utenti_ins, $adminArray) ) && $options['deletion_privileges'] == "1")
+              $activity_owner[] = (string) $r_scheduler->fk_utenti_ins;
           }
-          $total_users = array_unique(array_merge($arr_usersgroup, $arr_users));
-          $data_agenda = date("Y-m-d", mktime(0, 0, 0, $mese, $giorno - $rulestep, $anno));
-          if ($view == "day")
-            $cond = ($data_agenda <= date("Y-m-d"));
-          elseif ($view == "week") {
-            $sett = date("w");
-            $primo = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d") - ($sett - 1), date("Y")));
-            $ultimo = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d") + (5 - $sett), date("Y")));
-            $cond = ($data_agenda <= $ultimo);
-          } else
-            $cond = true;
+        } else {
+          $total_users = array();
+          $cond = true;
           $activity_owner = array();
           if ((!in_array($r_scheduler->fk_utenti_ins, $adminArray) ) && $options['deletion_privileges'] == "1")
             $activity_owner[] = (string) $r_scheduler->fk_utenti_ins;
