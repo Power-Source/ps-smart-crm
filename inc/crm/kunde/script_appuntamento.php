@@ -31,11 +31,10 @@ if (!PSCRM_INLINE_MODE) {
     });
 }
 
-// Datepicker für Termin initialisieren
+// Datepicker für Termin initialisieren (TERMIN hat nur EIN Feld!)
 (function(){
-    var inputStart = document.getElementById('a_data_scadenza_inizio');
-    var inputEnd = document.getElementById('a_data_scadenza_fine');
-    if (!inputStart || !inputEnd) return;
+    var inputStart = document.getElementById('a_data_agenda');
+    if (!inputStart) return;
 
     function toIsoLocal(val) {
         if (!val || typeof val !== 'string') return '';
@@ -58,18 +57,10 @@ if (!PSCRM_INLINE_MODE) {
             dateFormat: "d.m.Y H:i",
             defaultDate: inputStart.value || new Date()
         });
-        flatpickr(inputEnd, {
-            enableTime: true,
-            dateFormat: "d.m.Y H:i",
-            defaultDate: inputEnd.value || new Date()
-        });
     } else {
         inputStart.type = 'datetime-local';
-        inputEnd.type = 'datetime-local';
         var iso = toIsoLocal(inputStart.value);
         if (iso) inputStart.value = iso;
-        var iso2 = toIsoLocal(inputEnd.value);
-        if (iso2) inputEnd.value = iso2;
     }
 })();
 

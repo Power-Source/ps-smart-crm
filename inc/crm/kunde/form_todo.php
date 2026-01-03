@@ -7,14 +7,21 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="panel-body" style="padding:20px">
             <div class="row" style="padding-bottom:2px;padding-top:0px;border-bottom:1px solid #ccc">
                 <div class="col-md-12 form-group">
-                    <label class="col-sm-1 control-label"><?php _e( 'Ablauf', 'cpsmartcrm'); ?></label>
-                    <div class="col-md-4">
-                        <input type="text" name="t_data_scadenza" id='t_data_scadenza' value="<?php if (isset($data_scadenza)) echo $data_scadenza?>">
-
+                    <label class="col-sm-1 control-label"><?php _e( 'Von', 'cpsmartcrm'); ?></label>
+                    <div class="col-md-3">
+                        <input type="text" name="t_data_inizio" id='t_data_inizio' value="<?php if (isset($data_scadenza)) echo $data_scadenza?>" placeholder="DD.MM.YYYY">
+                    </div>
+                    <label class="col-sm-1 control-label"><?php _e('Bis','cpsmartcrm')?></label>
+                    <div class="col-md-3">
+                        <input type="text" name="t_data_fine" id='t_data_fine' placeholder="DD.MM.YYYY">
                     </div>
                     <label class="col-sm-1 control-label"><?php _e('Priorität','cpsmartcrm')?></label>
-                    <div class="col-md-4">
-                        <?php WPsCRM_priorita()?>
+                    <div class="col-md-2">
+                        <select name="t_priorita" id="t_priorita" class="form-control k-dropdown _m _flat">
+                            <option value="1"><?php _e('Niedrig', 'cpsmartcrm'); ?></option>
+                            <option value="2" selected><?php _e('Normal', 'cpsmartcrm'); ?></option>
+                            <option value="3"><?php _e('Hoch', 'cpsmartcrm'); ?></option>
+                        </select>
                     </div>
                 </div>
 

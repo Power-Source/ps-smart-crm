@@ -668,22 +668,51 @@ jQuery(document).ready(function ($) {
                                 var status_text = item.fatto == 1 ? '<?php _e("Offen","cpsmartcrm"); ?>' : '<?php _e("Abgeschlossen","cpsmartcrm"); ?>';
                                 var status_badge = item.fatto == 1 ? 'badge badge-warning' : 'badge badge-success';
                                 
-                                // Konvertiere Datum von YYYY-MM-DD zu DD.MM.YYYY
-                                var displayDate = '';
-                                if (item.start_date) {
-                                    var parts = item.start_date.split('-');
-                                    if (parts.length === 3) {
-                                        displayDate = parts[2] + '.' + parts[1] + '.' + parts[0];
-                                    } else {
-                                        displayDate = item.start_date;
+                                // Konvertiere Datum von YYYY-MM-DD HH:MM:SS zu DD.MM.YYYY
+                                function formatDate(dateStr) {
+                                    if (!dateStr) return '';
+                                    // Entferne Zeitstempel wenn vorhanden
+                                    var datePart = dateStr.split(' ')[0];
+                                    var parts = datePart.split('-');
+                                    if (parts.length === 3 && parts[0] !== '0000') {
+                                        return parts[2] + '.' + parts[1] + '.' + parts[0];
                                     }
+                                    return dateStr;
+                                }
+                                
+                                var displayDate = '';
+                                if (item.tipo_agenda == 1) {
+                                    // TODO: Zeige Von-Bis
+                                    var vonDate = formatDate(item.start_date);
+                                    var bisDate = formatDate(item.end_date);
+                                    if (vonDate && bisDate && vonDate !== bisDate) {
+                                        displayDate = vonDate + ' - ' + bisDate;
+                                    } else if (vonDate) {
+                                        displayDate = vonDate;
+                                    }
+                                } else {
+                                    // TERMIN: Nur start_date
+                                    displayDate = formatDate(item.start_date);
+                                }
+                                
+                                // Konvertiere Priorität-Zahl zu Text
+                                var priorita_text = '';
+                                var priorita_val = parseInt(item.priorita);
+                                if (priorita_val === 1) {
+                                    priorita_text = '<?php _e("Niedrig","cpsmartcrm"); ?>';
+                                } else if (priorita_val === 2) {
+                                    priorita_text = '<?php _e("Normal","cpsmartcrm"); ?>';
+                                } else if (priorita_val === 3) {
+                                    priorita_text = '<?php _e("Hoch","cpsmartcrm"); ?>';
+                                } else {
+                                    priorita_text = item.priorita || '';
                                 }
                                 
                                 html += '<tr>';
                                 html += '<td>' + displayDate + '</td>';
                                 html += '<td>' + (item.oggetto || '') + '</td>';
                                 html += '<td>' + type_text + '</td>';
-                                html += '<td>' + (item.priorita || '') + '</td>';
+                                html += '<td>' + priorita_text + '</td>';
                                 html += '<td><span class="' + status_badge + '">' + status_text + '</span></td>';
                                 html += '<td>';
                                 html += '<a href="#" class="btn btn-sm btn-info schedule-edit" data-id="' + item.id_agenda + '" title="<?php _e("Bearbeiten","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-pencil"></i></a> ';
@@ -734,41 +763,69 @@ jQuery(document).ready(function ($) {
                     if (response.success && response.data) {
                         var item = response.data;
                         
-                        // Konvertiere Datum von YYYY-MM-DD zu DD.MM.YYYY
+                        console.log('Loaded item:', item);
+                        console.log('start_date:', item.start_date, 'end_date:', item.end_date);
+                        
+                        // Konvertiere start_date von YYYY-MM-DD HH:MM:SS zu DD.MM.YYYY
                         var displayStartDate = '';
                         if (item.start_date) {
-                            var parts = item.start_date.split('-');
-                            if (parts.length === 3) {
+                            // Entferne Zeit-Teil
+                            var datePart = item.start_date.split(' ')[0];
+                            var parts = datePart.split('-');
+                            console.log('Start date parts:', parts);
+                            if (parts.length === 3 && parts[0] !== '0000') {
                                 displayStartDate = parts[2] + '.' + parts[1] + '.' + parts[0];
-                            }
-                        }
-                        var displayEndDate = '';
-                        if (item.end_date) {
-                            var parts = item.end_date.split('-');
-                            if (parts.length === 3) {
-                                displayEndDate = parts[2] + '.' + parts[1] + '.' + parts[0];
+                            } else {
+                                displayStartDate = item.start_date;
                             }
                         }
                         
+                        // Konvertiere end_date von YYYY-MM-DD HH:MM:SS zu DD.MM.YYYY
+                        var displayEndDate = '';
+                        if (item.end_date) {
+                            // Entferne Zeit-Teil
+                            var datePart = item.end_date.split(' ')[0];
+                            var parts = datePart.split('-');
+                            console.log('End date parts:', parts);
+                            if (parts.length === 3 && parts[0] !== '0000') {
+                                displayEndDate = parts[2] + '.' + parts[1] + '.' + parts[0];
+                            } else {
+                                displayEndDate = item.end_date;
+                            }
+                        }
+                        
+                        console.log('Converted dates - Start:', displayStartDate, 'End:', displayEndDate);
+                        
                         // Öffne entsprechendes Modal basierend auf tipo_agenda
                         if (item.tipo_agenda == 1) {
-                            // Todo
+                            // TODO: Hat Von-Bis (start_date und end_date)
                             jQuery('#id_agenda_todo').val(item.id_agenda);
                             jQuery('#t_oggetto').val(item.oggetto);
                             jQuery('#t_priorita').val(item.priorita);
-                            jQuery('#t_data_scadenza').val(displayStartDate);
                             jQuery('#t_annotazioni').val(item.annotazioni || '');
+                            
+                            // Setze die Von-Bis Datumsfelder
+                            jQuery('#t_data_inizio').val(displayStartDate);
+                            jQuery('#t_data_inizio').trigger('change');
+                            jQuery('#t_data_fine').val(displayEndDate);
+                            jQuery('#t_data_fine').trigger('change');
+                            
+                            console.log('Set todo - Von:', displayStartDate, 'Bis:', displayEndDate);
                             // Öffne Todo Modal über globale Variable
                             if (typeof initTodoModal === 'function') initTodoModal();
                             if (todoModal) todoModal.open();
                         } else {
-                            // Termin/Appuntamento
+                            // TERMIN/Appuntamento: Hat nur start_date (einzelner Punkt)
                             jQuery('#id_agenda').val(item.id_agenda);
                             jQuery('#a_oggetto').val(item.oggetto);
                             jQuery('#a_priorita').val(item.priorita);
-                            jQuery('#a_data_scadenza_inizio').val(displayStartDate);
-                            jQuery('#a_data_scadenza_fine').val(displayEndDate);
                             jQuery('#a_annotazioni').val(item.annotazioni || '');
+                            
+                            // Setze nur ein Datumfeld (a_data_agenda)
+                            jQuery('#a_data_agenda').val(displayStartDate);
+                            jQuery('#a_data_agenda').trigger('change');
+                            
+                            console.log('Set appointment - Datum:', displayStartDate);
                             // Öffne Appuntamento Modal über globale Variable
                             if (typeof initAppuntamentoModal === 'function') initAppuntamentoModal();
                             if (appuntamentoModal) appuntamentoModal.open();

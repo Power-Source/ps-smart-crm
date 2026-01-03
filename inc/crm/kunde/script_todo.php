@@ -78,10 +78,11 @@ function loadTodoGroups() {
 }
 loadTodoGroups();
 
-// Replace legacy jQuery UI datetimepicker with Flatpickr (local)
+// TODO Datepicker initialisieren (TODO hat VON-BIS, also zwei Felder!)
 (function(){
-    var input = document.getElementById('t_data_scadenza');
-    if (!input) return;
+    var inputStart = document.getElementById('t_data_inizio');
+    var inputEnd = document.getElementById('t_data_fine');
+    if (!inputStart || !inputEnd) return;
 
     // helper: parse dd-mm-YYYY or dd.mm.YYYY to ISO datetime-local string
     function toIsoLocal(val) {
@@ -100,18 +101,24 @@ loadTodoGroups();
     }
 
     if (typeof flatpickr === 'function') {
-        flatpickr(input, {
+        flatpickr(inputStart, {
             enableTime: true,
             dateFormat: "d.m.Y H:i",
-            defaultDate: input.value || new Date()
+            defaultDate: inputStart.value || new Date()
+        });
+        flatpickr(inputEnd, {
+            enableTime: true,
+            dateFormat: "d.m.Y H:i",
+            defaultDate: inputEnd.value || new Date()
         });
     } else {
         // Fallback: native control
-        input.type = 'datetime-local';
-        var iso = toIsoLocal(input.value);
-        if (iso) {
-            input.value = iso;
-        }
+        inputStart.type = 'datetime-local';
+        inputEnd.type = 'datetime-local';
+        var iso = toIsoLocal(inputStart.value);
+        if (iso) inputStart.value = iso;
+        var iso2 = toIsoLocal(inputEnd.value);
+        if (iso2) inputEnd.value = iso2;
     }
 })();
 

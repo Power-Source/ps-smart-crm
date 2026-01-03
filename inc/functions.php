@@ -1478,32 +1478,58 @@ function WPsCRM_save_todo() {
     $oggetto = isset($_POST['t_oggetto']) ? $_POST['t_oggetto'] : '';
     $priorita = isset($_POST['t_priorita']) ? $_POST['t_priorita'] : '';
     $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
-    $start_date = isset($_POST['t_data_scadenza']) ? $_POST['t_data_scadenza'] : '';
-    $end_date = $start_date; // Todo hat nur ein Datum
+    // TODO: Von-Bis (start_date und end_date) - Das Todo ist eine Zeitspanne!
+    $start_date = isset($_POST['t_data_inizio']) ? $_POST['t_data_inizio'] : '';
+    $end_date = isset($_POST['t_data_fine']) ? $_POST['t_data_fine'] : '';
     $einstiegsdatum = date("Y-m-d H:i");
     $annotazioni = isset($_POST['t_annotazioni']) ? $_POST['t_annotazioni'] : '';
     $tipo_agenda = 1; // Todo = 1
     $instantNotification = isset($_POST['instantNotification']) ? $_POST['instantNotification'] : 0;
     
-    error_log("WPsCRM_save_todo: id_agenda=$id_agenda, id_cliente=$id_cliente, oggetto=$oggetto, start_date=$start_date");
+    error_log("WPsCRM_save_todo: id_agenda=$id_agenda, id_cliente=$id_cliente, oggetto=$oggetto, start_date='$start_date', end_date='$end_date'");
     
     // Update bestehender Eintrag
     if ($id_agenda > 0) {
+      // Lade alte Werte aus der Datenbank um Felder zu erhalten die nicht gesendet wurden
+      $old_record = $wpdb->get_row($wpdb->prepare("SELECT start_date, end_date FROM $a_table WHERE id_agenda=%d", $id_agenda));
+      
+      // Nutze alte Werte wenn neue Werte leer sind
+      if (empty($start_date) && $old_record) {
+        $start_date = $old_record->start_date;
+        error_log("WPsCRM_save_todo: Using old start_date from DB: $start_date");
+      } elseif (!empty($start_date)) {
+        // Konvertiere neues Datum nur wenn es gesetzt wurde
+        $start_date = WPsCRM_sanitize_date_format($start_date);
+        error_log("WPsCRM_save_todo: Converted new start_date: $start_date");
+      }
+      
+      if (empty($end_date) && $old_record) {
+        $end_date = $old_record->end_date;
+        error_log("WPsCRM_save_todo: Using old end_date from DB: $end_date");
+      } elseif (!empty($end_date)) {
+        // Konvertiere neues Datum nur wenn es gesetzt wurde
+        $end_date = WPsCRM_sanitize_date_format($end_date);
+        error_log("WPsCRM_save_todo: Converted new end_date: $end_date");
+      }
+      
+      $update_data = array(
+        'oggetto' => $oggetto,
+        'annotazioni' => $annotazioni,
+        'start_date' => $start_date,
+        'end_date' => $end_date,
+        'priorita' => $priorita
+      );
+      $update_format = array('%s', '%s', '%s', '%s', '%d');
+      
       $update_result = $wpdb->update(
         $a_table,
-        array(
-          'oggetto' => $oggetto,
-          'annotazioni' => $annotazioni,
-          'start_date' => WPsCRM_sanitize_date_format($start_date),
-          'end_date' => WPsCRM_sanitize_date_format($end_date),
-          'priorita' => $priorita
-        ),
+        $update_data,
         array('id_agenda' => $id_agenda),
-        array('%s', '%s', '%s', '%s', '%d'),
+        $update_format,
         array('%d')
       );
       
-      error_log("WPsCRM_save_todo: update_result=$update_result");
+      error_log("WPsCRM_save_todo: Final update - start_date='$start_date', end_date='$end_date', update_result=$update_result");
       wp_send_json_success(array('message' => 'Todo aktualisiert', 'id' => $id_agenda));
     }
     // Neuer Eintrag
@@ -1518,13 +1544,15 @@ function WPsCRM_save_todo() {
               ), array('%s', '%s', '%d', '%d')
       );
       $id_sr = $wpdb->insert_id;
+      $converted_start = WPsCRM_sanitize_date_format($start_date);
+      $converted_end = WPsCRM_sanitize_date_format($end_date);
       $wpdb->insert(
               $a_table, array(
           'oggetto' => $oggetto,
           'fk_kunde' => $id_cliente,
           'annotazioni' => $annotazioni,
-          'start_date' => WPsCRM_sanitize_date_format($start_date),
-          'end_date' => WPsCRM_sanitize_date_format($end_date),
+          'start_date' => $converted_start,
+          'end_date' => $converted_end,
           'einstiegsdatum' => $einstiegsdatum,
           'fk_subscriptionrules' => $id_sr,
           'tipo_agenda' => $tipo_agenda,
@@ -1559,32 +1587,48 @@ function WPsCRM_save_appuntamento() {
     $oggetto = isset($_POST['a_oggetto']) ? $_POST['a_oggetto'] : '';
     $priorita = isset($_POST['a_priorita']) ? $_POST['a_priorita'] : '';
     $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
-    $start_date = isset($_POST['a_data_scadenza_inizio']) ? $_POST['a_data_scadenza_inizio'] : '';
-    $end_date = isset($_POST['a_data_scadenza_fine']) ? $_POST['a_data_scadenza_fine'] : '';
+    // TERMIN: Nur start_date (a_data_agenda) - Der Termin ist ein einzelner Zeitpunkt!
+    $start_date = isset($_POST['a_data_agenda']) ? $_POST['a_data_agenda'] : '';
     $einstiegsdatum = date("Y-m-d H:i");
     $annotazioni = isset($_POST['a_annotazioni']) ? $_POST['a_annotazioni'] : '';
     $tipo_agenda = 2; // Appuntamento = 2
     $instantNotification = isset($_POST['instantNotification']) ? $_POST['instantNotification'] : 0;
     
-    error_log("WPsCRM_save_appuntamento: id_agenda=$id_agenda, id_cliente=$id_cliente, oggetto=$oggetto, start_date=$start_date");
+    error_log("WPsCRM_save_appuntamento: id_agenda=$id_agenda, id_cliente=$id_cliente, oggetto=$oggetto, start_date='$start_date'");
     
     // Update bestehender Eintrag
     if ($id_agenda > 0) {
+      // Lade alte Werte aus der Datenbank um Felder zu erhalten die nicht gesendet wurden
+      $old_record = $wpdb->get_row($wpdb->prepare("SELECT start_date FROM $a_table WHERE id_agenda=%d", $id_agenda));
+      
+      // Nutze alte Werte wenn neue Werte leer sind
+      if (empty($start_date) && $old_record) {
+        $start_date = $old_record->start_date;
+        error_log("WPsCRM_save_appuntamento: Using old start_date from DB: $start_date");
+      } elseif (!empty($start_date)) {
+        // Konvertiere neues Datum nur wenn es gesetzt wurde
+        $start_date = WPsCRM_sanitize_date_format($start_date);
+        error_log("WPsCRM_save_appuntamento: Converted new start_date: $start_date");
+      }
+      
+      $update_data = array(
+        'oggetto' => $oggetto,
+        'annotazioni' => $annotazioni,
+        'start_date' => $start_date,
+        'end_date' => $start_date, // Bei Termin: end_date = start_date (einzelner Punkt)
+        'priorita' => $priorita
+      );
+      $update_format = array('%s', '%s', '%s', '%s', '%d');
+      
       $update_result = $wpdb->update(
         $a_table,
-        array(
-          'oggetto' => $oggetto,
-          'annotazioni' => $annotazioni,
-          'start_date' => WPsCRM_sanitize_date_format($start_date),
-          'end_date' => WPsCRM_sanitize_date_format($end_date),
-          'priorita' => $priorita
-        ),
+        $update_data,
         array('id_agenda' => $id_agenda),
-        array('%s', '%s', '%s', '%s', '%d'),
+        $update_format,
         array('%d')
       );
       
-      error_log("WPsCRM_save_appuntamento: update_result=$update_result");
+      error_log("WPsCRM_save_appuntamento: Final update - start_date='$start_date', update_result=$update_result");
       wp_send_json_success(array('message' => 'Termin aktualisiert', 'id' => $id_agenda));
     }
     // Neuer Eintrag
@@ -1599,13 +1643,14 @@ function WPsCRM_save_appuntamento() {
               ), array('%s', '%s', '%d', '%d')
       );
       $id_sr = $wpdb->insert_id;
+      $converted_date = WPsCRM_sanitize_date_format($start_date);
       $insert_result = $wpdb->insert(
               $a_table, array(
           'oggetto' => $oggetto,
           'fk_kunde' => $id_cliente,
           'annotazioni' => $annotazioni,
-          'start_date' => WPsCRM_sanitize_date_format($start_date),
-          'end_date' => WPsCRM_sanitize_date_format($end_date),
+          'start_date' => $converted_date,
+          'end_date' => $converted_date, // Bei Termin: end_date = start_date (einzelner Punkt)
           'einstiegsdatum' => $einstiegsdatum,
           'fk_subscriptionrules' => $id_sr,
           'tipo_agenda' => $tipo_agenda,
@@ -2064,14 +2109,15 @@ function WPsCRM_provenienza($selected) {
   <?php
 }
 
-function WPsCRM_priorita($selected = "Normale") {
-  $arr = array(__('Low', 'cpsmartcrm'), __('Normal', 'cpsmartcrm'), __('High', 'cpsmartcrm'));
+function WPsCRM_priorita($selected = 2) {
+  $arr = array(__('Niedrig', 'cpsmartcrm'), __('Normal', 'cpsmartcrm'), __('Hoch', 'cpsmartcrm'));
   ?>
   <select name="priorita" id="priorita" class="form-control k-dropdown _m _flat">
       <?php
       for ($i = 0; $i < count($arr); $i++) {
+        $value = $i + 1;
         ?>
-        <option value="<?php echo $i + 1 ?>" <?php echo $i + 1 == $selected ? "selected" : "" ?>><?php echo $arr[$i] ?></option>
+        <option value="<?php echo $value ?>" <?php echo $value == intval($selected) ? "selected" : "" ?>><?php echo $arr[$i] ?></option>
         <?php
       }
       ?>
@@ -3260,12 +3306,12 @@ function WPsCRM_inverti_data($data, $sep = "-") {
     return ""; // Ungültiges Format
   }
   
-  // Prüfe ob bereits im Format DD.MM.YYYY (Tag > 12 oder erster Teil = 2-stellig)
+  // Prüfe ob bereits im Format DD.MM.YYYY (Tag zuerst, Jahr am Ende mit 4 Stellen)
   if (strlen($arr_data[0]) <= 2 && strlen($arr_data[2]) == 4) {
-    // Bereits im Format DD.MM.YYYY - nur Trennzeichen auf Punkt ändern
-    $nuova_data = $arr_data[0] . "." . $arr_data[1] . "." . $arr_data[2];
+    // Format DD.MM.YYYY zu YYYY-MM-DD konvertieren (für Datenbank)
+    $nuova_data = $arr_data[2] . "-" . $arr_data[1] . "-" . $arr_data[0];
   } else {
-    // Format YYYY-MM-DD zu DD.MM.YYYY konvertieren
+    // Format YYYY-MM-DD zu DD.MM.YYYY konvertieren (für Anzeige)
     $nuova_data = $arr_data[2] . "." . $arr_data[1] . "." . $arr_data[0];
   }
   
