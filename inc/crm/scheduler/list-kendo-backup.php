@@ -149,18 +149,18 @@ jQuery(document).ready(function ($) {
 <ul class="select-action">
 
         <li onClick="location.href='<?php echo admin_url( 'admin.php?page=smart-crm&p=scheduler/form.php&tipo_agenda=1')?>';return false;" class="btn btn-info btn-sm _flat btn_todo"><i class="glyphicon glyphicon-tag"></i> 
-            <b> <?php _e('NEW TODO','cpsmartcrm')?></b>
+            <b> <?php _e('NEUES TODO','cpsmartcrm')?></b>
         </li>
         <li  onClick="location.href='<?php echo admin_url( 'admin.php?page=smart-crm&p=scheduler/form.php&tipo_agenda=2')?>';return false;" class="btn  btn-sm _flat btn_appuntamento"><i class="glyphicon glyphicon-pushpin"></i> 
-            <b> <?php _e('NEW APPOINTMENT','cpsmartcrm')?></b>
+            <b> <?php _e('NEUER TERMIN','cpsmartcrm')?></b>
         </li>
     <li class="btn  btn-sm _flat" style="background:#ccc;"><span class="crmHelp" data-help="section-scheduler" style="position:relative;top:-3px"></span></li>
         <!--<li  onClick="location.href='?page=smart-crm&p=scheduler/form.php&tipo_agenda=3';return false;" class="btn btn-primary btn-sm _flat btn_activity"><i class="glyphicon glyphicon-option-horizontal"></i> 
-            <b> <?php _e('NEW ACTIVITY','cpsmartcrm')?></b>
+            <b> <?php _e('NEUE AKTIVITÄT','cpsmartcrm')?></b>
         </li>-->
     <span style="float:right;">
         <li class="no-link" style="margin-top:4px">
-            <?php _e('Legend','cpsmartcrm') ?>:
+            <?php _e('Legende,'cpsmartcrm') ?>:
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-ok" style="color:green;font-size:1.3em"></i>

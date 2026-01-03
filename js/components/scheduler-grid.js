@@ -152,19 +152,33 @@
         _initFilterControls: function() {
             const self = this;
 
+            // Hilfsfunktion: DatePicker sicher anlegen oder Stub zurückgeben
+            const safeDatePicker = function(selector) {
+                if (PSCRM.createDatePicker && typeof PSCRM.createDatePicker === 'function') {
+                    try {
+                        return PSCRM.createDatePicker(selector, {
+                            format: (PSCRM.config && PSCRM.config.dateTimeFormat) ? PSCRM.config.dateTimeFormat : 'YYYY-MM-DD HH:mm',
+                            enableTime: true
+                        });
+                    } catch (e) {
+                        console.warn('DatePicker init failed for', selector, e);
+                    }
+                }
+                // Fallback Stub, damit getValue/clear nicht crashen
+                return {
+                    getValue: function() { return null; },
+                    clear: function() {},
+                    destroy: function() {}
+                };
+            };
+
             // DatePicker für Von-Bis
             if (document.getElementById('dateFrom')) {
-                this.dateFilters.from = PSCRM.createDatePicker('#dateFrom', {
-                    format: PSCRM.config.dateTimeFormat,
-                    enableTime: true
-                });
+                this.dateFilters.from = safeDatePicker('#dateFrom');
             }
 
             if (document.getElementById('dateTo')) {
-                this.dateFilters.to = PSCRM.createDatePicker('#dateTo', {
-                    format: PSCRM.config.dateTimeFormat,
-                    enableTime: true
-                });
+                this.dateFilters.to = safeDatePicker('#dateTo');
             }
 
             // Filter Button

@@ -274,10 +274,14 @@
          */
         clear: function() {
             if (this.engine === 'flatpickr') {
-                this.instance.clear();
+                if (this.instance && this.instance.config) {
+                    this.instance.clear();
+                } else if (this.element) {
+                    this.element.value = '';
+                }
             } else if (this.engine === 'jquery-ui') {
                 jQuery(this.element).datepicker('setDate', null);
-            } else {
+            } else if (this.element) {
                 this.element.value = '';
             }
         },

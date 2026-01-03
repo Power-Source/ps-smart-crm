@@ -31,16 +31,16 @@ $options = get_option('CRM_general_settings');
 <ul class="select-action">
     <li onClick="location.href='<?php echo admin_url( 'admin.php?page=smart-crm&p=scheduler/form.php&tipo_agenda=1')?>';return false;" class="btn btn-info btn-sm _flat btn_todo">
         <i class="glyphicon glyphicon-tag"></i> 
-        <b><?php _e('NEW TODO','cpsmartcrm')?></b>
+        <b><?php _e('NEUES TODO','cpsmartcrm')?></b>
     </li>
     <li onClick="location.href='<?php echo admin_url( 'admin.php?page=smart-crm&p=scheduler/form.php&tipo_agenda=2')?>';return false;" class="btn btn-sm _flat btn_appuntamento">
         <i class="glyphicon glyphicon-pushpin"></i> 
-        <b><?php _e('NEW APPOINTMENT','cpsmartcrm')?></b>
+        <b><?php _e('NEUER TERMIN','cpsmartcrm')?></b>
     </li>
     
     <span style="float:right;">
         <li class="no-link" style="margin-top:4px">
-            <?php _e('Legend','cpsmartcrm') ?>:
+            <?php _e('Legende','cpsmartcrm') ?>:
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-ok" style="color:green;font-size:1.3em"></i>
@@ -55,7 +55,7 @@ $options = get_option('CRM_general_settings');
             <?php _e('Abgesagt','cpsmartcrm') ?>
         </li>
         <li class="no-link">
-            <span class="tipped" style="width:13px;height:13px;display:inline-flex" title="<?php _e('Mouse over to display info','cpsmartcrm')?>"></span>
+            <span class="tipped" style="width:13px;height:13px;display:inline-flex" title="<?php _e('Bewege den Mauszeiger darüber, um weitere Informationen anzuzeigen.
             Info tooltip
         </li>
     </span>
@@ -81,8 +81,6 @@ jQuery(document).ready(function($) {
     
     // Scheduler Grid erstellen
     const schedulerGrid = PSCRM.createSchedulerGrid('#grid', gridOptions);
-    
-    console.log('✅ Vanilla.js Scheduler Grid initialisiert');
     
     // Activity Modal Handler (für bereits implementierte Kendo Fenster)
     $(document).on('click', '#save_activity_from_modal', function () {
