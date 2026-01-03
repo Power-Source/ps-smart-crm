@@ -460,6 +460,16 @@ function smart_crm_menu(){
                 ''
                 );
     }
+
+    // Buchhaltung (neu)
+    add_submenu_page(
+        'smart-crm',
+        __('CP SMART CRM Buchhaltung', 'cpsmartcrm'),
+        __('Buchhaltung', 'cpsmartcrm'),
+        'manage_crm',
+        'admin.php?page=smart-crm&p=accounting/dashboard.php',
+        ''
+        );
 }
 //$options=get_option('CRM_general_settings');
 //if(isset($options['services']) && $options['services']==1)
