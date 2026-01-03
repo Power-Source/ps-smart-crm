@@ -13,7 +13,7 @@ $current_user = wp_get_current_user();
     <li role="presentation" <?php echo ( $active[0]=="page=smart-crm" && count($active) ==0 || $active[0]=="page=smart-crm" && strstr($menu,"view") || $_SERVER['QUERY_STRING'] =="page=smart-crm" ) ? "class=\"active\"" :null  ?>>
         <a href="<?php echo admin_url('admin.php?page=smart-crm')?>"><i class="glyphicon glyphicon-home"></i> <?php _e('Dashboard','cpsmartcrm') ?></a>
 	</li>
-    <li role="presentation" <?php echo strstr($menu,"clienti") ? "class=\"active\"" :null  ?>>
+    <li role="presentation" <?php echo strstr($menu,"kunde") ? "class=\"active\"" :null  ?>>
         <?php if(!isset($privileges) || $privileges['customer'] >0){?>
         <a href="<?php echo admin_url('admin.php?page=smart-crm&p=kunde/list.php')?>"><i class="glyphicon glyphicon-user"></i> <?php _e('Kunden','cpsmartcrm') ?></a>
         <?php } else{ ?>
@@ -24,7 +24,7 @@ $current_user = wp_get_current_user();
         <?php if(!isset($privileges) || $privileges['customer'] >0){?>
         <ul>
 
-            <li role="presentation" <?php echo strstr($menu,"clienti") ? "class=\"active\"" :null  ?>>
+            <li role="presentation" <?php echo strstr($menu,"kunde") ? "class=\"active\"" :null  ?>>
                 <a href="<?php echo admin_url('admin.php?page=smart-crm&p=kunde/list.php')?>">
                     <i class="glyphicon glyphicon-align-justify"></i>
                     <?php _e('LISTE','cpsmartcrm')?>&raquo;

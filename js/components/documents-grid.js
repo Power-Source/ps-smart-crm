@@ -171,7 +171,7 @@
             },
             {
                 title: 'Kontakt',
-                data: 'ragione_sociale',
+                data: 'firmenname',
                 render: function(data, type, row) {
                     return `<a href="${baseUrl}&p=kunde/form.php&ID=${row.fk_kunde}">${data}</a>`;
                 }

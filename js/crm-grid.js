@@ -394,7 +394,7 @@
             height: options.height || 600,
             columns: [
                 { field: 'id', title: 'ID', width: '80px' },
-                { field: 'nome', title: 'Name' },
+                { field: 'name', title: 'Name' },
                 { field: 'email', title: 'Email' },
                 { field: 'telefono', title: 'Telefon' },
                 { field: 'kategorien', title: 'Kategorien', hidden: !options.showCategories },

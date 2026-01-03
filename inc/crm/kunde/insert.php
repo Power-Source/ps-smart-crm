@@ -15,9 +15,9 @@ else {
 	foreach ( $_GET as $chiave => $valore )
 		${$chiave}=$valore;
 
-	$data_inserimento=date("Y-m-d");
+	$einstiegsdatum=date("Y-m-d");
 	$data_modifica=date("Y-m-d");
-	$data_nascita=WPsCRM_inverti_data($_POST["data_nascita"]);
+	$geburtsdatum=WPsCRM_inverti_data($_POST["geburtsdatum"]);
 	$cur_year=date("Y");
 	$current_user = wp_get_current_user();
     if ( WPsCRM_is_agent() && !WPsCRM_agent_can())
@@ -27,7 +27,7 @@ else {
 	{
 		$wpdb->update(
 			  $table,
-			  array('FK_aziende' => "$ID_azienda",'nome' => "$nome",'cognome' => "$cognome",'categoria' => "$customerCategory",'ragione_sociale' => "$ragione_sociale",'indirizzo' => "$indirizzo",'cap' => "$cap", 'localita' => "$localita", 'provincia' => "$provincia", 'nazione' => "$nazione", 'telefono1' => "$telefono1",'telefono2' => "$telefono2",'fax' => $fax, 'email' => $email, 'sitoweb' => $sitoweb, 'skype' => $skype, 'p_iva' => $p_iva, 'cod_fis' => $cod_fis, 'annotazioni' => $annotazioni,'data_modifica'=>$data_modifica,'provenienza'=>$customerComesfrom,'agente'=>$selectAgent,'data_nascita'=>"$data_nascita",'luogo_nascita'=>"$luogo_nascita",'tipo_cliente'=>"$tipo_cliente", 'interessi'=>"$customerInterests"),
+			  array('FK_aziende' => "$ID_azienda",'name' => "$name",'nachname' => "$nachname",'categoria' => "$customerCategory",'firmenname' => "$firmenname",'adresse' => "$adresse",'cap' => "$cap", 'standort' => "$standort", 'provinz' => "$provinz", 'nation' => "$nation", 'telefono1' => "$telefono1",'telefono2' => "$telefono2",'fax' => $fax, 'email' => $email, 'sitoweb' => $sitoweb, 'skype' => $skype, 'p_iva' => $p_iva, 'cod_fis' => $cod_fis, 'annotazioni' => $annotazioni,'data_modifica'=>$data_modifica,'provenienza'=>$customerComesfrom,'agente'=>$selectAgent,'geburtsdatum'=>"$geburtsdatum",'luogo_nascita'=>"$luogo_nascita",'tipo_cliente'=>"$tipo_cliente", 'interessi'=>"$customerInterests"),
 			array('ID_kunde'=>$ID),
 			  array('%d','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%d', '%s', '%s','%d','%s')
 		);
@@ -36,7 +36,7 @@ else {
 	{
 		$wpdb->insert(
 			  $table,
-			  array('FK_aziende' => "$ID_azienda",'nome' => "$nome",'cognome' => "$cognome",'categoria' => "$customerCategory",'ragione_sociale' => "$ragione_sociale",'indirizzo' => "$indirizzo",'cap' => "$cap", 'localita' => "$localita", 'provincia' => "$provincia", 'nazione' => "$nazione", 'telefono1' => "$telefono1",'telefono2' => "$telefono2",'fax' => $fax, 'email' => $email, 'sitoweb' => $sitoweb, 'skype' => $skype, 'p_iva' => $p_iva, 'cod_fis' => $cod_fis, 'annotazioni' => $annotazioni,'data_modifica'=>"$data_modifica",'data_inserimento'=>"$data_inserimento",'provenienza'=>"$customerComesfrom",'agente'=>$selectAgent,'data_nascita'=>"$data_nascita",'luogo_nascita'=>"$luogo_nascita",'tipo_cliente'=>"$tipo_cliente", 'interessi'=>"$customerInterests"),
+			  array('FK_aziende' => "$ID_azienda",'name' => "$name",'nachname' => "$nachname",'categoria' => "$customerCategory",'firmenname' => "$firmenname",'adresse' => "$adresse",'cap' => "$cap", 'standort' => "$standort", 'provinz' => "$provinz", 'nation' => "$nation", 'telefono1' => "$telefono1",'telefono2' => "$telefono2",'fax' => $fax, 'email' => $email, 'sitoweb' => $sitoweb, 'skype' => $skype, 'p_iva' => $p_iva, 'cod_fis' => $cod_fis, 'annotazioni' => $annotazioni,'data_modifica'=>"$data_modifica",'einstiegsdatum'=>"$einstiegsdatum",'provenienza'=>"$customerComesfrom",'agente'=>$selectAgent,'geburtsdatum'=>"$geburtsdatum",'luogo_nascita'=>"$luogo_nascita",'tipo_cliente'=>"$tipo_cliente", 'interessi'=>"$customerInterests"),
 			  array('%d','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%d', '%s','%s','%d','%s')
 		);
 	}
@@ -83,8 +83,8 @@ else {
 		$userdata=array();
 		$userdata['CRM_username']=$_POST["username"];
 		$userdata['CRM_password']= $_POST["password"];
-		$userdata['CRM_firstname']=$nome;
-		$userdata['CRM_lastname']=$cognome;
+		$userdata['CRM_firstname']=$name;
+		$userdata['CRM_lastname']=$nachname;
 		$userdata['CRM_ID']=$ID_ret;
 		$userdata['CRM_email']=$_POST['email'];
 		$user_id=apply_filters( 'WPsCRM_add_User',$userdata);

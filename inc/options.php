@@ -287,11 +287,11 @@ class CRM_Options_Settings{
 		</div>
 		<div class="item xml_mandatory">
 			<label><?php _e('Staat/Provinz', 'wp-smart-crm-invoices-pro') ?> ( <span style="color:red"> * </span> )</label><br />
-			<input type="text" id="crm_business_provincia" name="CRM_business_settings[crm_business_provincia]" value="<?php echo isset($options['crm_business_provincia']) ? esc_attr($options['crm_business_provincia']) : "" ?>" required data-parsley-required-message="<?php _e('Staat/Provinz ist erforderlich','cpsmartcrm')?>" class="form-control _m" />
+			<input type="text" id="crm_business_provinz" name="CRM_business_settings[crm_business_provinz]" value="<?php echo isset($options['crm_business_provinz']) ? esc_attr($options['crm_business_provinz']) : "" ?>" required data-parsley-required-message="<?php _e('Staat/Provinz ist erforderlich','cpsmartcrm')?>" class="form-control _m" />
 		</div>
 		<div class="item xml_mandatory">
 			<label><?php _e('Land', 'wp-smart-crm-invoices-pro') ?> ( <span style="color:red"> * </span> )</label><br />
-			<select data-nazione="<?php if (isset($options['business_country'])) echo esc_attr($options['business_country']) ?>" id="nazione" name="CRM_business_settings[business_country]" size="20" maxlength='50'>
+			<select data-nation="<?php if (isset($options['business_country'])) echo esc_attr($options['business_country']) ?>" id="nation" name="CRM_business_settings[business_country]" size="20" maxlength='50'>
 				<?php
 				if (isset($options['business_country']))
 					echo stripslashes(WPsCRM_get_countries(esc_attr($options['business_country'])));
@@ -374,11 +374,11 @@ class CRM_Options_Settings{
 			</style>
 			<script>
 			jQuery(document).ready(function($){
-				$('#nazione').select2({
+				$('#nation').select2({
 					placeholder: "<?php _e('Land auswählen','cpsmartcrm') ?>...",
 					width: '50%'
 				});
-				$('#nazione').val('<?php echo isset($options['business_country']) ? $options['business_country'] : 'DE' ?>').trigger('change');
+				$('#nation').val('<?php echo isset($options['business_country']) ? $options['business_country'] : 'DE' ?>').trigger('change');
 
 				// Parsley initialisieren
 				$("form").parsley();
@@ -1032,7 +1032,7 @@ class CRM_Options_Settings{
 				<div id="_header_offers_numbering">
 					<div class="widget col-md-5 pull-right">
 						<h3><span class="crmHelp crmHelp-dark" data-help="document-numbering"></span>
-							<?php _e('Einstellungen für die Nummerierung von Angeboten','cpsmartcrm')?>
+							<?php _e('Einstellungen für die Nummerierung von Angebote','cpsmartcrm')?>
 						</h3>
 						<div>
 							<div class="col-md-10">

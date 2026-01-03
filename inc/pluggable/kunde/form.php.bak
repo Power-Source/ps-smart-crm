@@ -7,7 +7,7 @@ function WPsCRM_display_customer_form() {
     $update_nonce= wp_create_nonce( "update_customer" );
     $scheduler_nonce = wp_create_nonce( "update_scheduler" );
     $ID = isset($_REQUEST["ID"])?$_REQUEST["ID"]:0;
-    // fallback: some installs created table as 'clienti'
+    // fallback: some installs created table as 'kunde'
     $table = WPsCRM_get_customer_table();
     $pk = WPsCRM_get_customer_pk($table);
     $ID_azienda = "1";
@@ -19,29 +19,29 @@ function WPsCRM_display_customer_form() {
     $custom_tax = "";
     $riga = array(
         "agente" => "",
-        "ragione_sociale" => "",
-        "nome" => "",
-        "cognome" => "",
+        "firmenname" => "",
+        "name" => "",
+        "nachname" => "",
         "email" => "",
         "custom_tax" => "",
         "annotazioni" => "",
         "categoria" => "",
         "provenienza" => "",
         "interessi" => "",
-        "fatturabile" => "",
+        "abrechnungsmodus" => "",
         "tipo_cliente" => "",
-        "nazione" => "",
+        "nation" => "",
         "cod_fis" => "",
         "p_iva" => "",
-        "indirizzo" => "",
+        "adresse" => "",
         "cap" => "",
-        "localita" => "",
-        "provincia" => "",
+        "standort" => "",
+        "provinz" => "",
         "telefono1" => "",
         "fax" => "",
         "telefono2" => "",
         "luogo_nascita" => "",
-        "data_nascita" => "",
+        "geburtsdatum" => "",
         "sitoweb" => "",
         "note" => "",
         "skype" => "",
@@ -73,7 +73,7 @@ if ( $ID )
         $riga = array_merge($riga, $riga_db);
     }
     $agente = isset($riga["agente"]) ? $riga["agente"] : "";
-    $cliente = !empty($riga["ragione_sociale"]) ? $riga["ragione_sociale"] : trim((isset($riga["nome"]) ? $riga["nome"] : "")." ".(isset($riga["cognome"]) ? $riga["cognome"] : ""));
+    $cliente = !empty($riga["firmenname"]) ? $riga["firmenname"] : trim((isset($riga["name"]) ? $riga["name"] : "")." ".(isset($riga["nachname"]) ? $riga["nachname"] : ""));
     $cliente = stripslashes( $cliente );
     $email = isset($riga['email']) ? $riga['email'] : "";
     $custom_tax = maybe_unserialize( isset($riga['custom_tax']) ? $riga['custom_tax'] : "" );
@@ -201,11 +201,11 @@ jQuery(document).ready(function ($) {
     });
 
     // jQuery UI Datepicker
-    $("#data_inserimento").datepicker({
+    $("#einstiegsdatum").datepicker({
         dateFormat: "dd.mm.yy",
         defaultDate: new Date()
     });
-    $("#data_nascita").datepicker({
+    $("#geburtsdatum").datepicker({
         dateFormat: "dd.mm.yy"
     });
 
@@ -240,18 +240,18 @@ jQuery(document).ready(function ($) {
     }
 
     // LAND (Select2)
-    $('#nazione').select2({
+    $('#nation').select2({
         placeholder: "<?php _e('Land auswählen','cpsmartcrm') ?>...",
         width: '100%'
     });
     // Felder aktivieren/deaktivieren je nach Land
-    var country = $('#nazione').val();
+    var country = $('#nation').val();
     if (country != "0") {
         $('._toCheck').attr({ 'readonly': false, 'title': '' });
     } else {
         $('._toCheck').attr({ 'readonly': 'readonly', 'title': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...', 'alt': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...' });
     }
-    $('#nazione').on('change', function () {
+    $('#nation').on('change', function () {
         if ($(this).val() != "0") {
             $('._toCheck').attr({ 'readonly': false, 'title': '' });
         } else {
@@ -337,8 +337,8 @@ jQuery(document).ready(function ($) {
     });
     window.Parsley.addValidator('fiscalcode', {
         validateString: function(value) {
-            var country = $('#nazione').val();
-            if ($('#fatturabile_1').is(':checked')) {
+            var country = $('#nation').val();
+            if ($('#abrechnungsmodus_1').is(':checked')) {
                 if (value === "" && $('#p_iva').val() === "") return false;
                 if (country === "DE" && value.length !== 16) return false;
             }
@@ -350,7 +350,7 @@ jQuery(document).ready(function ($) {
     });
 
     // Parsley-Felder zuweisen
-    $('#nazione').attr('data-parsley-country', '');
+    $('#nation').attr('data-parsley-country', '');
     $('#cod_fis').attr('data-parsley-fiscalcode', '');
 
     // Speichern-Button
@@ -453,7 +453,7 @@ jQuery(document).ready(function ($) {
 			if ($ID){
             ?>
             <li id="tab2"><?php _e('Kontakte','cpsmartcrm')?></li>
-            <li id="tab3"><?php _e('Angeboten','cpsmartcrm')?></li>
+            <li id="tab3"><?php _e('Angebote','cpsmartcrm')?></li>
             <li id="tab4"><?php _e('Zusammenfassung','cpsmartcrm')?></li>
             <?php 
 				do_action('WPsCRM_add_tabs_to_customer_form');
@@ -467,7 +467,7 @@ jQuery(document).ready(function ($) {
 						<?php _e('Datum','cpsmartcrm')?>
 					</label>
 					<div class="col-sm-2">
-						<input type="text" id="data_inserimento" name="data_inserimento" />
+						<input type="text" id="einstiegsdatum" name="einstiegsdatum" />
 					</div>
 					<?php do_action('WPsCRM_display_anagrafiche_in_form') ?>
 
@@ -477,8 +477,8 @@ jQuery(document).ready(function ($) {
 						<?php _e('Rechnungspflichtig?','cpsmartcrm')?>
 					</label>
 					<div class="col-sm-4">
-                        <span style="margin-right:20px"><input type="radio" name="fatturabile" id="fatturabile_1" value="1" <?php if (isset($riga) && $riga["fatturabile"]==1) echo "checked"?> /><?php _e('Ja','cpsmartcrm')?></span>
-                        <span><input type="radio" name="fatturabile" id="fatturabile_2" value="0" <?php if ((isset($riga) && $riga["fatturabile"]==0) || !isset($riga)) echo "checked"?> /><?php _e('Nein','cpsmartcrm')?></span>
+                        <span style="margin-right:20px"><input type="radio" name="abrechnungsmodus" id="abrechnungsmodus_1" value="1" <?php if (isset($riga) && $riga["abrechnungsmodus"]==1) echo "checked"?> /><?php _e('Ja','cpsmartcrm')?></span>
+                        <span><input type="radio" name="abrechnungsmodus" id="abrechnungsmodus_2" value="0" <?php if ((isset($riga) && $riga["abrechnungsmodus"]==0) || !isset($riga)) echo "checked"?> /><?php _e('Nein','cpsmartcrm')?></span>
 					</div>
 
 					<label class="col-sm-1 control-label">
@@ -492,11 +492,11 @@ jQuery(document).ready(function ($) {
                 <div class="row form-group">
                     <label class="col-sm-1 control-label"><?php _e('Land','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <select data-nazione="<?php if(isset($riga)) echo $riga["nazione"]?>" id="nazione" name="nazione" size="20" maxlength='50'><?php if(isset($riga['nazione'])) echo stripslashes( WPsCRM_get_countries($riga["nazione"]) ); else echo stripslashes( WPsCRM_get_countries('DE'))?></select>
+                        <select data-nation="<?php if(isset($riga)) echo $riga["nation"]?>" id="nation" name="nation" size="20" maxlength='50'><?php if(isset($riga['nation'])) echo stripslashes( WPsCRM_get_countries($riga["nation"]) ); else echo stripslashes( WPsCRM_get_countries('DE'))?></select>
                     </div>
                     <label class="col-sm-1 control-label"><?php _e('Firmenname','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <input type="text" name="ragione_sociale" maxlength='250' value="<?php if(isset($riga)) echo stripslashes($riga["ragione_sociale"])?>" class="form-control">
+                        <input type="text" name="firmenname" maxlength='250' value="<?php if(isset($riga)) echo stripslashes($riga["firmenname"])?>" class="form-control">
                     </div>
                 </div>
                 <div class="row form-group">
@@ -512,17 +512,17 @@ jQuery(document).ready(function ($) {
                 <div class="row form-group">
                     <label class="col-sm-1 control-label"><?php _e('Vorname','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <input type="text" name="nome" value="<?php if(isset($riga)) echo stripslashes($riga["nome"])?>" class="form-control">
+                        <input type="text" name="name" value="<?php if(isset($riga)) echo stripslashes($riga["name"])?>" class="form-control">
                     </div>
                     <label class="col-sm-1 control-label"><?php _e('Nachname','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <input type="text" name="cognome" value="<?php if(isset($riga)) echo stripslashes($riga["cognome"])?>" class="form-control">
+                        <input type="text" name="nachname" value="<?php if(isset($riga)) echo stripslashes($riga["nachname"])?>" class="form-control">
                     </div>
                 </div>
                 <div class="row form-group">
                     <label class="col-sm-1 control-label"><?php _e('Addresse','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <input type="text" name="indirizzo" size="50" maxlength='50' value="<?php if(isset($riga)) echo stripslashes($riga["indirizzo"])?>" class="form-control">
+                        <input type="text" name="adresse" size="50" maxlength='50' value="<?php if(isset($riga)) echo stripslashes($riga["adresse"])?>" class="form-control">
                     </div>
                     <label class="col-sm-1 control-label"><?php _e('PLZ','cpsmartcrm')?></label>
                     <div class="col-sm-4">
@@ -532,11 +532,11 @@ jQuery(document).ready(function ($) {
                 <div class="row form-group">
                     <label class="col-sm-1 control-label"><?php _e('Stadt','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <input type="text" name="localita" size="50" maxlength='55' value="<?php if(isset($riga)) echo stripslashes($riga["localita"])?>" class="form-control">
+                        <input type="text" name="standort" size="50" maxlength='55' value="<?php if(isset($riga)) echo stripslashes($riga["standort"])?>" class="form-control">
                     </div>
                     <label class="col-sm-1 control-label"><?php _e('Staat/Prov.','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <input type="text" name="provincia" size="5" maxlength='5' value="<?php if(isset($riga)) echo $riga["provincia"]?>" class="form-control">
+                        <input type="text" name="provinz" size="5" maxlength='5' value="<?php if(isset($riga)) echo $riga["provinz"]?>" class="form-control">
                     </div>
                 </div>
                 <div class="row form-group">
@@ -581,7 +581,7 @@ jQuery(document).ready(function ($) {
                 <div class="row form-group">
                     <label class="col-sm-1 control-label"><?php _e('Geburtsdatum','cpsmartcrm')?></label>
                     <div class="col-sm-4">
-                        <input type="text" id="data_nascita" name="data_nascita" value="<?php if(isset($riga)) echo WPsCRM_inverti_data($riga["data_nascita"])?>">
+                        <input type="text" id="geburtsdatum" name="geburtsdatum" value="<?php if(isset($riga)) echo WPsCRM_inverti_data($riga["geburtsdatum"])?>">
                     </div>
                     <label class="col-sm-1 control-label"><?php _e('Kategorie','cpsmartcrm')?></label>
                     <div class="col-sm-4">
@@ -716,7 +716,7 @@ jQuery(document).ready(function ($) {
         <!--TAB 3 -->
 
         <div>
-            <!--<h2 style="text-align:center"><?php _e('Angeboten','cpsmartcrm')?></h2>-->
+            <!--<h2 style="text-align:center"><?php _e('Angebote','cpsmartcrm')?></h2>-->
             <div style="min-height: 200px">
                 <div id="annotation">
                     <h3 style="text-align:center"><?php _e('Notizen-Zeitleiste','cpsmartcrm')?> 
@@ -951,11 +951,11 @@ jQuery(document).ready(function ($) {
     });
 
     // --- NEU: jQuery UI Datepicker statt Kendo ---
-    $("#data_inserimento").datepicker({
+    $("#einstiegsdatum").datepicker({
         dateFormat: "dd.mm.yy",
         defaultDate: new Date()
     });
-    $("#data_nascita").datepicker({
+    $("#geburtsdatum").datepicker({
         dateFormat: "dd.mm.yy"
     });
 
@@ -993,18 +993,18 @@ jQuery(document).ready(function ($) {
 			}
 
 			// LAND (Select2)
-			$('#nazione').select2({
+			$('#nation').select2({
 				placeholder: "<?php _e('Land auswählen','cpsmartcrm') ?>...",
 				width: '100%'
 			});
 			// Felder aktivieren/deaktivieren je nach Land
-			var country = $('#nazione').val();
+			var country = $('#nation').val();
 			if (country != "0") {
 				$('._toCheck').attr({ 'readonly': false, 'title': '' });
 			} else {
 				$('._toCheck').attr({ 'readonly': 'readonly', 'title': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...', 'alt': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...' });
 			}
-			$('#nazione').on('change', function () {
+			$('#nation').on('change', function () {
 				if ($(this).val() != "0") {
 					$('._toCheck').attr({ 'readonly': false, 'title': '' });
 				} else {

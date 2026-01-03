@@ -71,7 +71,7 @@ class CRM_mail{
 		//echo "IDAGENDA:".$this->ID_agenda."<br><br>";
 		//echo "sono in __construct<br>";
 		//echo "il cliente è:<br> ";
-		//echo "nome: ".$this->oCustomer->get_customer()->name."<br>";
+		//echo "name: ".$this->oCustomer->get_customer()->name."<br>";
 		//echo "Email:".$this->customerEmail."<br>";
 		//echo "ID: ".$this->oCustomer->get_customer()->customer_id."<br><br>";
 		////echo "La rule è: ".$this->get_activity($this->ID_agenda)->rule."<br>";
@@ -133,9 +133,9 @@ class CRM_mail{
 		$table=WPsCRM_TABLE."kunde";
 		global $wpdb;
 
-		$data=$wpdb->get_row( "SELECT nome, cognome, ragione_sociale FROM $table WHERE ID_kunde =$id" ) ;
+		$data=$wpdb->get_row( "SELECT name, nachname, firmenname FROM $table WHERE ID_kunde =$id" ) ;
 
-		$data->ragione_sociale !="" ? $name=$data->ragione_sociale : $name=$data->nome. " ". $data->cognome;
+		$data->firmenname !="" ? $name=$data->firmenname : $name=$data->name. " ". $data->nachname;
 
 		if($print ==1)
 			echo $name;

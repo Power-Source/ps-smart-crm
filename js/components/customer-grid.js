@@ -59,18 +59,18 @@
         _getColumns: function() {
             const columns = [
                 {
-                    field: 'ID_clienti',
+                    field: 'ID_kunde',
                     title: 'ID',
                     width: '50px',
                     hidden: true
                 },
                 {
-                    field: 'ragione_sociale',
+                    field: 'firmenname',
                     title: 'Firmenname',
                     width: '150px'
                 },
                 {
-                    field: 'indirizzo',
+                    field: 'adresse',
                     title: 'Adresse',
                     width: '150px'
                 },
@@ -131,19 +131,19 @@
                 render: function(data, type, row) {
                     if (type === 'display') {
                         return `
-                            <button class="btn btn-sm _flat btn-edit" data-id="${row.ID_clienti}" title="Bearbeiten">
+                            <button class="btn btn-sm _flat btn-edit" data-id="${row.ID_kunde}" title="Bearbeiten">
                                 <i class="glyphicon glyphicon-pencil"></i> Bearbeiten
                             </button>
-                            <button class="btn btn-sm btn-danger _flat btn-delete" data-id="${row.ID_clienti}" title="Löschen">
+                            <button class="btn btn-sm btn-danger _flat btn-delete" data-id="${row.ID_kunde}" title="Löschen">
                                 <i class="glyphicon glyphicon-trash"></i> Löschen
                             </button>
-                            <button class="btn btn-sm btn-info _flat btn-todo" data-id="${row.ID_clienti}" data-name="${PSCRM.utils.escapeHtml(row.ragione_sociale)}" title="TODO">
+                            <button class="btn btn-sm btn-info _flat btn-todo" data-id="${row.ID_kunde}" data-name="${PSCRM.utils.escapeHtml(row.firmenname)}" title="TODO">
                                 <i class="glyphicon glyphicon-tag"></i>
                             </button>
-                            <button class="btn btn-sm btn_appuntamento_1 _flat btn-appointment" data-id="${row.ID_clienti}" data-name="${PSCRM.utils.escapeHtml(row.ragione_sociale)}" title="Termin">
+                            <button class="btn btn-sm btn_appuntamento_1 _flat btn-appointment" data-id="${row.ID_kunde}" data-name="${PSCRM.utils.escapeHtml(row.firmenname)}" title="Termin">
                                 <i class="glyphicon glyphicon-pushpin"></i>
                             </button>
-                            <button class="btn btn-sm btn-primary _flat btn-activity" data-id="${row.ID_clienti}" data-name="${PSCRM.utils.escapeHtml(row.ragione_sociale)}" title="Aktivität">
+                            <button class="btn btn-sm btn-primary _flat btn-activity" data-id="${row.ID_kunde}" data-name="${PSCRM.utils.escapeHtml(row.firmenname)}" title="Aktivität">
                                 <i class="glyphicon glyphicon-option-horizontal"></i>
                             </button>
                         `;
@@ -246,8 +246,8 @@
             // Modal für TODO öffnen
             if (window.jQuery && jQuery('#dialog_todo').length) {
                 jQuery('#dialog_todo').attr('data-fkcliente', id);
-                if (jQuery('.nome_cliente').length) {
-                    jQuery('.nome_cliente').html(name);
+                if (jQuery('.name_cliente').length) {
+                    jQuery('.name_cliente').html(name);
                 }
                 
                 // Öffne Modal
@@ -261,8 +261,8 @@
             // Modal für Termin öffnen
             if (window.jQuery && jQuery('#dialog_appuntamento').length) {
                 jQuery('#dialog_appuntamento').attr('data-fkcliente', id);
-                if (jQuery('.nome_cliente').length) {
-                    jQuery('.nome_cliente').html(name);
+                if (jQuery('.name_cliente').length) {
+                    jQuery('.name_cliente').html(name);
                 }
                 jQuery('#dialog_appuntamento').show();
             }
@@ -272,8 +272,8 @@
             // Modal für Aktivität öffnen
             if (window.jQuery && jQuery('#dialog_attivita').length) {
                 jQuery('#dialog_attivita').attr('data-fkcliente', id);
-                if (jQuery('.nome_cliente').length) {
-                    jQuery('.nome_cliente').html(name);
+                if (jQuery('.name_cliente').length) {
+                    jQuery('.name_cliente').html(name);
                 }
                 jQuery('#dialog_attivita').show();
             }

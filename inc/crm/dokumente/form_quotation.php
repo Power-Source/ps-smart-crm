@@ -42,20 +42,20 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
     $totale_netto = $riga["totale_netto"];
     $FK_contatti = $riga["FK_contatti"];
     if ($fk_kunde = $riga["fk_kunde"]) {
-      $sql = "select ragione_sociale, nome, cognome, indirizzo, cap, localita, provincia, cod_fis, p_iva, tipo_cliente from $c_table where ID_kunde=" . $fk_kunde;
+      $sql = "select firmenname, name, nachname, adresse, cap, standort, provinz, cod_fis, p_iva, tipo_cliente from $c_table where ID_kunde=" . $fk_kunde;
       $rigac = $wpdb->get_row($sql, ARRAY_A);
-      $cliente = $rigac["ragione_sociale"] ? $rigac["ragione_sociale"] : $rigac["nome"] . " " . $rigac["cognome"];
+      $cliente = $rigac["firmenname"] ? $rigac["firmenname"] : $rigac["name"] . " " . $rigac["nachname"];
       $cliente = stripslashes($cliente);
-      $indirizzo = stripslashes($rigac["indirizzo"]);
+      $adresse = stripslashes($rigac["adresse"]);
       $cap = $rigac["cap"];
-      $localita = stripslashes($rigac["localita"]);
-      $provincia = $rigac["provincia"];
+      $standort = stripslashes($rigac["standort"]);
+      $provinz = $rigac["provinz"];
       $cod_fis = $rigac["cod_fis"];
       $p_iva = $rigac["p_iva"];
       $tipo_cliente = $rigac["tipo_cliente"];
     }
     if ($riga["FK_contatti"]) {
-      $sql = "select concat(nome,' ', cognome) as contatto from ana_contatti where ID_contatti=" . $riga["FK_contatti"];
+      $sql = "select concat(name,' ', nachname) as contatto from ana_contatti where ID_contatti=" . $riga["FK_contatti"];
       $rigac = $wpdb->get_row($sql, ARRAY_A);
       $contatto = $rigac["contatto"];
     }
@@ -219,7 +219,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                       <label class="col-sm-1 control-label"><?php _e('Addresse', 'wp-smart-crm-invoices-pro') ?></label>
                       <div class="col-sm-2 col-md-2 col-lg-3">
 
-                          <input type="text" class="form-control _editable" name="indirizzo" id="indirizzo" maxlength='50' value="<?php if (isset($indirizzo)) echo $indirizzo ?>" <?php echo $disabled ?> data-value="<?php if (isset($indirizzo)) echo $indirizzo ?>" />
+                          <input type="text" class="form-control _editable" name="adresse" id="adresse" maxlength='50' value="<?php if (isset($adresse)) echo $adresse ?>" <?php echo $disabled ?> data-value="<?php if (isset($adresse)) echo $adresse ?>" />
 
                       </div>
                       <label class="col-sm-1 control-label"><?php _e('PLZ', 'wp-smart-crm-invoices-pro') ?></label>
@@ -238,13 +238,13 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                       <label class="col-sm-1 control-label"><?php _e('Stadt', 'wp-smart-crm-invoices-pro') ?></label>
                       <div class="col-sm-2 col-md-2 col-lg-3">
 
-                          <input type="text" class="form-control _editable" name="localita" id="localita" maxlength='50' value="<?php if (isset($localita)) echo $localita ?>" <?php echo $disabled ?> data-value="<?php if (isset($localita)) echo $localita ?>">
+                          <input type="text" class="form-control _editable" name="standort" id="standort" maxlength='50' value="<?php if (isset($standort)) echo $standort ?>" <?php echo $disabled ?> data-value="<?php if (isset($standort)) echo $standort ?>">
 
                       </div>
                       <label class="col-sm-1 control-label"><?php _e('Staat/Prov.', 'wp-smart-crm-invoices-pro') ?></label>
                       <div class="col-sm-2">
 
-                          <input type="text" class="form-control _editable" name="provincia" id="provincia" maxlength='20' value="<?php if (isset($provincia)) echo $provincia ?>" <?php echo $disabled ?> data-value="<?php if (isset($provincia)) echo $provincia ?>">
+                          <input type="text" class="form-control _editable" name="provinz" id="provinz" maxlength='20' value="<?php if (isset($provinz)) echo $provinz ?>" <?php echo $disabled ?> data-value="<?php if (isset($provinz)) echo $provinz ?>">
 
                       </div>
                       <label class="col-sm-1 control-label"><?php _e('Umsatzsteuer-ID', 'wp-smart-crm-invoices-pro') ?></label>
@@ -430,7 +430,7 @@ jQuery(document).ready(function ($) {
                     results: $.map(data.clients, function (obj) {
                         return {
                             id: obj.ID_kunde,
-                            text: obj.ragione_sociale ? obj.ragione_sociale : (obj.nome + " " + obj.cognome)
+                            text: obj.firmenname ? obj.firmenname : (obj.name + " " + obj.nachname)
                         };
                     })
                 };
@@ -461,10 +461,10 @@ jQuery(document).ready(function ($) {
             success: function (result) {
                 var parseData = result.info || result;
                 if (parseData && parseData[0]) {
-                    $("#indirizzo").val(parseData[0].indirizzo);
+                    $("#adresse").val(parseData[0].adresse);
                     $("#cap").val(parseData[0].cap);
-                    $("#localita").val(parseData[0].localita);
-                    $("#provincia").val(parseData[0].provincia);
+                    $("#standort").val(parseData[0].standort);
+                    $("#provinz").val(parseData[0].provinz);
                     $("#cod_fis").val(parseData[0].cod_fis);
                     $("#p_iva").val(parseData[0].p_iva);
                     $("#tipo_cliente").val(parseData[0].tipo_cliente);

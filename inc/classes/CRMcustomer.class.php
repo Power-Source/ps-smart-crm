@@ -10,14 +10,14 @@
 		global $wpdb;
 
 		$SQL=
-			"SELECT C.ID_kunde, C.nome, C.cognome, C.ragione_sociale, C.email
+			"SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email
 			FROM $c_table AS C
 			INNER JOIN $d_table AS D ON C.ID_kunde = D.fk_kunde
 			WHERE D.id =$id";
 
 		$data=$wpdb->get_row( $SQL ) ;
 
-		$data->ragione_sociale !="" ? $this->business_name=$data->ragione_sociale : $this->business_name=$data->nome. " ". $data->cognome;
+		$data->firmenname !="" ? $this->business_name=$data->firmenname : $this->business_name=$data->name. " ". $data->nachname;
 		$this->email=$data->email;
 		$this->customerID=$data->ID_kunde;
 
@@ -29,14 +29,14 @@
 		global $wpdb;
 
 		$SQL=
-			"SELECT C.ID_kunde, C.nome, C.cognome, C.ragione_sociale, C.email
+			"SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email
 			FROM $c_table AS C
 			INNER JOIN $a_table AS A ON C.ID_kunde = A.fk_kunde
 			WHERE A.id_agenda =$id";
 
 		$data=$wpdb->get_row( $SQL ) ;
 
-		$data->ragione_sociale !="" ? $this->business_name=$data->ragione_sociale : $this->business_name=$data->nome. " ". $data->cognome;
+		$data->firmenname !="" ? $this->business_name=$data->firmenname : $this->business_name=$data->name. " ". $data->nachname;
 		$this->email=$data->email;
 		$this->customerID=$data->ID_kunde;
 
@@ -49,7 +49,7 @@
 		global $wpdb;
 
 		$SQL=
-			"SELECT C.ID_kunde, C.nome, C.cognome, C.ragione_sociale, C.email
+			"SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email
 			FROM $c_table AS C
 			WHERE C.ID_kunde IN (SELECT D.fk_kunde FROM $d_table AS D
 									JOIN  $r_table AS R
@@ -59,7 +59,7 @@
 								  )";
 
 		$data=$wpdb->get_row( $SQL ) ;
-		$data->ragione_sociale !="" ? $this->business_name=$data->ragione_sociale : $this->business_name=$data->nome. " ". $data->cognome;
+		$data->firmenname !="" ? $this->business_name=$data->firmenname : $this->business_name=$data->name. " ". $data->nachname;
 		$this->email=$data->email;
 		$this->customerID=$data->ID_kunde;
 
@@ -68,10 +68,10 @@
 	public function set_customer($id){
 		$table=WPsCRM_TABLE."kunde";
 		global $wpdb;
-		$SQL="SELECT C.ID_kunde, C.nome, C.cognome, C.ragione_sociale, C.email from $table AS C WHERE C.ID_kunde =$id";
+		$SQL="SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email from $table AS C WHERE C.ID_kunde =$id";
 		//echo $SQL;
 		$data=$wpdb->get_row( $SQL ) ;
-		$data->ragione_sociale !="" ? $this->business_name=$data->ragione_sociale : $this->business_name=$data->nome. " ". $data->cognome;
+		$data->firmenname !="" ? $this->business_name=$data->firmenname : $this->business_name=$data->name. " ". $data->nachname;
 		$this->email=$data->email;
 		$this->customerID=$id;
 	}

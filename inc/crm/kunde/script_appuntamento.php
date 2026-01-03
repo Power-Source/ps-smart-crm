@@ -42,7 +42,7 @@ if (!PSCRM_INLINE_MODE) {
 		var id = $(this).data('id');
 		var name = $(this).data('name');
 		$('#dialog_appuntamento').attr('data-fkcliente', id);
-		$('.nome_cliente').html(name || '');
+		$('.name_cliente').html(name || '');
 		initAppuntamentoModal();
 		appuntamentoModal.open();
     });

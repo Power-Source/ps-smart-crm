@@ -29,10 +29,10 @@ $update_nonce= wp_create_nonce( "update_scheduler" );
 
 jQuery(document).ready(function ($) {
 	var $format = "<?php echo WPsCRM_DATETIMEFORMAT ?>";
-    var ragione_sociale=$("#ragione_sociale").val();
+    var firmenname=$("#firmenname").val();
     var param="?";
-    if (ragione_sociale)
-      param+="ragione_sociale="+ragione_sociale+"&";
+    if (firmenname)
+      param+="firmenname="+firmenname+"&";
     param = param.substr(0, param.length - 1);
 	<?php do_action('WPsCRM_scheduler_datasource') ?>
 

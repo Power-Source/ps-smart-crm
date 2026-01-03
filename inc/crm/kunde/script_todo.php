@@ -43,7 +43,7 @@ if (!PSCRM_INLINE_MODE) {
         var id = $(this).data('id') || $('#dialog_todo').data('fkcliente');
         var name = $(this).data('name');
         if (id) $('#dialog_todo').attr('data-fkcliente', id);
-        if (name) $('.nome_cliente').html(name);
+        if (name) $('.name_cliente').html(name);
         initTodoModal();
         todoModal.open();
     });

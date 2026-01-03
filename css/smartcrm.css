@@ -45,6 +45,9 @@ opacity:.8
 .k-grid-content table tr.annullato td{border-bottom:1px solid #ccc}
 ._flat{border-radius:0!important}
 ul.select-action{background:#e2e2e2;padding:1px;position:relative;top:0!important;display:inline-block!important;width:100%}
+ul.select-action li.btn {color:#fff!important;font-weight:bold!important;}
+ul.select-action li.btn i {color:#fff!important;}
+ul.select-action li.btn b {color:#fff!important;}
 .k-list {background:#fff;/*height:auto!important;*/	overflow-y:scroll}
 .k-popup .k-list .k-item{line-height:1.2em}
 .btn_appuntamento,.btn_appuntamento_1{background:#6697c0!important;color:#fff!important}
@@ -871,6 +874,7 @@ input[type="checkbox"]:checked::before {
 input[type="checkbox"], input[type="radio"] {
   width: 15px;
   height: 15px;
+  margin: 0px 5px 5px 0px;
 }
 
 input[type="radio"]:checked::before {

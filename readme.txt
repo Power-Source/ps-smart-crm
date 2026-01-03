@@ -29,16 +29,16 @@ CRM-Verwaltung:
 - Kunden CSV-Import 
 
 
-Verwaltung von Rechnungen/Angeboten
+Verwaltung von Rechnungen/Angebote
 
-- Dynamische Erstellung von Rechnungen/Angeboten mit mehrzeiligen Produkten
-- Erstellung von Rechnungen/Angeboten im .pdf-Format
+- Dynamische Erstellung von Rechnungen/Angebote mit mehrzeiligen Produkten
+- Erstellung von Rechnungen/Angebote im .pdf-Format
 - PDF herunterladen und auf dem Server speichern
 - Benutzerdefiniertes LOGO
 - Benutzerdefinierte Ausrichtung der Kopfelemente in der PDF-Vorlage
 - Konfigurierbare Fälligkeitsdaten für Zahlungen
 - Benachrichtigung bei Ablauf der Zahlung
-- Interne Kommentare und Angeboten
+- Interne Kommentare und Angebote
 - Benutzerdefinierte Canvas-Signatur im Angebot (Touch-kompatibel)
 - Registrierung von Rechnungen
 - Benutzerdefinierter Startwert für die Nummerierung (Sie können zu jedem beliebigen Zeitpunkt des Jahres mit einer von 1 abweichenden Startnummer beginnen, in Übereinstimmung mit Ihrer Buchhaltung)

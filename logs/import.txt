@@ -1,1 +1,1 @@
-delete from wp_smartcrm_clienti where ID_clienti=95
+delete from wp_smartcrm_kunde where ID_kunde=95

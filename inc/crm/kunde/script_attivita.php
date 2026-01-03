@@ -44,7 +44,7 @@ if (!PSCRM_INLINE_MODE) {
 		var id = $(this).data('id');
 		var name = $(this).data('name');
 		$('#dialog_attivita').attr('data-fkcliente', id);
-		$('.nome_cliente').html(name || '');
+		$('.name_cliente').html(name || '');
 		initAttivitaModal();
 		attivitaModal.open();
     });

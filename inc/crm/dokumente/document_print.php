@@ -108,16 +108,16 @@ if ($ID)
 	$oggetto = $tipo ==1 ? $riga["oggetto"] : "";
 	if ($FK_kunde=$riga["fk_kunde"])
 	{
-		$sql="select ragione_sociale, nome, cognome, email, indirizzo, cap, localita, provincia, p_iva, cod_fis, tipo_cliente from $c_table where ID_kunde=".$FK_kunde;
+		$sql="select firmenname, name, nachname, email, adresse, cap, standort, provinz, p_iva, cod_fis, tipo_cliente from $c_table where ID_kunde=".$FK_kunde;
 		//  	echo $sql;
 		$rigac=$wpdb->get_row($sql, ARRAY_A);
-		$cliente=$rigac["ragione_sociale"]?$rigac["ragione_sociale"]:$rigac["nome"]." ".$rigac["cognome"];
+		$cliente=$rigac["firmenname"]?$rigac["firmenname"]:$rigac["name"]." ".$rigac["nachname"];
 		$cliente=stripslashes($cliente);
-		$indirizzo=stripslashes($rigac["indirizzo"]);
+		$adresse=stripslashes($rigac["adresse"]);
 		$tipo_cliente=$rigac["tipo_cliente"];
 		$cap=$rigac["cap"];
-		$localita=stripslashes($rigac["localita"]);
-		$provincia=$rigac["provincia"];
+		$standort=stripslashes($rigac["standort"]);
+		$provinz=$rigac["provinz"];
 		$email=$rigac["email"];
 		$p_iva=$rigac["p_iva"];
 		$cod_fis=$rigac["cod_fis"];
@@ -130,7 +130,7 @@ if ($ID)
 }
 //document sub-header
 $subheader  ='<section class="WPsCRM_subheader">';
-$subheader .='<div class="col-md-6 WPsCRM_customerData">'.$document_dear.' <b>'.$cliente.'</b><br>'.$indirizzo.'<br>'.$cap.'  '.$localita.'     ( '.$provincia.' )';
+$subheader .='<div class="col-md-6 WPsCRM_customerData">'.$document_dear.' <b>'.$cliente.'</b><br>'.$adresse.'<br>'.$cap.'  '.$standort.'     ( '.$provinz.' )';
 if ($p_iva)
 	$subheader.='<br>'.__('Umsatzsteuer-ID','cpsmartcrm').': '.$p_iva;
 if ($cod_fis)

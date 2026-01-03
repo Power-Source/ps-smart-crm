@@ -38,7 +38,7 @@ if ( ! wp_verify_nonce( $nonce, 'update_document' ) || ! current_user_can('manag
 
 	$data_scadenza=$_POST["data_scadenza"] ? WPsCRM_sanitize_date_format($_POST["data_scadenza"]) : "";
 	$data_scadenza_timestamp=strtotime(WPsCRM_sanitize_date_format($_POST["data_scadenza"]));
-	$data_inserimento=date("Y-m-d");
+	$einstiegsdatum=date("Y-m-d");
 
 	$data_timestamp=strtotime($data) ;
 	$testo_libero=isset($_POST["testo_libero"]) ? str_replace(array("\r\n", "\r"), "<br />", $_POST["testo_libero"]) : "";
@@ -91,7 +91,7 @@ if ( ! wp_verify_nonce( $nonce, 'update_document' ) || ! current_user_can('manag
 		$anno_ultima= date('Y', $rigad["data_timestamp"]);
 		if ($cur_year==$anno_ultima)
 		{
-			$sql="select max(progressivo) as last_reg from $table where $where and year(data_inserimento)='$cur_year'";
+			$sql="select max(progressivo) as last_reg from $table where $where and year(einstiegsdatum)='$cur_year'";
 			$riga=$wpdb->get_row($sql, ARRAY_A);
 			if ($document_start>$riga["last_reg"])
 			{
@@ -116,7 +116,7 @@ if ( ! wp_verify_nonce( $nonce, 'update_document' ) || ! current_user_can('manag
 		update_option('CRM_documents_settings', $document_options);
 		$wpdb->insert(
 		$table,
-		array('progressivo' => "$new_reg",'tipo' => "$type",'fk_kunde' => "$fk_kunde",'data' => "$data",'fk_utenti_ins' => "$user_id", 'oggetto' => "$oggetto",'riferimento' => "$riferimento",'modalita_pagamento' => "$modalita_pagamento",'annotazioni' => "$annotazioni", 'totale_imponibile' => "$totale_imponibile", 'totale_imposta' => "$totale_imposta", 'totale' => "$totale", 'tot_cassa_inps' => "$totale_cassa", 'ritenuta_acconto' => "$ritenuta_acconto", 'totale_netto' => "$totale_netto", 'data_inserimento' => "$data_inserimento",'commento' => "$commento",'testo_libero' => $testo_libero, 'giorni_pagamento' => $notificationDays, 'perc_realizzo' => $perc_realizzo, 'notifica_pagamento' => $notify_payment, 'valore_preventivo' => $quotation_value, 'data_scadenza' => $data_scadenza, 'data_timestamp'=>$data_timestamp,'data_scadenza_timestamp'=>$data_scadenza_timestamp,'origine_proforma'=>$origine_proforma, 'tipo_sconto'=>$tipo_sconto),
+		array('progressivo' => "$new_reg",'tipo' => "$type",'fk_kunde' => "$fk_kunde",'data' => "$data",'fk_utenti_ins' => "$user_id", 'oggetto' => "$oggetto",'riferimento' => "$riferimento",'modalita_pagamento' => "$modalita_pagamento",'annotazioni' => "$annotazioni", 'totale_imponibile' => "$totale_imponibile", 'totale_imposta' => "$totale_imposta", 'totale' => "$totale", 'tot_cassa_inps' => "$totale_cassa", 'ritenuta_acconto' => "$ritenuta_acconto", 'totale_netto' => "$totale_netto", 'einstiegsdatum' => "$einstiegsdatum",'commento' => "$commento",'testo_libero' => $testo_libero, 'giorni_pagamento' => $notificationDays, 'perc_realizzo' => $perc_realizzo, 'notifica_pagamento' => $notify_payment, 'valore_preventivo' => $quotation_value, 'data_scadenza' => $data_scadenza, 'data_timestamp'=>$data_timestamp,'data_scadenza_timestamp'=>$data_scadenza_timestamp,'origine_proforma'=>$origine_proforma, 'tipo_sconto'=>$tipo_sconto),
 		array('%d','%d','%d','%s','%d','%d','%s','%s','%s','%s','%f','%f','%f','%f','%f','%f','%s','%s','%s','%d','%s','%d','%f','%d','%d', '%d', '%d')
 	);
 	}
@@ -248,7 +248,7 @@ if ( ! wp_verify_nonce( $nonce, 'update_document' ) || ! current_user_can('manag
 				'start_date'=>$data_scadenza,
 				'end_date'=>$data_scadenza,
 				'data_agenda'=>$data_agenda,
-				'data_inserimento'=>date("Y-m-d H:i")
+				'einstiegsdatum'=>date("Y-m-d H:i")
 			),
 			array('id_agenda'=>$res->id_agenda),
 			array('%s', '%s', '%s', '%s')
@@ -297,7 +297,7 @@ if ( ! wp_verify_nonce( $nonce, 'update_document' ) || ! current_user_can('manag
 				  'priorita'=>3,
 				  'urgente'=>'Si',
 				  'importante'=>'Si',
-				  'data_inserimento'=>date("Y-m-d H:i"),
+				  'einstiegsdatum'=>date("Y-m-d H:i"),
 				  'fk_subscriptionrules'=>$id_sr,
 				  'tipo_agenda'=>3,
 				  'fk_dokumente'=>$ID_ret,

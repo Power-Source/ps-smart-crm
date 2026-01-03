@@ -10,17 +10,17 @@ function WPsCRM_crm_install() {
 
 	$charset_collate = $wpdb->get_charset_collate();
 
-	$sql[] = "CREATE TABLE `".WPsCRM_SETUP_TABLE."clienti` (
+	$sql[] = "CREATE TABLE `".WPsCRM_SETUP_TABLE."kunde` (
   `ID_kunde` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `categoria` varchar(100) NOT NULL DEFAULT '0',
-  `nome` varchar(100) NOT NULL,
-  `cognome` varchar(100) NOT NULL,
-  `ragione_sociale` varchar(250) NOT NULL DEFAULT '',
-  `indirizzo` varchar(200) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `nachname` varchar(100) NOT NULL,
+  `firmenname` varchar(250) NOT NULL DEFAULT '',
+  `adresse` varchar(200) DEFAULT NULL,
   `cap` varchar(10) DEFAULT NULL,
-  `localita` varchar(55) NOT NULL DEFAULT '',
-  `provincia` varchar(100) DEFAULT NULL,
-  `nazione` varchar(100) DEFAULT NULL,
+  `standort` varchar(55) NOT NULL DEFAULT '',
+  `provinz` varchar(100) DEFAULT NULL,
+  `nation` varchar(100) DEFAULT NULL,
   `telefono1` varchar(50) DEFAULT NULL,
   `telefono2` varchar(50) DEFAULT NULL,
   `fax` varchar(50) DEFAULT NULL,
@@ -31,24 +31,24 @@ function WPsCRM_crm_install() {
   `cod_fis` varchar(30) DEFAULT NULL,
   `annotazioni` text,
   `FK_aziende` int(10) unsigned NOT NULL DEFAULT '0',
-  `data_inserimento` date DEFAULT NULL,
+  `einstiegsdatum` date DEFAULT NULL,
   `data_modifica` date DEFAULT NULL,
   `eliminato` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `aggiornato` enum('No','Si') NOT NULL DEFAULT 'No',
   `provenienza` varchar(100) NOT NULL DEFAULT '',
   `luogo_nascita` varchar(200) NOT NULL,
-  `data_nascita` date DEFAULT NULL,
+  `geburtsdatum` date DEFAULT NULL,
   `stripe_ID` varchar(32) NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `tipo_cliente` tinyint(3) unsigned NOT NULL,
   `agente` int(10) unsigned NULL,
   `interessi` varchar(100) NOT NULL DEFAULT '',
-  `fatturabile` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `abrechnungsmodus` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `custom_fields` text,
   `custom_tax` text,
   `uploads` text,
   PRIMARY KEY (`ID_kunde`),
-  KEY `FK_categorie_clienti` (`categoria`),
+  KEY `FK_categorie_kunde` (`categoria`),
   KEY `FK_aziende` (`FK_aziende`)
 ) ENGINE=MyISAM  ".$charset_collate." AUTO_INCREMENT=1";
 
@@ -63,7 +63,7 @@ function WPsCRM_crm_install() {
   `data_agenda` date DEFAULT NULL,
   `ora_agenda` time DEFAULT NULL,
   `annotazioni` text NOT NULL,
-  `data_inserimento` datetime NOT NULL,
+  `einstiegsdatum` datetime NOT NULL,
   `start_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `end_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `esito` text,
@@ -87,8 +87,8 @@ function WPsCRM_crm_install() {
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."contatti` (
    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `fk_kunde` int(10) unsigned NOT NULL,
-  `nome` varchar(50) NOT NULL,
-  `cognome` varchar(50) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `nachname` varchar(50) NOT NULL,
   `email` varchar(50) NOT NULL,
   `telefono` varchar(50) NOT NULL,
   `qualifica` varchar(100) NOT NULL,
@@ -99,7 +99,7 @@ function WPsCRM_crm_install() {
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tipo` tinyint(3) unsigned NOT NULL COMMENT '1=preventivo, 2=fattura, 3=proforma',
   `data` date NOT NULL,
-  `data_inserimento` date NOT NULL,
+  `einstiegsdatum` date NOT NULL,
   `data_timestamp` int(15) NOT NULL,
   `data_scadenza_timestamp` int(15) NOT NULL,
   `oggetto` varchar(100) NOT NULL,
@@ -210,8 +210,8 @@ function WPsCRM_crm_install() {
 
     //print_r ($sql);//exit;
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	$nomefile="error_setup_".date("YmdHi").".txt";
-	$myFile = WPsCRM_DIR."/logs/".$nomefile;
+	$namefile="error_setup_".date("YmdHi").".txt";
+	$myFile = WPsCRM_DIR."/logs/".$namefile;
 	$msg="";
 	foreach($sql as $q)
     {
@@ -317,10 +317,10 @@ function WPsCRM_update_db_check() {
 add_action( 'plugins_loaded', 'WPsCRM_update_db_check',13 );
 
 
-add_action( 'plugins_loaded', 'WPsCRM_create_clienti',11 );
-function WPsCRM_create_clienti() {
+add_action( 'plugins_loaded', 'WPsCRM_create_kunde',11 );
+function WPsCRM_create_kunde() {
 
-    register_post_type( 'clienti',
+    register_post_type( 'kunde',
         array(
             'labels' => array(
                 'name' => __( 'Clienti','commonFunctions' ),
@@ -361,7 +361,7 @@ function WPsCRM_customers_tax() {
     'query_var'         => 'WPsCRM_customersInt',
     'rewrite'           => false,
 	);
-	register_taxonomy( 'WPsCRM_customersInt', array('clienti'), $args );
+	register_taxonomy( 'WPsCRM_customersInt', array('kunde'), $args );
 
 	$labels=array(
    'name'              => _x( 'Kategorien', 'taxonomy general name' ),
@@ -382,7 +382,7 @@ function WPsCRM_customers_tax() {
     'query_var'         => 'WPsCRM_customersCat',
     'rewrite'           => false
 	);
-	register_taxonomy( 'WPsCRM_customersCat', array('clienti'), $args );
+	register_taxonomy( 'WPsCRM_customersCat', array('kunde'), $args );
 
   $labels = array(
     'name'              => _x( 'Quellen', 'taxonomy general name' ),
@@ -403,7 +403,7 @@ function WPsCRM_customers_tax() {
     'query_var'         => 'WPsCRM_customersProv',
     'rewrite'           => false
 	);
-	register_taxonomy( 'WPsCRM_customersProv', array('clienti'), $args );
+	register_taxonomy( 'WPsCRM_customersProv', array('kunde'), $args );
 }
 
 
