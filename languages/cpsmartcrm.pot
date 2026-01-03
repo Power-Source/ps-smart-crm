@@ -1970,7 +1970,7 @@ msgid "Done"
 msgstr ""
 
 #: inc/crm/scheduler/list.php:166
-msgid "Canceled"
+msgid "Abgesagt"
 msgstr ""
 
 #: inc/crm/scheduler/list.php:169

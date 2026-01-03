@@ -37,9 +37,6 @@ $options = get_option('CRM_general_settings');
         <i class="glyphicon glyphicon-pushpin"></i> 
         <b><?php _e('NEW APPOINTMENT','cpsmartcrm')?></b>
     </li>
-    <li class="btn btn-sm _flat" style="background:#ccc;">
-        <span class="crmHelp" data-help="section-scheduler" style="position:relative;top:-3px"></span>
-    </li>
     
     <span style="float:right;">
         <li class="no-link" style="margin-top:4px">
@@ -47,7 +44,7 @@ $options = get_option('CRM_general_settings');
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-ok" style="color:green;font-size:1.3em"></i>
-            <?php _e('Done','cpsmartcrm') ?>
+            <?php _e('Erledigt','cpsmartcrm') ?>
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-bookmark" style="color:black;font-size:1.3em"></i>
@@ -55,7 +52,7 @@ $options = get_option('CRM_general_settings');
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-remove" style="color:red;font-size:1.3em"></i>
-            <?php _e('Canceled','cpsmartcrm') ?>
+            <?php _e('Abgesagt','cpsmartcrm') ?>
         </li>
         <li class="no-link">
             <span class="tipped" style="width:13px;height:13px;display:inline-flex" title="<?php _e('Mouse over to display info','cpsmartcrm')?>"></span>

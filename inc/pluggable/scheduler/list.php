@@ -28,6 +28,22 @@ function WPsCRM_display_scheduler_list() {
     <button id="btn_reset" class="button button-secondary _flat"><?php _e('Reset filters','cpsmartcrm') ?></button>
 </div>
 
+<!-- Tabs for Appointments and TODOs -->
+<div class="pscrm-tabs" style="margin: 20px 0;">
+    <ul class="nav nav-tabs" role="tablist" style="border-bottom: 2px solid #ddd; list-style: none; padding: 0; margin: 0;">
+        <li role="presentation" style="display: inline-block; margin-right: 10px;">
+            <a href="#tab-appointments" role="tab" class="nav-link active pscrm-tab-link" data-tab="appointments" style="padding: 10px 15px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; background: #f5f5f5; cursor: pointer; display: inline-block;">
+                <i class="glyphicon glyphicon-pushpin"></i> <?php _e('Appointments','cpsmartcrm') ?>
+            </a>
+        </li>
+        <li role="presentation" style="display: inline-block;">
+            <a href="#tab-todos" role="tab" class="nav-link pscrm-tab-link" data-tab="todos" style="padding: 10px 15px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; background: #f5f5f5; cursor: pointer; display: inline-block;">
+                <i class="glyphicon glyphicon-tag"></i> <?php _e('TODOs','cpsmartcrm') ?>
+            </a>
+        </li>
+    </ul>
+</div>
+
 <!-- Toolbar Buttons -->
 <ul class="select-action">
     <li onClick="location.href='<?php echo admin_url( 'admin.php?page=smart-crm&p=scheduler/form.php&tipo_agenda=1')?>';return false;" class="btn btn-info btn-sm _flat btn_todo">
@@ -38,9 +54,6 @@ function WPsCRM_display_scheduler_list() {
         <i class="glyphicon glyphicon-pushpin"></i> 
         <b><?php _e('NEW APPOINTMENT','cpsmartcrm')?></b>
     </li>
-    <li class="btn btn-sm _flat" style="background:#ccc;">
-        <span class="crmHelp" data-help="section-scheduler" style="position:relative;top:-3px"></span>
-    </li>
     
     <span style="float:right;">
         <li class="no-link" style="margin-top:4px">
@@ -48,7 +61,7 @@ function WPsCRM_display_scheduler_list() {
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-ok" style="color:green;font-size:1.3em"></i>
-            <?php _e('Done','cpsmartcrm') ?>
+            <?php _e('Erledigt','cpsmartcrm') ?>
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-bookmark" style="color:black;font-size:1.3em"></i>
@@ -56,7 +69,7 @@ function WPsCRM_display_scheduler_list() {
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-remove" style="color:red;font-size:1.3em"></i>
-            <?php _e('Canceled','cpsmartcrm') ?>
+            <?php _e('Abgesagt','cpsmartcrm') ?>
         </li>
         <li class="no-link">
             <span class="tipped" style="width:13px;height:13px;display:inline-flex" title="<?php _e('Mouse over to display info','cpsmartcrm')?>"></span>
@@ -65,8 +78,18 @@ function WPsCRM_display_scheduler_list() {
     </span>
 </ul>
 
-<!-- Grid Container -->
-<div id="grid" class="datagrid _scheduler"></div> 
+<!-- Tab Content -->
+<div class="tab-content">
+    <!-- Appointments Tab -->
+    <div role="tabpanel" class="tab-pane fade in active" id="tab-appointments">
+        <div id="grid-appointments" class="datagrid _scheduler"></div>
+    </div>
+    
+    <!-- TODOs Tab -->
+    <div role="tabpanel" class="tab-pane fade" id="tab-todos">
+        <div id="grid-todos" class="datagrid _scheduler"></div>
+    </div>
+</div>
 
 <!-- Modal für Aktivitätsansicht -->
 <div id="dialog-view" class="_modal"></div>
@@ -93,8 +116,43 @@ function WPsCRM_display_scheduler_list() {
 				baseUrl: 'admin.php?page=smart-crm'
 			};
 			
-			// Scheduler Grid erstellen
-			const schedulerGrid = PSCRM.createSchedulerGrid('#grid', gridOptions);
+			// Scheduler Grid für Appointments erstellen (tipo_agenda = 2)
+			const appointmentsGrid = PSCRM.createSchedulerGrid('#grid-appointments', {
+				...gridOptions,
+				tipo_agenda: 2
+			});
+			
+			// Scheduler Grid für TODOs erstellen (tipo_agenda = 1)
+			const todosGrid = PSCRM.createSchedulerGrid('#grid-todos', {
+				...gridOptions,
+				tipo_agenda: 1
+			});
+			
+			// Tab-Wechsel Handler (ohne Bootstrap)
+			$(document).on('click', '.pscrm-tab-link', function(e) {
+				e.preventDefault();
+				const tabName = $(this).data('tab');
+				
+				// Alle Tabs als inaktiv markieren
+				$('.pscrm-tab-link').removeClass('active');
+				$('.tab-pane').removeClass('active');
+				
+				// Aktuellen Tab als aktiv markieren
+				$(this).addClass('active');
+				
+				// Entsprechenden Tab-Content aktivieren
+				if (tabName === 'appointments') {
+					$('#tab-appointments').addClass('active');
+					if (appointmentsGrid && typeof appointmentsGrid.reload === 'function') {
+						appointmentsGrid.reload();
+					}
+				} else if (tabName === 'todos') {
+					$('#tab-todos').addClass('active');
+					if (todosGrid && typeof todosGrid.reload === 'function') {
+						todosGrid.reload();
+					}
+				}
+			});
 			
 			// Activity Modal Handler (für bereits implementierte Kendo Fenster)
 			$(document).on('click', '#save_activity_from_modal', function () {
@@ -113,7 +171,8 @@ function WPsCRM_display_scheduler_list() {
 						security: '<?php echo esc_attr($update_nonce) ?>'
 					},
 					success: function (result) {
-						schedulerGrid.reload();
+						appointmentsGrid.reload();
+						todosGrid.reload();
 						
 						setTimeout(function () {
 							$('._modal').fadeOut('fast');
@@ -130,12 +189,15 @@ function WPsCRM_display_scheduler_list() {
 			});
 			
 			$(document).on('click', '._reset', function () {
-				$('._ modal').fadeOut('fast');
+				$('._modal').fadeOut('fast');
 				$('input[type="reset"]').trigger('click');
 			});
 			
+		} catch (error) {
+			console.error('Fehler bei der Grid-Initialisierung:', error);
 		}
 	});
 })(jQuery);
+</script>
 <?php
 }

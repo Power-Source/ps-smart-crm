@@ -164,7 +164,7 @@ jQuery(document).ready(function ($) {
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-ok" style="color:green;font-size:1.3em"></i>
-            <?php _e('Done','cpsmartcrm') ?>
+            <?php _e('Erledigt','cpsmartcrm') ?>
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-bookmark  " style="color:black;font-size:1.3em"></i>
@@ -172,7 +172,7 @@ jQuery(document).ready(function ($) {
         </li>
         <li class="no-link">
             <i class="glyphicon glyphicon-remove" style="color:red;font-size:1.3em"></i>
-            <?php _e('Canceled','cpsmartcrm') ?>
+            <?php _e('Abgesagt','cpsmartcrm') ?>
         </li>
         <li class="no-link">
             <span class="tipped" style="width:13px;height:13px;display:inline-flex" title="<?php _e('Mouse over to display info','cpsmartcrm')?>"></span>

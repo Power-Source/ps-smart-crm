@@ -96,10 +96,6 @@
                     title: 'Empfänger'
                 },
                 {
-                    field: 'privileges',
-                    hidden: true
-                },
-                {
                     field: 'status',
                     title: 'Status',
                     width: '100px',
@@ -120,7 +116,7 @@
                     }
                 },
                 {
-                    field: 'actions',
+                    field: null, // actions column is purely rendered
                     title: 'Aktionen',
                     width: '200px',
                     sortable: false,
@@ -136,7 +132,7 @@
                                 </button>
                             `;
                         }
-                        return data;
+                        return '';
                     }
                 },
                 {
@@ -220,6 +216,11 @@
                 self_client: 1
             };
 
+            // tipo_agenda hinzufügen wenn in options vorhanden
+            if (this.options.tipo_agenda) {
+                filterParams.type = this.options.tipo_agenda;
+            }
+
             // Datum-Filter hinzufügen wenn gesetzt
             if (this.dateFilters.from) {
                 const fromDates = this.dateFilters.from.getValue();
@@ -281,28 +282,64 @@
          */
         _handleView: function(id) {
             const self = this;
-            
-            PSCRM.utils.ajax({
-                data: {
-                    action: 'WPsCRM_view_activity_modal',
-                    id: id
-                },
-                success: function(result) {
-                    if (jQuery('#dialog-view').length) {
-                        jQuery('#dialog-view').show().html(result);
-                    } else {
-                        // Vanilla Modal erstellen
-                        const modal = PSCRM.createModal({
-                            title: 'Aktivität',
-                            content: result,
-                            width: '800px'
-                        });
-                        modal.open();
+
+            // Response ist HTML, kein JSON -> jQuery.ajax mit dataType 'html'
+            if (window.jQuery && typeof window.jQuery.ajax === 'function') {
+                window.jQuery.ajax({
+                    url: window.ajaxurl,
+                    method: 'POST',
+                    data: {
+                        action: 'WPsCRM_view_activity_modal',
+                        id: id
+                    },
+                    dataType: 'html',
+                    success: function(result) {
+                        if (window.jQuery('#dialog-view').length) {
+                            window.jQuery('#dialog-view').show().html(result);
+                        } else if (PSCRM.createModal) {
+                            const modal = PSCRM.createModal({
+                                title: 'Aktivität',
+                                content: result,
+                                width: '800px'
+                            });
+                            modal.open();
+                        } else {
+                            console.log(result);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        PSCRM.notify('Fehler beim Laden der Aktivität', 'error');
                     }
-                },
-                error: function(error) {
-                    PSCRM.notify('Fehler beim Laden der Aktivität', 'error');
+                });
+                return;
+            }
+
+            // Fallback ohne jQuery: fetch als Text
+            fetch(window.ajaxurl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: new URLSearchParams({ action: 'WPsCRM_view_activity_modal', id: id })
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Network error');
+                return r.text();
+            })
+            .then(result => {
+                if (window.jQuery && window.jQuery('#dialog-view').length) {
+                    window.jQuery('#dialog-view').show().html(result);
+                } else if (PSCRM.createModal) {
+                    const modal = PSCRM.createModal({
+                        title: 'Aktivität',
+                        content: result,
+                        width: '800px'
+                    });
+                    modal.open();
+                } else {
+                    console.log(result);
                 }
+            })
+            .catch(() => {
+                PSCRM.notify('Fehler beim Laden der Aktivität', 'error');
             });
         },
 

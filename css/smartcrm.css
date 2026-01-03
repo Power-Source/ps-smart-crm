@@ -920,3 +920,42 @@ ul.tabstrip li.active {
     height: auto;
     display: inline-block;
 }
+
+/* Scheduler List Tabs */
+.pscrm-tabs .nav-tabs .nav-link {
+    color: #333;
+    font-weight: 500;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: #f5f5f5;
+    transition: all 0.3s ease;
+}
+
+.pscrm-tabs .nav-tabs .nav-link:hover {
+    background: #efefef;
+    border-color: #999;
+}
+
+.pscrm-tabs .nav-tabs .nav-link.active {
+    background: #fff;
+    color: #333;
+    border-color: #ddd;
+    border-bottom-color: #fff;
+    font-weight: 600;
+}
+
+.pscrm-tabs .tab-content {
+    border: 1px solid #ddd;
+    border-top: none;
+    padding: 20px 0;
+    background: #fff;
+}
+
+.pscrm-tabs .tab-pane {
+    display: none;
+}
+
+.pscrm-tabs .tab-pane.active {
+    display: block;
+}

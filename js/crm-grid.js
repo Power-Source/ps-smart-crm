@@ -508,9 +508,15 @@
      * Scheduler-spezifische Grid Initialisierung
      */
     PSCRM.createSchedulerGrid = function(element, options) {
+        // Wenn die neue SchedulerGrid-Komponente vorhanden ist, delegieren
+        if (PSCRM.SchedulerGrid) {
+            return new PSCRM.SchedulerGrid(element, options);
+        }
+
+        // Fallback auf alte Implementierung
         const schedulerGridOptions = {
             engine: 'datatable',
-            height: options.height || 600,
+            height: (options && options.height) || 600,
             columns: [
                 { field: 'id', title: 'ID', width: '80px' },
                 { field: 'titolo', title: 'Titel' },
@@ -531,7 +537,9 @@
             }
         };
 
-        $.extend(true, schedulerGridOptions, options);
+        if (window.jQuery && typeof window.jQuery.extend === 'function') {
+            window.jQuery.extend(true, schedulerGridOptions, options);
+        }
         
         // Entferne dataSource falls vorhanden - Grid soll ohne AJAX initialisieren
         delete schedulerGridOptions.dataSource;
@@ -539,9 +547,9 @@
         const grid = PSCRM.createGrid(element, schedulerGridOptions);
         
         // Load data NACH Grid-Initialisierung wenn AJAX vorhanden
-        if (window.ajaxurl && grid && grid.instance) {
+        if (window.ajaxurl && grid && grid.instance && window.jQuery) {
             setTimeout(function() {
-                $.ajax({
+                window.jQuery.ajax({
                     url: window.ajaxurl,
                     method: 'POST',
                     data: { action: 'WPsCRM_load_scheduler_grid' },

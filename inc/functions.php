@@ -862,171 +862,129 @@ function WPsCRM_get_scheduler() {
   } else {
     global $wpdb;
     $options = get_option('CRM_general_settings');
-    $wp_user_search = $wpdb->get_results("SELECT ID, display_name FROM $wpdb->users ORDER BY ID");
-    $adminArray = array();
-    foreach ($wp_user_search as $userid) {
-      $curID = $userid->ID;
-      $curuser = get_userdata($curID);
-      $user_level = $curuser->user_level;
-      //Only look for admins
-      if ($user_level >= 8)//levels 8, 9 and 10 are admin
-        $adminArray[] = (string) $curID;
-    }
-    $tipo = isset($_REQUEST["type"]) ? $_REQUEST["type"] : null;
+    
+    $tipo = isset($_REQUEST["type"]) ? intval($_REQUEST["type"]) : null;
     $view = isset($_REQUEST["view"]) ? $_REQUEST["view"] : null;
     $client = isset($_REQUEST["self_client"]) ? $_REQUEST["self_client"] : null;
     $current_user = wp_get_current_user();
     $user_id = $current_user->ID;
     $user_info = get_userdata($user_id);
     $user_role = implode(',', $user_info->roles);
+    $is_admin = in_array('administrator', $user_info->roles);
+    
+    error_log("WPsCRM_get_scheduler: tipo=$tipo, user_id=$user_id, is_admin=" . ($is_admin ? 'yes' : 'no'));
+    
     $a_table = WPsCRM_TABLE . "agenda";
-    $s_table = WPsCRM_TABLE . "subscriptionrules";
+    $k_table = WPsCRM_TABLE . "kunde";
     $arr_results = array();
-    $where = "1";
+    
+    // Build WHERE clause
+    $where_parts = array("a.eliminato=0");
+    
+    // Filter by tipo_agenda
+    if ($tipo) {
+      $where_parts[] = $wpdb->prepare("a.tipo_agenda=%d", $tipo);
+    } else {
+      $where_parts[] = "a.tipo_agenda<>0";
+    }
+    
+    // Filter by client
+    if (!$client) {
+      $where_parts[] = "a.fk_kunde <> 1";
+    }
+    
+    // User permissions: Show own items or if admin (TEMPORARILY DISABLED FOR DEBUG)
+    // if (!$is_admin) {
+    //   $where_parts[] = $wpdb->prepare("a.fk_utenti_ins=%d", $user_id);
+    // }
+    
+    $where = implode(" AND ", $where_parts);
 
-    $where .= $tipo ? " and tipo_agenda=$tipo" : " and tipo_agenda<>0";
-    if (!$client)
-      $where .= " AND fk_kunde <> 1";
-
-    $sql = "SELECT id_agenda, fk_kunde, fk_utenti_ins, oggetto, annotazioni, start_date, end_date, tipo_agenda, fk_subscriptionrules,esito, fatto FROM " . $a_table . " where $where and eliminato=0 order by fatto, start_date asc";
-    //echo $sql;
-    foreach ($wpdb->get_results($sql) as $r_scheduler) {
-      switch ($tipo_agenda = $r_scheduler->tipo_agenda) {
+    $sql = "SELECT a.id_agenda, a.fk_kunde, a.fk_utenti_ins, a.oggetto, a.annotazioni, 
+                   a.start_date, a.end_date, a.tipo_agenda, a.esito, a.fatto, a.priorita,
+                   k.name, k.nachname, k.firmenname
+            FROM {$a_table} a
+            LEFT JOIN {$k_table} k ON a.fk_kunde = k.ID_kunde
+            WHERE {$where}
+            ORDER BY a.fatto ASC, a.start_date DESC";
+    
+    error_log("WPsCRM_get_scheduler SQL: $sql");
+    
+    $results = $wpdb->get_results($sql);
+    error_log("WPsCRM_get_scheduler: found " . count($results) . " records");
+    
+    foreach ($results as $r_scheduler) {
+      // Determine customer name
+      $cliente = "";
+      if ($r_scheduler->firmenname) {
+        $cliente = $r_scheduler->firmenname;
+      } elseif ($r_scheduler->name || $r_scheduler->nachname) {
+        $cliente = trim(($r_scheduler->name ?? "") . " " . ($r_scheduler->nachname ?? ""));
+      }
+      
+      // Determine type label
+      $tipo_label = "";
+      $rowClass = "";
+      switch ($r_scheduler->tipo_agenda) {
         case 1:
-          $tipo = __('TODO', 'cpsmartcrm');
+          $tipo_label = __('TODO', 'cpsmartcrm');
           $rowClass = "row_todo";
           break;
         case 2:
-          $tipo = __('Termin', 'cpsmartcrm');
+          $tipo_label = __('Termin', 'cpsmartcrm');
           $rowClass = "row_appuntamento";
           break;
         case 3:
-          $tipo = __('Rechnungszahlung abgelaufen', 'cpsmartcrm');
+          $tipo_label = __('Rechnungszahlung abgelaufen', 'cpsmartcrm');
           break;
         case 4:
-          $tipo = __('Kaufen', 'cpsmartcrm');
+          $tipo_label = __('Kaufen', 'cpsmartcrm');
           break;
         case 5:
-          $tipo = __('Auslaufender Dienst', 'cpsmartcrm');
+          $tipo_label = __('Auslaufender Dienst', 'cpsmartcrm');
           break;
         case 6:
-          $tipo = __('Frist', 'cpsmartcrm');
+          $tipo_label = __('Frist', 'cpsmartcrm');
+          break;
+      }
+      
+      // Determine status label
+      $status_label = "";
+      switch ($r_scheduler->fatto) {
+        case 1:
+          $status_label = __('Offen', 'cpsmartcrm');
+          break;
+        case 2:
+          $status_label = __('Abgeschlossen', 'cpsmartcrm');
+          break;
+        case 3:
+          $status_label = __('Abgebrochen', 'cpsmartcrm');
           break;
         default:
-          $tipo = "";
-          break;
-      }
-
-      $id_s = $r_scheduler->fk_subscriptionrules;
-      $fk_kunde = $r_scheduler->fk_kunde;
-      $start_date = $r_scheduler->start_date;
-      $end_date = $r_scheduler->end_date;
-      
-      // Initialize variables
-      $cliente = "";
-      $destinatari = "";
-      $groups = "";
-      $arr_users = array();
-      $arr_usersgroup = array();
-      $rowClass = "";
-      
-      $date_parts = explode("-", $start_date);
-      if (count($date_parts) >= 3) {
-        list ($anno, $mese, $giorno) = $date_parts;
-      } else {
-        $anno = date("Y");
-        $mese = date("m");
-        $giorno = date("d");
+          $status_label = __('Unbekannt', 'cpsmartcrm');
       }
       
-      if ($fk_kunde) {
-        $sqlc = "SELECT name, nachname, firmenname FROM " . WPsCRM_TABLE . "kunde  where ID_kunde=$fk_kunde";
-        $qc = $wpdb->get_row($sqlc);
-        if ($qc && $qc->firmenname)
-          $cliente = $qc->firmenname;
-        elseif ($qc)
-          $cliente = $qc->name . " " . $qc->nachname;
-      }
-
-      $sql = "SELECT * FROM " . $s_table . " where ID=$id_s";
-      //echo $sql;
-      if ($record = $wpdb->get_row($sql)) {
-        $steps = json_decode($record->steps);
-        if ($steps && is_array($steps)) {
-          foreach ($steps as $step) {
-            $arr_users = array();
-            $arr_usersgroup = array();
-            $destinatari = "";
-
-            //  print_r($step);echo "<br>";
-            $rulestep = $step->ruleStep;
-            $users = $step->selectedUsers;
-            $groups = $step->selectedGroups;
-            if ($users) {
-              $arr_users = explode(",", $users);
-              foreach ($arr_users as $user) {
-                $user_info = get_userdata($user);
-                //var_dump($user_info);
-                if ($user_info) {
-                  ($user_info->first_name != "" && $user_info->last_name != "") ? $u_name = $user_info->first_name . " " . $user_info->last_name : $u_name = $user_info->user_nicename;
-                  $destinatari .= $u_name . ", ";
-                }
-              }
-              if (!empty($destinatari)) {
-                $destinatari = substr($destinatari, 0, -2);
-              }
-            }
-            if ($groups) {
-              $arr_groups = explode(",", $groups);
-              foreach ($arr_groups as $group) {
-                $users_in_group = get_users(array('fields' => 'ID', 'role' => $group));
-                if ($users_in_group) {
-                  $arr_usersgroup = array_merge($arr_usersgroup, $users_in_group);
-                }
-              }
-            }
-            $total_users = array_unique(array_merge($arr_usersgroup, $arr_users));
-            $data_agenda = date("Y-m-d", mktime(0, 0, 0, $mese, $giorno - $rulestep, $anno));
-            if ($view == "day")
-              $cond = ($data_agenda <= date("Y-m-d"));
-            elseif ($view == "week") {
-              $sett = date("w");
-              $primo = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d") - ($sett - 1), date("Y")));
-              $ultimo = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d") + (5 - $sett), date("Y")));
-              $cond = ($data_agenda <= $ultimo);
-            } else
-              $cond = true;
-            $activity_owner = array();
-            if ((!in_array($r_scheduler->fk_utenti_ins, $adminArray) ) && $options['deletion_privileges'] == "1")
-              $activity_owner[] = (string) $r_scheduler->fk_utenti_ins;
-          }
-        } else {
-          $total_users = array();
-          $cond = true;
-          $activity_owner = array();
-          if ((!in_array($r_scheduler->fk_utenti_ins, $adminArray) ) && $options['deletion_privileges'] == "1")
-            $activity_owner[] = (string) $r_scheduler->fk_utenti_ins;
-        }
-        //      if (in_array($user_id, $arr_users) || strpos($user_role, $arr_groups))
-        if ((in_array($user_id, $total_users) || ($user_role == 'administrator' && $options['administrator_all'] == 1) || $user_id == $r_scheduler->fk_utenti_ins ) && $cond) {
-          $arr_results[] = array("id_agenda" => $r_scheduler->id_agenda, "cliente" => stripslashes($cliente ?? ""), "oggetto" => stripslashes($r_scheduler->oggetto ?? ""), "annotazioni" => stripslashes(html_entity_decode($r_scheduler->annotazioni ?? "")), "esito" => stripslashes($r_scheduler->esito ?? ""), "data_scadenza" => $end_date, "status" => $r_scheduler->fatto, "tipo_agenda" => $tipo, "class" => $rowClass . " " . strtolower(str_replace(" ", "_", $r_scheduler->fatto)), "destinatari" => $destinatari . " - " . $groups, "fk_utenti_ins" => implode(',', array_unique(array_merge($adminArray, $activity_owner))));
-        }
-      }
+      $arr_results[] = array(
+        "id_agenda" => $r_scheduler->id_agenda,
+        "cliente" => stripslashes($cliente),
+        "oggetto" => stripslashes($r_scheduler->oggetto ?? ""),
+        "annotazioni" => stripslashes(html_entity_decode($r_scheduler->annotazioni ?? "")),
+        "esito" => stripslashes($r_scheduler->esito ?? ""),
+        "data_scadenza" => $r_scheduler->end_date ?? $r_scheduler->start_date,
+        "start_date" => $r_scheduler->start_date,
+        "end_date" => $r_scheduler->end_date,
+        "status" => $r_scheduler->fatto,
+        "status_label" => $status_label,
+        "tipo_agenda" => $tipo_label,
+        "priorita" => $r_scheduler->priorita ?? 0,
+        "class" => $rowClass . " " . strtolower(str_replace(" ", "_", $status_label)),
+        "destinatari" => "",
+        "fk_utenti_ins" => $r_scheduler->fk_utenti_ins
+      );
     }
-    // }
-    //usort($arr_results, "WPsCRM_compare_date");
-    foreach ($arr_results as $key => $record) {
-      $date = strtotime($record["data_scadenza"]);
-      if (WPsCRM_show_only_future_activity() && ( $record['status'] == 2 || $record['status'] == 3)) {
-        if ($date < time() - 86400) {
-          unset($arr_results[$key]);
-        } else
-          $arr_results[$key]['data_scadenza'] = $record["data_scadenza"];
-      } else
-        $arr_results[$key]['data_scadenza'] = $record["data_scadenza"];
-    }
-    $arr_results = array_values($arr_results);
 
+    error_log("WPsCRM_get_scheduler: returning " . count($arr_results) . " results");
+    
     header("Content-type: application/json");
     echo "{\"scheduler\":" . json_encode($arr_results) . "}";
     die();

@@ -2333,7 +2333,7 @@ msgstr "Fatto"
 
 #: inc/crm/scheduler/list.php:166
 #, fuzzy
-msgid "Canceled"
+msgid "Abgesagt"
 msgstr "Annullato"
 
 #: inc/crm/scheduler/list.php:169
