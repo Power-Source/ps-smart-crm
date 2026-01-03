@@ -66,7 +66,6 @@ function WPsCRM_display_customer_form() {
 if ( $ID )
 {
     $sql = "select * from $table where $pk=$ID";
-    //echo $sql;
     $riga_db = $wpdb ? $wpdb->get_row($sql, ARRAY_A) : null;
     if ($riga_db) {
         // Merge DB values with defaults to avoid undefined key warnings
@@ -194,7 +193,7 @@ jQuery(document).ready(function ($) {
                 }, 500);
             },
             error: function (errorThrown) {
-                console.log(errorThrown);
+                // AJAX Fehler
             }
         })
     });
@@ -233,7 +232,7 @@ jQuery(document).ready(function ($) {
                 }
             },
             error: function (errorThrown) {
-                console.log(errorThrown);
+                // AJAX Fehler
             }
         });
     }
@@ -400,7 +399,6 @@ jQuery(document).ready(function ($) {
         var idString = ids.join(',');
         // Speichere in das value-Attribut
         $(this).attr('value', idString);
-        console.log('customerCategory changed - IDs:', ids, 'String:', idString);
     });
     
     $('#customerComesfrom').on('change', function(e) {
@@ -408,7 +406,6 @@ jQuery(document).ready(function ($) {
         var ids = s2Data.map(function(item) { return item.id; });
         var idString = ids.join(',');
         $(this).attr('value', idString);
-        console.log('customerComesfrom changed - IDs:', ids, 'String:', idString);
     });
     
     $('#customerInterests').on('change', function(e) {
@@ -416,7 +413,6 @@ jQuery(document).ready(function ($) {
         var ids = s2Data.map(function(item) { return item.id; });
         var idString = ids.join(',');
         $(this).attr('value', idString);
-        console.log('customerInterests changed - IDs:', ids, 'String:', idString);
     });
 
     // Parsley für Validierung
@@ -455,28 +451,20 @@ jQuery(document).ready(function ($) {
 
     // Speichern-Button
     $(document).on('click', '.saveForm', function(e) {
-        console.log('saveForm clicked!');
-        console.log('Event object:', e);
-        console.log('This element:', this);
         e.preventDefault();
         e.stopPropagation();
         var $form = $('#form_insert');
-        console.log('Form found:', $form.length);
         if ($form.parsley().validate()) {
             // Get SELECT2 values directly from the SELECT2 API
             var catVals = $('#customerCategory').val() || [];
             var intVals = $('#customerInterests').val() || [];
             var provVals = $('#customerComesfrom').val() || [];
             
-            console.log('SELECT2 values - cat:', catVals, 'int:', intVals, 'prov:', provVals);
-            
             // Serialize form + manually add SELECT2 values
             var formData = $form.serialize() + 
                 '&customerCategory=' + encodeURIComponent(Array.isArray(catVals) ? catVals.join(',') : catVals) +
                 '&customerInterests=' + encodeURIComponent(Array.isArray(intVals) ? intVals.join(',') : intVals) +
                 '&customerComesfrom=' + encodeURIComponent(Array.isArray(provVals) ? provVals.join(',') : provVals);
-            
-            console.log('FormData:', formData);
             
             showMouseLoader();
             $.ajax({
@@ -538,20 +526,11 @@ jQuery(document).ready(function ($) {
     if ($ts.length) {
         var $tabs = $ts.children('ul').children('li');
         var $panes = $ts.children('div');
-        console.log('Tabstrip gefunden:', $ts.length);
-        console.log('Tabs (li):', $tabs.length);
-        console.log('Panes (div):', $panes.length);
-        console.log('Tabstrip HTML:', $ts.html().substring(0, 500));
-        $panes.each(function(i){ 
-            console.log('Pane ' + i + ' - ID:', this.id, 'CLASS:', this.className, 'HTML:', $(this).html().substring(0, 100)); 
-        });
         function activate(i){
-            console.log('Aktiviere Tab:', i);
             $tabs.removeClass('active');
             $panes.removeClass('active').css('display', 'none');
             $tabs.eq(i).addClass('active');
             $panes.eq(i).addClass('active').css('display', 'block');
-            console.log('Tab aktiviert:', i, 'Pane:', $panes.eq(i));
         }
         $tabs.each(function(i){
             $(this).on('click', function(e){ e.preventDefault(); activate(i); });
@@ -571,13 +550,11 @@ jQuery(document).ready(function ($) {
                 // TAB 2 - Kontakte Grid
                 if (i === 1 && !gridContactsInitialized) {
                     gridContactsInitialized = true;
-                    console.log('Loading Contacts Grid...');
                     initContactsGrid();
                 }
                 // TAB 3 - Angebote Grid
                 if (i === 2 && !gridQuotesInitialized) {
                     gridQuotesInitialized = true;
-                    console.log('Loading Quotes Grid...');
                     initQuotesGrid();
                 }
                 // TAB 4 - Zusammenfassung/Scheduler Grid

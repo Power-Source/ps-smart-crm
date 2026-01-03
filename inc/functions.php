@@ -1090,7 +1090,6 @@ function WPsCRM_get_client_info() {
   $table = WPsCRM_TABLE."kunde";
   $ID_azienda = 1;
   $sql = "select firmenname, name, nachname, adresse, cap, standort, provinz, cod_fis, p_iva, tipo_cliente from $table where ID_kunde=$id_kunde";
-  //echo $sql;
   foreach ($wpdb->get_results($sql) as $record) {
     $arr[] = stripslashes_deep($record);
   }

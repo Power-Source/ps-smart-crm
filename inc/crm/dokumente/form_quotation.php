@@ -8,7 +8,6 @@ $scheduler_nonce = wp_create_nonce("update_scheduler");
 global $document;
 $generalOptions = get_option('CRM_general_settings');
 $documentOptions = get_option('CRM_documents_settings');
-//echo $documentOptions['default_vat'];
 $def_iva = $documentOptions['default_vat'];
 $accOptions = get_option("CRM_acc_settings");
 if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
