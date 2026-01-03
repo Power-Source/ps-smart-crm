@@ -187,8 +187,6 @@ $num=$wpdb->num_rows;
         var currentStep = jQuery('#formEditStep').serializeObject();
         currentStep.ID = jQuery('#editStep h3 span:last').text();
         var stepID = jQuery('#editStep h3 span:first').text();
-        console.log(currentStep);
-
             var _html = "";
             var s = "[";
             var jQuerycount = 0;
@@ -215,11 +213,9 @@ $num=$wpdb->num_rows;
 
             jQuery("#rule_" + currentStep.ID + "-step_" + stepID).remove();
             jQuery("#rule-" + currentStep.ID).find("ul").append(_html).hide();
-            console.log("qui" +_html)
             jQuery('#editStep').hide()
             setTimeout(function () {
             	var rule = jQuery('#existingRules').find('li[id="rule-' + currentStep.ID + '"] ul li');
-            	console.log(rule)
             	for (var l = 0; l < rule.length; l++) {
 
             		s += '{"ruleStep":"' + jQuery(rule[l]).find('.days').text() + '" ,"remindToCustomer":';
@@ -262,7 +258,6 @@ $num=$wpdb->num_rows;
             		},
             		type: "POST",
             		success: function (response) {
-            			console.log(response);
             			window.location.reload();
             		}
             	})
@@ -322,7 +317,6 @@ $num=$wpdb->num_rows;
 				complete = true;
 			},
 			error: function (errorThrown) {
-				console.log(errorThrown);
 			}
 		});
 
@@ -545,7 +539,6 @@ $num=$wpdb->num_rows;
             }
 
             s += ']';
-            console.log(s);
             $.ajax({
                 url: ajaxurl,
                 data: {
@@ -556,7 +549,6 @@ $num=$wpdb->num_rows;
                 },
                 type: "POST",
                 success: function (response) {
-                    console.log(response);
                     window.location.reload();
                 }
 
@@ -751,6 +743,14 @@ function drawRules(rules) {
     }
 
 			$('#existingRules ul').append(_html);
+
+            // Sort helper: order widgets by day value ascending
+            function sort_li(a, b) {
+                var da = parseInt($(a).find('.days').text(), 10) || 0;
+                var db = parseInt($(b).find('.days').text(), 10) || 0;
+                return da - db;
+            }
+
 			setTimeout(function () {
 				$(".list_items").each(function () {
 					var widget=$(this).find('.widget');

@@ -154,6 +154,9 @@ function WPsCRM_add_smartcrm_scripts(){
     wp_enqueue_style( 'crm-vanilla', plugin_dir_url( __FILE__ ).'css/crm-vanilla.css', array(), '1.0.0');
     
     // CRM Core JavaScript
+        // Suppress jQuery Migrate warnings (added BEFORE other scripts)
+        wp_add_inline_script( 'jquery', "window.jQuery && (window.jQuery.migrateMute = true);" );
+    
     wp_enqueue_script( 'pscrm-core', plugin_dir_url( __FILE__ ).'js/crm-core.js', array(), '1.0.0', true );
     wp_enqueue_script( 'pscrm-grid', plugin_dir_url( __FILE__ ).'js/crm-grid.js', array('pscrm-core', 'datatables-js'), '1.0.0', true );
     wp_enqueue_script( 'pscrm-datepicker', plugin_dir_url( __FILE__ ).'js/crm-datepicker.js', array('pscrm-core', 'flatpickr-js'), '1.0.0', true );

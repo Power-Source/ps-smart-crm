@@ -8,6 +8,15 @@
 (function(window) {
     'use strict';
 
+    // Suprimir jQuery Migrate warnings non-critical (deferred.pipe deprecated from Parsley.js)
+    const originalWarn = console.warn;
+    console.warn = function(...args) {
+        if (args[0] && args[0].includes && args[0].includes('JQMIGRATE: deferred.pipe()')) {
+            return; // Suprimir warning de deferred.pipe do Parsley.js
+        }
+        originalWarn.apply(console, args);
+    };
+
     /**
      * Hauptobjekt für PS Smart CRM
      */
@@ -305,7 +314,6 @@
             });
         } else {
             // Fallback: Console oder natives Alert
-            console.log(`[${type.toUpperCase()}] ${message}`);
             
             // Einfaches natives Notification-Element erstellen
             const notification = document.createElement('div');
