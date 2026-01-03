@@ -637,6 +637,12 @@ function WPsCRM_get_documents_for_customer() {
     $customer = $_REQUEST['id_cliente'];
     $oDocument = new CRM_document;
     $documents = $oDocument->get_documentsbyCustomerID($customer);
+    
+    // Sicherstellen dass $documents ein Array ist
+    if (!is_array($documents)) {
+      $documents = array();
+    }
+    
     foreach ($documents as $document) {
       //var_dump( WPsCRM_culture_date_format($document->einstiegsdatum));
       $date = WPsCRM_culture_date_format($document->einstiegsdatum);
@@ -648,24 +654,28 @@ function WPsCRM_get_documents_for_customer() {
     $SQL = "SELECT uploads FROM $table WHERE ID_kunde=$customer";
     $customerFiles = maybe_unserialize($wpdb->get_var($SQL));
     $uploads = array();
-    foreach ($customerFiles as $file) {
-      $meta = wp_get_attachment_metadata($file['id']);
-      $date = get_post($file['id'])->post_modified;
-      if ($file['thumbnail'] != null)
-        $thumb = $file['thumbnail'];
-      else
-        $thumb = $file['icon'];
-      $uploads[] = array(
-          'id' => $file['id'],
-          'url' => $file['url'],
-          'icon' => $file['icon'],
-          'description' => $file['description'],
-          'caption' => $file['caption'],
-          'thumbnail' => $thumb,
-          //'date'=>$meta['image_meta']['created_timestamp']*1000
-          'date' => $date,
-          'filename' => $meta['file']
-      );
+    
+    // Sicherstellen dass $customerFiles ein Array ist
+    if (is_array($customerFiles)) {
+      foreach ($customerFiles as $file) {
+        $meta = wp_get_attachment_metadata($file['id']);
+        $date = get_post($file['id'])->post_modified;
+        if ($file['thumbnail'] != null)
+          $thumb = $file['thumbnail'];
+        else
+          $thumb = $file['icon'];
+        $uploads[] = array(
+            'id' => $file['id'],
+            'url' => $file['url'],
+            'icon' => $file['icon'],
+            'description' => $file['description'],
+            'caption' => $file['caption'],
+            'thumbnail' => $thumb,
+            //'date'=>$meta['image_meta']['created_timestamp']*1000
+            'date' => $date,
+            'filename' => $meta['file']
+        );
+      }
     }
     header("Content-type: application/json");
     echo "{\"documents\":" . json_encode($documents) . ",\"files\": " . json_encode($uploads) . "}";
@@ -1079,7 +1089,7 @@ function WPsCRM_get_client_info() {
   $id_kunde = $_GET["id_kunde"];
   $table = WPsCRM_TABLE."kunde";
   $ID_azienda = 1;
-  $sql = "select adresse, cap, standort, provinz, cod_fis, p_iva, tipo_cliente from $table where ID_kunde=$id_kunde";
+  $sql = "select firmenname, name, nachname, adresse, cap, standort, provinz, cod_fis, p_iva, tipo_cliente from $table where ID_kunde=$id_kunde";
   //echo $sql;
   foreach ($wpdb->get_results($sql) as $record) {
     $arr[] = stripslashes_deep($record);

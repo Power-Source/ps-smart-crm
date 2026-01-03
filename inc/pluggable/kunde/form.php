@@ -561,6 +561,7 @@ jQuery(document).ready(function ($) {
         // Grid Initialisierung - nur bei vorhandenem Kunden
         <?php if ($ID): ?>
         var gridContactsInitialized = false;
+        var gridQuotesInitialized = false;
         var gridSchedulerInitialized = false;
         
         // Tab-Wechsel Event - initialisiere Grids lazy
@@ -573,13 +574,19 @@ jQuery(document).ready(function ($) {
                     console.log('Loading Contacts Grid...');
                     initContactsGrid();
                 }
+                // TAB 3 - Angebote Grid
+                if (i === 2 && !gridQuotesInitialized) {
+                    gridQuotesInitialized = true;
+                    console.log('Loading Quotes Grid...');
+                    initQuotesGrid();
+                }
                 // TAB 4 - Zusammenfassung/Scheduler Grid
                 if (i === 3 && !gridSchedulerInitialized) {
                     gridSchedulerInitialized = true;
                     console.log('Loading Scheduler Grid...');
                     initSchedulerGrid();
                 }
-                console.log('Tab clicked - Index:', i, 'gridContactsInitialized:', gridContactsInitialized, 'gridSchedulerInitialized:', gridSchedulerInitialized);
+                console.log('Tab clicked - Index:', i, 'gridContactsInitialized:', gridContactsInitialized, 'gridQuotesInitialized:', gridQuotesInitialized, 'gridSchedulerInitialized:', gridSchedulerInitialized);
             });
         });
         
@@ -625,6 +632,141 @@ jQuery(document).ready(function ($) {
                 error: function(xhr, status, error) {
                     console.error('Grid Fehler:', error, xhr.responseText);
                     jQuery('#grid_contacts').html('<div class="alert alert-warning"><?php _e("Fehler beim Laden der Kontakte","cpsmartcrm"); ?></div>');
+                }
+            });
+        }
+        
+        // Angebote Grid initialisieren
+        function initQuotesGrid() {
+            jQuery.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'WPsCRM_get_documents_for_customer',
+                    id_cliente: <?php echo $ID; ?>,
+                    security: '<?php echo wp_create_nonce("mailToCustomer"); ?>'
+                },
+                success: function(response) {
+                    console.log('Documents response:', response);
+                    var documents = response.documents || [];
+                    
+                    // Filter Angebote (tipo = 1)
+                    var quotes = documents.filter(function(doc){ return doc.tipo == 1; });
+                    var $gridQuotes = jQuery('#grid_quotes');
+                    if ($gridQuotes.length) {
+                        var html = '';
+                        if (quotes.length > 0) {
+                            // Button oberhalb der Tabelle
+                            html += '<div style="margin-bottom:15px;">';
+                            html += '<button type="button" class="btn btn-success btn_new_quote" title="<?php _e("Neues Angebot für diesen Kunden erstellen","cpsmartcrm"); ?>">';
+                            html += '<i class="glyphicon glyphicon-send"></i> ';
+                            html += '<?php _e("Neues Angebot","cpsmartcrm"); ?>';
+                            html += '</button>';
+                            html += '</div>';
+                            
+                            html += '<table class="table table-striped table-hover">';
+                            html += '<thead><tr>';
+                            html += '<th><?php _e("Nr.","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Datum","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Betrag","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Aktionen","cpsmartcrm"); ?></th>';
+                            html += '</tr></thead><tbody>';
+                            quotes.forEach(function(quote){
+                                var editUrl = '<?php echo admin_url("admin.php?page=smart-crm&p=dokumente/form_quotation.php&ID="); ?>' + quote.id;
+                                var printUrl = '<?php echo admin_url("admin.php?page=smart-crm&p=dokumente/document_print.php&id_invoice="); ?>' + quote.id;
+                                html += '<tr>';
+                                html += '<td>' + (quote.progressivo || quote.id) + '</td>';
+                                html += '<td>' + (quote.culture_einstiegsdatum || quote.einstiegsdatum || '') + '</td>';
+                                html += '<td>' + (quote.totale_doc || '0.00') + ' <?php echo WPsCRM_DEFAULT_CURRENCY_SYMBOL; ?></td>';
+                                html += '<td>';
+                                html += '<a href="' + editUrl + '" class="btn btn-sm btn-primary" title="<?php _e("Bearbeiten","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-pencil"></i></a> ';
+                                html += '<a href="' + printUrl + '" target="_blank" class="btn btn-sm btn-info" title="<?php _e("Drucken","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-print"></i></a>';
+                                html += '</td>';
+                                html += '</tr>';
+                            });
+                            html += '</tbody></table>';
+                        } else {
+                            // Keine Angebote: Zeige Text + Button
+                            html += '<div class="alert alert-info" style="margin-bottom:20px;">';
+                            html += '<p style="margin-bottom:15px;font-size:1.1em;"><?php _e("Dieser Kunde hat noch keine Angebote erhalten. Erstelle ein","cpsmartcrm"); ?></p>';
+                            html += '<button type="button" class="btn btn-success btn-lg btn_new_quote" title="<?php _e("Neues Angebot für diesen Kunden erstellen","cpsmartcrm"); ?>">';
+                            html += '<i class="glyphicon glyphicon-send"></i> ';
+                            html += '<?php _e("Neues Angebot","cpsmartcrm"); ?>';
+                            html += '</button>';
+                            html += '</div>';
+                        }
+                        $gridQuotes.html(html);
+                        
+                        // Button-Handler neu binden (da dynamisch erstellt)
+                        $gridQuotes.find('.btn_new_quote').on('click', function(e) {
+                            e.preventDefault();
+                            var quoteUrl = '<?php echo admin_url("admin.php?page=smart-crm&p=dokumente/form_quotation.php&cliente=".$ID); ?>';
+                            window.location.href = quoteUrl;
+                        });
+                    }
+                    
+                    // Filter Rechnungen (tipo = 2)
+                    var invoices = documents.filter(function(doc){ return doc.tipo == 2; });
+                    var $gridInvoices = jQuery('#grid_invoices');
+                    if ($gridInvoices.length) {
+                        var htmlInv = '';
+                        if (invoices.length > 0) {
+                            // Button oberhalb der Tabelle
+                            htmlInv += '<div style="margin-bottom:15px;">';
+                            htmlInv += '<button type="button" class="btn btn-success btn_new_invoice" title="<?php _e("Neue Rechnung für diesen Kunden erstellen","cpsmartcrm"); ?>">';
+                            htmlInv += '<i class="glyphicon glyphicon-file"></i> ';
+                            htmlInv += '<?php _e("Neue Rechnung","cpsmartcrm"); ?>';
+                            htmlInv += '</button>';
+                            htmlInv += '</div>';
+                            
+                            htmlInv += '<table class="table table-striped table-hover">';
+                            htmlInv += '<thead><tr>';
+                            htmlInv += '<th><?php _e("Nr.","cpsmartcrm"); ?></th>';
+                            htmlInv += '<th><?php _e("Datum","cpsmartcrm"); ?></th>';
+                            htmlInv += '<th><?php _e("Betrag","cpsmartcrm"); ?></th>';
+                            htmlInv += '<th><?php _e("Status","cpsmartcrm"); ?></th>';
+                            htmlInv += '<th><?php _e("Aktionen","cpsmartcrm"); ?></th>';
+                            htmlInv += '</tr></thead><tbody>';
+                            invoices.forEach(function(invoice){
+                                var editUrl = '<?php echo admin_url("admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID="); ?>' + invoice.id;
+                                var printUrl = '<?php echo admin_url("admin.php?page=smart-crm&p=dokumente/document_print.php&id_invoice="); ?>' + invoice.id;
+                                var statusBadge = invoice.pagato == 'Yes' ? '<span class="label label-success"><?php _e("Bezahlt","cpsmartcrm"); ?></span>' : '<span class="label label-warning"><?php _e("Offen","cpsmartcrm"); ?></span>';
+                                htmlInv += '<tr>';
+                                htmlInv += '<td>' + (invoice.progressivo || invoice.id) + '</td>';
+                                htmlInv += '<td>' + (invoice.culture_einstiegsdatum || invoice.einstiegsdatum || '') + '</td>';
+                                htmlInv += '<td>' + (invoice.totale_doc || '0.00') + ' <?php echo WPsCRM_DEFAULT_CURRENCY_SYMBOL; ?></td>';
+                                htmlInv += '<td>' + statusBadge + '</td>';
+                                htmlInv += '<td>';
+                                htmlInv += '<a href="' + editUrl + '" class="btn btn-sm btn-primary" title="<?php _e("Bearbeiten","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-pencil"></i></a> ';
+                                htmlInv += '<a href="' + printUrl + '" target="_blank" class="btn btn-sm btn-info" title="<?php _e("Drucken","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-print"></i></a>';
+                                htmlInv += '</td>';
+                                htmlInv += '</tr>';
+                            });
+                            htmlInv += '</tbody></table>';
+                        } else {
+                            // Keine Rechnungen: Zeige Text + Button
+                            htmlInv += '<div class="alert alert-info" style="margin-bottom:20px;">';
+                            htmlInv += '<p style="margin-bottom:15px;font-size:1.1em;"><?php _e("Dieser Kunde hat noch keine Rechnungen. Erstelle eine","cpsmartcrm"); ?></p>';
+                            htmlInv += '<button type="button" class="btn btn-success btn-lg btn_new_invoice" title="<?php _e("Neue Rechnung für diesen Kunden erstellen","cpsmartcrm"); ?>">';
+                            htmlInv += '<i class="glyphicon glyphicon-file"></i> ';
+                            htmlInv += '<?php _e("Neue Rechnung","cpsmartcrm"); ?>';
+                            htmlInv += '</button>';
+                            htmlInv += '</div>';
+                        }
+                        $gridInvoices.html(htmlInv);
+                        
+                        // Button-Handler neu binden (da dynamisch erstellt)
+                        $gridInvoices.find('.btn_new_invoice').on('click', function(e) {
+                            e.preventDefault();
+                            var invoiceUrl = '<?php echo admin_url("admin.php?page=smart-crm&p=dokumente/form_invoice.php&cliente=".$ID); ?>';
+                            window.location.href = invoiceUrl;
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Documents Fehler:', error, xhr.responseText);
+                    jQuery('#grid_quotes').html('<div class="alert alert-warning"><?php _e("Fehler beim Laden der Dokumente","cpsmartcrm"); ?></div>');
+                    jQuery('#grid_invoices').html('');
                 }
             });
         }
@@ -744,7 +886,7 @@ jQuery(document).ready(function ($) {
             <li id="tab1"><?php _e('Stammdaten','cpsmartcrm')?></li>
             <?php if ($ID){ ?>
             <li id="tab2"><?php _e('Kontakte','cpsmartcrm')?></li>
-            <li id="tab3"><?php _e('Angebote','cpsmartcrm')?></li>
+            <li id="tab3"><?php _e('Dokumente','cpsmartcrm')?></li>
             <li id="tab4"><?php _e('Zusammenfassung','cpsmartcrm')?></li>
             <?php 
                 do_action('WPsCRM_add_tabs_to_customer_form');
@@ -948,9 +1090,13 @@ jQuery(document).ready(function ($) {
         </div>
         <!--END TAB 2 -->
         
-        <!-- TAB 3: Angebote -->
+        <!-- TAB 3: Dokumente (Angebote & Rechnungen) -->
         <div>
-            <p><?php _e('Angebote kommen hier hin','cpsmartcrm'); ?></p>
+            <h4 class="page-header"><?php _e('Angebote','cpsmartcrm')?></h4>
+            <div id="grid_quotes"></div>
+            
+            <h4 class="page-header" style="margin-top:40px;"><?php _e('Rechnungen','cpsmartcrm')?></h4>
+            <div id="grid_invoices"></div>
         </div>
         <!-- END TAB 3 -->
         

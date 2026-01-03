@@ -384,14 +384,13 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
   </div>
 
  <script type="text/javascript">
+jQuery(document).ready(function ($) {
  <?php
   include (WPsCRM_DIR . "/inc/crm/kunde/script_todo.php" );
   include (WPsCRM_DIR . "/inc/crm/kunde/script_appuntamento.php" );
   include (WPsCRM_DIR . "/inc/crm/kunde/script_attivita.php" );
   include (WPsCRM_DIR . "/inc/crm/kunde/script_mail.php" );
   ?>
-
-jQuery(document).ready(function ($) {
     // Tooltip bleibt wie gehabt
     $("._tooltip").tooltip({
         content: "<h4><?php _e('BUTTONS LEGENDE', 'cpsmartcrm') ?>:</h4>\
@@ -422,7 +421,7 @@ jQuery(document).ready(function ($) {
             data: function (params) {
                 return {
                     action: 'WPsCRM_get_clients2',
-                    q: params.term
+                    firmenname: params.term
                 };
             },
             processResults: function (data) {
@@ -430,7 +429,7 @@ jQuery(document).ready(function ($) {
                     results: $.map(data.clients, function (obj) {
                         return {
                             id: obj.ID_kunde,
-                            text: obj.firmenname ? obj.firmenname : (obj.name + " " + obj.nachname)
+                            text: obj.firmenname || 'Kein Name'
                         };
                     })
                 };
@@ -445,8 +444,33 @@ jQuery(document).ready(function ($) {
         $("#fk_kunde").prop("disabled", true);
         $('#hidden_fk_kunde').val('<?php echo $fk_kunde ?>');
     <?php endif; ?>
+    
     <?php if (isset($_GET['cliente'])) : ?>
-        $("#fk_kunde").val("<?php echo esc_js($_GET['cliente']); ?>").trigger('change');
+        // Kundendaten via AJAX laden wenn cliente Parameter übergeben wird
+        var clienteId = "<?php echo esc_js($_GET['cliente']); ?>";
+        $.ajax({
+            url: ajaxurl,
+            data: {
+                action: 'WPsCRM_get_client_info',
+                id_kunde: clienteId
+            },
+            success: function (result) {
+                var parseData = result.info || result;
+                if (parseData && parseData[0]) {
+                    var kundenName = parseData[0].firmenname || (parseData[0].name + " " + parseData[0].nachname);
+                    // Option zum Select2 hinzufügen und auswählen
+                    $("#fk_kunde").append(new Option(kundenName, clienteId, true, true)).trigger('change');
+                    // Kundendaten in Formular eintragen
+                    $("#adresse").val(parseData[0].adresse);
+                    $("#cap").val(parseData[0].cap);
+                    $("#standort").val(parseData[0].standort);
+                    $("#provinz").val(parseData[0].provinz);
+                    $("#cod_fis").val(parseData[0].cod_fis);
+                    $("#p_iva").val(parseData[0].p_iva);
+                    $("#tipo_cliente").val(parseData[0].tipo_cliente);
+                }
+            }
+        });
     <?php endif; ?>
 
     // Automatisches Ausfüllen der Kundendaten
