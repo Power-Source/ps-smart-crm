@@ -35,7 +35,18 @@ if ( in_array( 'wp-smart-crm-agents/wp-smart-crm-agents.php', apply_filters( 'ac
     if(isset($_GET['p']))
 		$p=$_GET['p'];
 
-    include(plugin_dir_path(__FILE__ ))."$p";
+    // Handle new modular accounting system
+    if (strpos($p, 'buchhaltung/') === 0) {
+        // Redirect to new accounting system
+        include(dirname(plugin_dir_path(__FILE__)) . '/' )."$p";
+    } else {
+        // Handle old accounting redirects
+        if ($p === 'accounting/dashboard.php' || $p === 'accounting/bookings.php' || $p === 'accounting/settings.php') {
+            include(dirname(plugin_dir_path(__FILE__)) . '/' )."buchhaltung/index.php";
+        } else {
+            include(plugin_dir_path(__FILE__ ))."$p";
+        }
+    }
     echo '<small style="text-align:center;top:30px;position:relative">ENTWICKELT VON PSOURCE <a href="https://cp-psource.github.io/ps-smart-crm">https://cp-psource.github.io/ps-smart-crm</a></small></div>';
 	?>
 

@@ -153,10 +153,10 @@ $recent_invoices = $wpdb->get_results(
     <?php endif; ?>
 
     <p style="margin-top: 16px; display: flex; gap: 8px;">
-        <a class="button button-primary" href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&accounting_tab=bookings')); ?>">
+        <a class="button button-primary" href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&p=buchhaltung/index.php&accounting_tab=bookings')); ?>">
             <?php _e('Zur Buchungsverwaltung', 'cpsmartcrm'); ?>
         </a>
-        <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&accounting_tab=settings')); ?>">
+        <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&p=buchhaltung/index.php&accounting_tab=settings')); ?>">
             <?php _e('Zu den Einstellungen', 'cpsmartcrm'); ?>
         </a>
         <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&p=dokumente/list.php')); ?>">

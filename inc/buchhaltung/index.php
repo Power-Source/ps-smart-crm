@@ -23,6 +23,12 @@ $available_tabs = array(
         'file' => 'tabs/dashboard.php',
         'capability' => 'manage_crm',
     ),
+    'accounting' => array(
+        'label' => __('Buchhaltung', 'cpsmartcrm'),
+        'icon' => 'glyphicon glyphicon-book',
+        'file' => 'tabs/accounting.php',
+        'capability' => 'manage_crm',
+    ),
     'bookings' => array(
         'label' => __('Buchungen', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-list',
@@ -35,13 +41,25 @@ $available_tabs = array(
         'file' => 'tabs/settings.php',
         'capability' => 'manage_crm',
     ),
+    'integrations' => array(
+        'label' => __('Integrationen', 'cpsmartcrm'),
+        'icon' => 'glyphicon glyphicon-plug',
+        'file' => 'tabs/integrations.php',
+        'capability' => 'manage_crm',
+    ),
+    'statistics' => array(
+        'label' => __('Statistik', 'cpsmartcrm'),
+        'icon' => 'glyphicon glyphicon-stats',
+        'file' => 'tabs/statistics.php',
+        'capability' => 'manage_crm',
+    ),
 );
 
 // Allow third-party plugins to add tabs
 $available_tabs = apply_filters('WPsCRM_accounting_tabs', $available_tabs);
 
 // Determine active tab
-$active_tab = sanitize_key($_GET['tab'] ?? 'dashboard');
+$active_tab = sanitize_key($_GET['accounting_tab'] ?? 'dashboard');
 
 // Validate tab exists and user has capability
 if (!isset($available_tabs[$active_tab]) || !current_user_can($available_tabs[$active_tab]['capability'])) {
@@ -65,7 +83,7 @@ if (!file_exists($tab_file)) {
     <nav class="nav-tab-wrapper" style="background: #fff; border-bottom: 1px solid #ccc; margin-bottom: 20px;">
         <?php foreach ($available_tabs as $tab_key => $tab_info) : ?>
             <?php if (current_user_can($tab_info['capability'])) : ?>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&accounting_tab=' . $tab_key)); ?>" 
+                     <a href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&p=buchhaltung/index.php&accounting_tab=' . $tab_key)); ?>" 
                    class="nav-tab <?php echo ($active_tab === $tab_key) ? 'nav-tab-active' : ''; ?>" 
                    style="padding: 12px 16px; display: inline-flex; align-items: center; gap: 8px;">
                     <?php if (!empty($tab_info['icon'])) : ?>

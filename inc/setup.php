@@ -208,6 +208,38 @@ function WPsCRM_crm_install() {
   PRIMARY KEY (`ID`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1 ;";
 
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."expenses` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `data` date NOT NULL,
+  `kategoria` varchar(100) NOT NULL,
+  `descrizione` text NOT NULL,
+  `imponibile` float(9,2) unsigned NOT NULL,
+  `aliquota` float(4,2) unsigned NOT NULL DEFAULT '19',
+  `imposta` float(9,2) unsigned NOT NULL,
+  `totale` float(9,2) unsigned NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `data` (`data`),
+  KEY `kategoria` (`kategoria`)
+) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
+
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."incomes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `data` date NOT NULL,
+  `kategoria` varchar(100) NOT NULL,
+  `descrizione` text NOT NULL,
+  `imponibile` float(9,2) unsigned NOT NULL,
+  `aliquota` float(4,2) unsigned NOT NULL DEFAULT '19',
+  `imposta` float(9,2) unsigned NOT NULL,
+  `totale` float(9,2) unsigned NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `data` (`data`),
+  KEY `kategoria` (`kategoria`)
+) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
+
     //print_r ($sql);//exit;
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	$namefile="error_setup_".date("YmdHi").".txt";

@@ -128,6 +128,7 @@ if (isset($_POST['export_csv']) && check_admin_referer('bookings_bulk_action')) 
 
 <form method="get" action="" style="background: #f8f8f8; padding: 16px; border-radius: 4px; margin-bottom: 16px;">
     <input type="hidden" name="page" value="smart-crm" />
+    <input type="hidden" name="p" value="buchhaltung/index.php" />
     <input type="hidden" name="accounting_tab" value="bookings" />
 
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
@@ -159,7 +160,7 @@ if (isset($_POST['export_csv']) && check_admin_referer('bookings_bulk_action')) 
 
     <button type="submit" class="button button-primary"><?php _e('Filtern', 'cpsmartcrm'); ?></button>
     <?php if (!empty($status) || !empty($date_from) || !empty($date_to) || !empty($search)) : ?>
-        <a href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&accounting_tab=bookings')); ?>" class="button">
+        <a href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&p=buchhaltung/index.php&accounting_tab=bookings')); ?>" class="button">
             <?php _e('Zurücksetzen', 'cpsmartcrm'); ?>
         </a>
     <?php endif; ?>
