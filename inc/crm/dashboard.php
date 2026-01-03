@@ -233,12 +233,12 @@ $page="dashboard";
     </li>
     <?php } ?>
     <?php if($privileges ==null || $privileges['customer'] ==2){?>
-	<li onclick="location.href='<?php echo admin_url('admin.php?page=smart-crm&p=clienti/form.php')?>';return false;">
+	<li onclick="location.href='<?php echo admin_url('admin.php?page=smart-crm&p=kunde/form.php')?>';return false;">
         <i class="glyphicon glyphicon-user"></i><br /><b ><?php _e('Neukunde','cpsmartcrm')?><small></small></b>
     </li>
     <?php } ?>
     <?php if($privileges ==null || $privileges['quote'] ==2){?>
-    <li onClick="location.href='<?php echo admin_url('admin.php?page=smart-crm&p=documenti/form_quotation.php&type=1')?>';return false;">
+    <li onClick="location.href='<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php&type=1')?>';return false;">
 		<i class="glyphicon glyphicon-circle-arrow-right"></i>
 		<br />
 		<b>
@@ -248,7 +248,7 @@ $page="dashboard";
 	</li>
     <?php } ?>
     <?php if($privileges ==null || $privileges['invoice'] ==2){?>
-	<li onclick="location.href='<?php echo admin_url('admin.php?page=smart-crm&p=documenti/form_invoice.php&type=2')?>';return false;">
+	<li onclick="location.href='<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&type=2')?>';return false;">
         <i class="glyphicon glyphicon-open-file"></i><br /><b ><?php _e('Neue Rechnung','cpsmartcrm')?><small></small></b>
     </li>
     <?php } ?>

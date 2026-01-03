@@ -7,12 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Moderne Planerliste mit Vanilla.js statt Kendo UI
  */
 
-function WPsCRM_display_scheduler_list() {
-	$delete_nonce= wp_create_nonce( "delete_activity" );
-	$update_nonce= wp_create_nonce( "update_scheduler" );
-	$current_user = wp_get_current_user();
-	$user_id = $current_user->ID;
-	$options = get_option('CRM_general_settings');
+$delete_nonce= wp_create_nonce( "delete_activity" );
+$update_nonce= wp_create_nonce( "update_scheduler" );
+$current_user = wp_get_current_user();
+$user_id = $current_user->ID;
+$options = get_option('CRM_general_settings');
 ?>
 
 <!-- Filter Toolbar -->
@@ -72,74 +71,62 @@ function WPsCRM_display_scheduler_list() {
 <div id="dialog-view" class="_modal"></div>
 
 <script type="text/javascript">
-(function($) {
-	'use strict';
-	
-	$(document).ready(function() {
-		
-		// Prüfe ob PSCRM vorhanden ist
-		if (typeof PSCRM === 'undefined' || typeof PSCRM.createSchedulerGrid !== 'function') {
-			console.error('PSCRM oder createSchedulerGrid nicht geladen!');
-			return;
-		}
-		
-		try {
-			// Grid-Konfiguration
-			const gridOptions = {
-				currentUser: <?php echo intval($user_id) ?>,
-				isAdmin: <?php echo current_user_can('administrator') ? 'true' : 'false' ?>,
-				deletionPrivileges: <?php echo (isset($options['deletion_privileges']) && $options['deletion_privileges'] == 1) ? 'true' : 'false' ?>,
-				deleteNonce: '<?php echo esc_attr($delete_nonce) ?>',
-				baseUrl: 'admin.php?page=smart-crm'
-			};
-			
-			// Scheduler Grid erstellen
-			const schedulerGrid = PSCRM.createSchedulerGrid('#grid', gridOptions);
-			
-			// Activity Modal Handler (für bereits implementierte Kendo Fenster)
-			$(document).on('click', '#save_activity_from_modal', function () {
-				var id = $(this).data('id');
-				$('.modal_loader').show();
-				
-				$.ajax({
-					url: ajaxurl,
-					method: 'POST',
-					data: {
-						action: 'WPsCRM_scheduler_update',
-						ID: id,
-						fatto: $('input[name="fatto"]:checked').val(),
-						esito: $('#esito').val(),
-						self_client: '1',
-						security: '<?php echo esc_attr($update_nonce) ?>'
-					},
-					success: function (result) {
-						schedulerGrid.reload();
-						
-						setTimeout(function () {
-							$('._modal').fadeOut('fast');
-							$('.modal_loader').fadeOut('fast');
-						}, 200);
-						
-						PSCRM.notify('Aktivität aktualisiert', 'success');
-					},
-					error: function (errorThrown) {
-						console.log(errorThrown);
-						PSCRM.notify('Fehler beim Aktualisieren', 'error');
-					}
-				});
-			});
-			
-			$(document).on('click', '._reset', function () {
-				$('._ modal').fadeOut('fast');
-				$('input[type="reset"]').trigger('click');
-			});
-			
-		} catch(err) {
-			console.error('Fehler beim Initialisieren der Scheduler Grid:', err);
-		}
-	});
-})(jQuery);
-</script>
+jQuery(document).ready(function($) {
+    console.log('🚀 Vanilla.js Scheduler Grid wird initialisiert...');
+    
+    // Grid-Konfiguration
+    const gridOptions = {
+        currentUser: <?php echo $user_id ?>,
+        isAdmin: <?php echo current_user_can('administrator') ? 'true' : 'false' ?>,
+        deletionPrivileges: <?php echo (isset($options['deletion_privileges']) && $options['deletion_privileges'] == 1) ? 'true' : 'false' ?>,
+        deleteNonce: '<?php echo $delete_nonce ?>',
+        baseUrl: 'admin.php?page=smart-crm'
+    };
+    
+    // Scheduler Grid erstellen
+    const schedulerGrid = PSCRM.createSchedulerGrid('#grid', gridOptions);
+    
+    console.log('✅ Vanilla.js Scheduler Grid initialisiert');
+    
+    // Activity Modal Handler (für bereits implementierte Kendo Fenster)
+    $(document).on('click', '#save_activity_from_modal', function () {
+        var id = $(this).data('id');
+        $('.modal_loader').show();
+        
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+                action: 'WPsCRM_scheduler_update',
+                ID: id,
+                fatto: $('input[name="fatto"]:checked').val(),
+                esito: $('#esito').val(),
+                self_client: '1',
+                security: '<?php echo $update_nonce?>'
+            },
+            success: function (result) {
+                schedulerGrid.reload();
+                
+                setTimeout(function () {
+                    $('._modal').fadeOut('fast');
+                    $('.modal_loader').fadeOut('fast');
+                }, 200);
+                
+                PSCRM.notify('Aktivität aktualisiert', 'success');
+            },
+            error: function (errorThrown) {
+                console.log(errorThrown);
+                PSCRM.notify('Fehler beim Aktualisieren', 'error');
+            }
+        });
+    });
+    
+    $(document).on('click', '._reset', function () {
+        $('._modal').fadeOut('fast');
+        $('input[type="reset"]').trigger('click');
+    });
+    
+    // Notification anzeigen
     setTimeout(function() {
         PSCRM.notify('Vanilla.js Scheduler ist aktiv! 🎉', 'info', 5000);
     }, 500);
@@ -160,5 +147,3 @@ function WPsCRM_display_scheduler_list() {
         display: inline-block;
     }
 </style>
-<?php
-}

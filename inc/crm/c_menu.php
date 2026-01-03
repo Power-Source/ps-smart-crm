@@ -15,7 +15,7 @@ $current_user = wp_get_current_user();
 	</li>
     <li role="presentation" <?php echo strstr($menu,"clienti") ? "class=\"active\"" :null  ?>>
         <?php if(!isset($privileges) || $privileges['customer'] >0){?>
-        <a href="<?php echo admin_url('admin.php?page=smart-crm&p=clienti/list.php')?>"><i class="glyphicon glyphicon-user"></i> <?php _e('Kunden','cpsmartcrm') ?></a>
+        <a href="<?php echo admin_url('admin.php?page=smart-crm&p=kunde/list.php')?>"><i class="glyphicon glyphicon-user"></i> <?php _e('Kunden','cpsmartcrm') ?></a>
         <?php } else{ ?>
         <a href="#" onclick="noPermission('customers');return false;">
             <i class="glyphicon glyphicon-user"></i><?php _e('Kunden','cpsmartcrm') ?>
@@ -25,7 +25,7 @@ $current_user = wp_get_current_user();
         <ul>
 
             <li role="presentation" <?php echo strstr($menu,"clienti") ? "class=\"active\"" :null  ?>>
-                <a href="<?php echo admin_url('admin.php?page=smart-crm&p=clienti/list.php')?>">
+                <a href="<?php echo admin_url('admin.php?page=smart-crm&p=kunde/list.php')?>">
                     <i class="glyphicon glyphicon-align-justify"></i>
                     <?php _e('LISTE','cpsmartcrm')?>&raquo;
                 </a>
@@ -33,7 +33,7 @@ $current_user = wp_get_current_user();
 
             <?php if(!isset($privileges) || $privileges['customer']==2){?>
             <li role="presentation" <?php echo strstr($menu,"documenti") ? "class=\"active\"" :null  ?>>
-                <a href="<?php echo admin_url('admin.php?page=smart-crm&p=clienti/form.php')?>">
+                <a href="<?php echo admin_url('admin.php?page=smart-crm&p=kunde/form.php')?>">
                     <i class="glyphicon  glyphicon-user"></i><?php _e('NEUKUNDE','cpsmartcrm')?>&raquo;
                 </a>
             </li>
@@ -43,7 +43,7 @@ $current_user = wp_get_current_user();
 	</li>
 <?php if(isset($options['services']) &&$options['services'] ==1){?>
     <li role="presentation" <?php echo strstr($menu,"articoli") ? "class=\"active\"" :null  ?>>
-        <a href="<?php echo admin_url('admin.php?page=smart-crm&p=articoli/list.php')?>"><i class="glyphicon glyphicon-star-empty"></i> <?php _e('Dienstleistungen','cpsmartcrm') ?></a>
+        <a href="<?php echo admin_url('admin.php?page=smart-crm&p=artikel/list.php')?>"><i class="glyphicon glyphicon-star-empty"></i> <?php _e('Dienstleistungen','cpsmartcrm') ?></a>
 	</li>
 <?php } 
 	is_multisite() ? $filter=get_blog_option(get_current_blog_id(), 'active_plugins' ) : $filter=get_option('active_plugins' );
@@ -87,14 +87,14 @@ $current_user = wp_get_current_user();
 	<?php } ?>
     <li role="presentation" <?php echo strstr($menu,"documenti") ? "class=\"active\"" :null  ?>>
         <?php if(!isset($privileges) || $privileges['quote'] >0 || $privileges['invoice'] >0){?>
-        <a href="<?php echo admin_url('admin.php?page=smart-crm&p=documenti/list.php')?>"><i class="glyphicon glyphicon-th-list"></i> <?php _e('Dokumente','cpsmartcrm') ?></a>
+        <a href="<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/list.php')?>"><i class="glyphicon glyphicon-th-list"></i> <?php _e('Dokumente','cpsmartcrm') ?></a>
         <?php } else{ ?>
         <a href="#" onclick="noPermission('documents');return false;"><i class="glyphicon glyphicon-th-list"></i> <?php _e('Dokumente','cpsmartcrm') ?></a>
         <?php } ?>
         <?php if(!isset($privileges) || $privileges['quote'] >0 || $privileges['invoice'] >0){?>
 		<ul>
 			<li role="presentation" <?php echo strstr($menu,"documenti") ? "class=\"active\"" :null  ?>>
-				<a href="<?php echo admin_url('admin.php?page=smart-crm&p=documenti/list.php')?>">
+				<a href="<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/list.php')?>">
 					<i class="glyphicon glyphicon-align-justify"></i>
 					<?php _e('LISTE','cpsmartcrm')?>&raquo;
 				</a>
@@ -102,7 +102,7 @@ $current_user = wp_get_current_user();
             <?php } ?>
             <?php if(!isset($privileges) || $privileges['invoice'] ==2){?>
 			<li role="presentation" <?php echo strstr($menu,"documenti") ? "class=\"active\"" :null  ?>>
-				<a href="<?php echo admin_url('admin.php?page=smart-crm&p=documenti/form_invoice.php')?>">
+				<a href="<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php')?>">
 					<i class="glyphicon  glyphicon-fire"></i>
 				<?php _e('NEUE RECHNUNG','cpsmartcrm')?>&raquo;
 			</a>
@@ -110,7 +110,7 @@ $current_user = wp_get_current_user();
             <?php } ?>
             <?php if(!isset($privileges) || $privileges['quote'] ==2){?>
 		    <li role="presentation" <?php echo strstr($menu,"documenti") ? "class=\"active\"" :null  ?>>
-				<a href="<?php echo admin_url('admin.php?page=smart-crm&p=documenti/form_quotation.php')?>">
+				<a href="<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php')?>">
 					<i class="glyphicon  glyphicon-send"></i>
 				<?php _e('NEUES ANGEBOT','cpsmartcrm') ?>&raquo;
 				</a>

@@ -1,6 +1,4 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit;
-
-function WPsCRM_display_documents_list() {
 	$delete_nonce= wp_create_nonce( "delete_document" );
 	$update_nonce= wp_create_nonce( "update_document" );
 	do_action('WPsCRM_documents_grid_toolbar');
@@ -70,37 +68,55 @@ function WPsCRM_display_documents_list() {
 </div>
 
 <script type="text/javascript">
-(function($) {
-	'use strict';
+jQuery(document).ready(function($) {
 	
-	$(document).ready(function() {
-		// Prüfe ob PSCRM vorhanden ist
-		if (typeof PSCRM === 'undefined') {
-			console.error('PSCRM nicht geladen!');
-			return;
-		}
+	// Tab-Funktionalität
+	$('.pscrm-tab-nav li').on('click', function() {
+		const tab = $(this).data('tab');
 		
-		try {
-			// Tab-Funktionalität
-			$('.pscrm-tab-nav li').on('click', function() {
-				const tab = $(this).data('tab');
-				
-				// Tab Navigation aktivieren
-				$('.pscrm-tab-nav li').removeClass('active');
-				$(this).addClass('active');
-				
-				// Tab Content anzeigen
-				$('.pscrm-tab-content').removeClass('active');
-				$('#tab-' + tab).addClass('active');
-			});
-			
-			// Rechnungen Grid
-			const invoicesGrid = PSCRM.createDocumentsGrid('#grid-invoices', {
-				type: 'invoice',
-				height: <?php echo intval($gridHeight) ?>,
-				security: '<?php echo esc_attr($delete_nonce) ?>',
-				dateFormat: '<?php echo esc_attr(WPsCRM_DATEFORMAT) ?>',
-				currencySymbol: '<?php echo esc_attr(html_entity_decode(WPsCRM_DEFAULT_CURRENCY_SYMBOL)) ?>',
+		// Tab Navigation aktivieren
+		$('.pscrm-tab-nav li').removeClass('active');
+		$(this).addClass('active');
+		
+		// Tab Content anzeigen
+		$('.pscrm-tab-content').removeClass('active');
+		$('#tab-' + tab).addClass('active');
+	});
+	
+	// Rechnungen Grid
+	const invoicesGrid = PSCRM.createDocumentsGrid('grid-invoices', {
+		type: 'invoice',
+		height: <?php echo $gridHeight ?>,
+		security: '<?php echo $delete_nonce ?>',
+		dateFormat: '<?php echo WPsCRM_DATEFORMAT ?>',
+		currencySymbol: '<?php echo html_entity_decode(WPsCRM_DEFAULT_CURRENCY_SYMBOL) ?>',
+		texts: {
+			invoice: '<?php _e('Rechnung', 'cpsmartcrm') ?>',
+			quote: '<?php _e('Angebot', 'cpsmartcrm') ?>',
+			edit: '<?php _e('Bearbeiten', 'cpsmartcrm') ?>',
+			delete: '<?php _e('Löschen', 'cpsmartcrm') ?>',
+			print: '<?php _e('Drucken', 'cpsmartcrm') ?>',
+			confirmDelete: '<?php _e('Dokument wirklich löschen?', 'cpsmartcrm') ?>',
+			filterByDate: '<?php _e('Nach Datum filtern', 'cpsmartcrm') ?>',
+			filterByAgent: '<?php _e('Nach Agent filtern', 'cpsmartcrm') ?>',
+			from: '<?php _e('Von', 'cpsmartcrm') ?>',
+			to: '<?php _e('Bis', 'cpsmartcrm') ?>',
+			filter: '<?php _e('Filter', 'cpsmartcrm') ?>',
+			resetFilters: '<?php _e('Filter zurücksetzen', 'cpsmartcrm') ?>',
+			total: '<?php _e('Total', 'cpsmartcrm') ?>'
+		}
+	});
+	
+	// Angebote Grid (Lazy Loading - erst wenn Tab aktiviert wird)
+	let quotesGridLoaded = false;
+	$('.pscrm-tab-nav li[data-tab="quotes"]').on('click', function() {
+		if (!quotesGridLoaded) {
+			const quotesGrid = PSCRM.createDocumentsGrid('grid-quotes', {
+				type: 'quote',
+				height: <?php echo $gridHeight ?>,
+				security: '<?php echo $delete_nonce ?>',
+				dateFormat: '<?php echo WPsCRM_DATEFORMAT ?>',
+				currencySymbol: '<?php echo html_entity_decode(WPsCRM_DEFAULT_CURRENCY_SYMBOL) ?>',
 				texts: {
 					invoice: '<?php _e('Rechnung', 'cpsmartcrm') ?>',
 					quote: '<?php _e('Angebot', 'cpsmartcrm') ?>',
@@ -117,42 +133,10 @@ function WPsCRM_display_documents_list() {
 					total: '<?php _e('Total', 'cpsmartcrm') ?>'
 				}
 			});
-			
-			// Angebote Grid (Lazy Loading - erst wenn Tab aktiviert wird)
-			let quotesGridLoaded = false;
-			$('.pscrm-tab-nav li[data-tab="quotes"]').on('click', function() {
-				if (!quotesGridLoaded && typeof PSCRM.createDocumentsGrid === 'function') {
-					const quotesGrid = PSCRM.createDocumentsGrid('#grid-quotes', {
-						type: 'quote',
-						height: <?php echo intval($gridHeight) ?>,
-						security: '<?php echo esc_attr($delete_nonce) ?>',
-						dateFormat: '<?php echo esc_attr(WPsCRM_DATEFORMAT) ?>',
-						currencySymbol: '<?php echo esc_attr(html_entity_decode(WPsCRM_DEFAULT_CURRENCY_SYMBOL)) ?>',
-						texts: {
-							invoice: '<?php _e('Rechnung', 'cpsmartcrm') ?>',
-							quote: '<?php _e('Angebot', 'cpsmartcrm') ?>',
-							edit: '<?php _e('Bearbeiten', 'cpsmartcrm') ?>',
-							delete: '<?php _e('Löschen', 'cpsmartcrm') ?>',
-							print: '<?php _e('Drucken', 'cpsmartcrm') ?>',
-							confirmDelete: '<?php _e('Dokument wirklich löschen?', 'cpsmartcrm') ?>',
-							filterByDate: '<?php _e('Nach Datum filtern', 'cpsmartcrm') ?>',
-							filterByAgent: '<?php _e('Nach Agent filtern', 'cpsmartcrm') ?>',
-							from: '<?php _e('Von', 'cpsmartcrm') ?>',
-							to: '<?php _e('Bis', 'cpsmartcrm') ?>',
-							filter: '<?php _e('Filter', 'cpsmartcrm') ?>',
-							resetFilters: '<?php _e('Filter zurücksetzen', 'cpsmartcrm') ?>',
-							total: '<?php _e('Total', 'cpsmartcrm') ?>'
-						}
-					});
-					quotesGridLoaded = true;
-				}
-			});
-			
-		} catch(err) {
-			console.error('Fehler beim Initialisieren der Document Grids:', err);
+			quotesGridLoaded = true;
 		}
 	});
-})(jQuery);
+});
 </script>
 
 <style>
@@ -216,6 +200,8 @@ function WPsCRM_display_documents_list() {
 .pscrm-filter-toolbar label {
 	margin: 0;
 	font-weight: 600;
+}
+
 .pscrm-filter-toolbar input,
 .pscrm-filter-toolbar select {
 	padding: 6px 12px;
@@ -223,5 +209,3 @@ function WPsCRM_display_documents_list() {
 	border-radius: 3px;
 }
 </style>
-<?php
-}

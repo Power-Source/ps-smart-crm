@@ -11,7 +11,7 @@ function WPsCRM_crm_install() {
 	$charset_collate = $wpdb->get_charset_collate();
 
 	$sql[] = "CREATE TABLE `".WPsCRM_SETUP_TABLE."clienti` (
-  `ID_clienti` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ID_kunde` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `categoria` varchar(100) NOT NULL DEFAULT '0',
   `nome` varchar(100) NOT NULL,
   `cognome` varchar(100) NOT NULL,
@@ -47,7 +47,7 @@ function WPsCRM_crm_install() {
   `custom_fields` text,
   `custom_tax` text,
   `uploads` text,
-  PRIMARY KEY (`ID_clienti`),
+  PRIMARY KEY (`ID_kunde`),
   KEY `FK_categorie_clienti` (`categoria`),
   KEY `FK_aziende` (`FK_aziende`)
 ) ENGINE=MyISAM  ".$charset_collate." AUTO_INCREMENT=1";
@@ -58,7 +58,7 @@ function WPsCRM_crm_install() {
   `fk_utenti_ins` int(10) unsigned NOT NULL DEFAULT '0',
   `oggetto` varchar(255) DEFAULT NULL,
   `fk_utenti_des` int(10) unsigned NOT NULL DEFAULT '0',
-  `fk_clienti` int(10) unsigned DEFAULT NULL,
+  `fk_kunde` int(10) unsigned DEFAULT NULL,
   `fk_contatti` int(10) unsigned NOT NULL DEFAULT '0',
   `data_agenda` date DEFAULT NULL,
   `ora_agenda` time DEFAULT NULL,
@@ -72,8 +72,8 @@ function WPsCRM_crm_install() {
   `urgente` enum('No','Si') NOT NULL DEFAULT 'No',
   `fatto` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '1=da fare, 2= fatto, 3=cancellato',
   `tipo_agenda` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '1=todo, 2= appuntamento, 3=notifica scadenza pagamento fattura, 4=acquisto,5 notifica scadenza servizio',
-  `fk_documenti` int(10) unsigned NOT NULL,
-  `fk_documenti_dettaglio` int(10) unsigned NOT NULL,
+  `fk_dokumente` int(10) unsigned NOT NULL,
+  `fk_dokumente_dettaglio` int(10) unsigned NOT NULL,
   `fk_subscriptionrules` int(10) unsigned NOT NULL,
   `eliminato` tinyint(3) unsigned NOT NULL,
   `visto` varchar(50)  DEFAULT NULL,
@@ -86,7 +86,7 @@ function WPsCRM_crm_install() {
 
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."contatti` (
    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `fk_clienti` int(10) unsigned NOT NULL,
+  `fk_kunde` int(10) unsigned NOT NULL,
   `nome` varchar(50) NOT NULL,
   `cognome` varchar(50) NOT NULL,
   `email` varchar(50) NOT NULL,
@@ -104,7 +104,7 @@ function WPsCRM_crm_install() {
   `data_scadenza_timestamp` int(15) NOT NULL,
   `oggetto` varchar(100) NOT NULL,
   `riferimento` varchar(100) NOT NULL,
-  `fk_clienti` int(10) unsigned NOT NULL,
+  `fk_kunde` int(10) unsigned NOT NULL,
   `fk_utenti_ins` int(10) unsigned NOT NULL,
   `fk_utenti_age` int(10) unsigned NOT NULL,
   `progressivo` int(11) NOT NULL,
@@ -135,10 +135,10 @@ function WPsCRM_crm_install() {
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1";
 
-	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."documenti_dettaglio` (
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."dokumente_dettaglio` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `fk_documenti` int(10) unsigned NOT NULL,
-  `fk_articoli` int(10) unsigned NOT NULL,
+  `fk_dokumente` int(10) unsigned NOT NULL,
+  `fk_artikel` int(10) unsigned NOT NULL,
   `qta` float(5,2) unsigned NOT NULL,
   `n_riga` int(10) unsigned NOT NULL,
   `sconto` float(9,2) unsigned NOT NULL,
@@ -162,10 +162,10 @@ function WPsCRM_crm_install() {
   `e_sent` tinyint(3) unsigned NOT NULL,
   `e_date` datetime NOT NULL,
   `fk_agenda` int(10) unsigned NOT NULL,
-  `fk_documenti` int(10) unsigned NOT NULL,
-  `fk_documenti_dettaglio` int(10) unsigned NOT NULL,
+  `fk_dokumente` int(10) unsigned NOT NULL,
+  `fk_dokumente_dettaglio` int(10) unsigned NOT NULL,
   `e_unsent` VARCHAR( 255 ) NOT NULL,
-  `fk_clienti` int(10) unsigned NOT NULL,
+  `fk_kunde` int(10) unsigned NOT NULL,
   `attachments` text NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1";
@@ -226,13 +226,13 @@ function WPsCRM_crm_install() {
 function WPsCRM_upgrade_taxonomies()
 {
 	global $wpdb;
-    $table=WPsCRM_TABLE."clienti";
-	$sql="select ID_clienti, categoria, provenienza from $table";
+    $table=WPsCRM_TABLE."kunde";
+	$sql="select ID_kunde, categoria, provenienza from $table";
     foreach( $wpdb->get_results( $sql ) as $record)
 	{
 		$cat=$record->categoria;
 		$pro=$record->provenienza;
-		$id_cli=$record->ID_clienti;
+		$id_cli=$record->ID_kunde;
 		if ($cat!="0" && $cat!="")
 		{
 			$categorybyname = get_term_by('name', $cat, 'WPsCRM_customersCat');
@@ -259,7 +259,7 @@ function WPsCRM_upgrade_taxonomies()
 					'categoria'=>$cat_id
 				),
 				array(
-					'ID_clienti'=>$id_cli
+					'ID_kunde'=>$id_cli
 				),
 				array(
 				'%s'
@@ -292,7 +292,7 @@ function WPsCRM_upgrade_taxonomies()
 					'provenienza'=>$pro_id
 				),
 				array(
-					'ID_clienti'=>$id_cli
+					'ID_kunde'=>$id_cli
 				),
 				array(
 				'%s'
@@ -436,7 +436,7 @@ function smart_crm_menu(){
                 __('CP SMART CRM Kunden', 'cpsmartcrm'),
                 __('Kunden', 'cpsmartcrm'),
                 'manage_crm',
-                'admin.php?page=smart-crm&p=clienti/list.php',
+                'admin.php?page=smart-crm&p=kunde/list.php',
                 ''
                 );
     }
@@ -456,7 +456,7 @@ function smart_crm_menu(){
                 __('CP SMART CRM Dokumente', 'cpsmartcrm'),
                 __('Dokumente', 'cpsmartcrm'),
                 'manage_crm',
-                'admin.php?page=smart-crm&p=documenti/list.php',
+                'admin.php?page=smart-crm&p=dokumente/list.php',
                 ''
                 );
     }

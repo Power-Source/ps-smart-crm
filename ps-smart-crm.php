@@ -132,31 +132,68 @@ function WPsCRM_add_smartcrm_scripts(){
 		else
 			$style="light";
     }
+    
+    // DataTables für Grid-Funktionalität
     wp_enqueue_style( 'datatables-css', 'https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css', array(), '1.13.8' );
     wp_enqueue_script( 'datatables-js', 'https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js', array('jquery'), '1.13.8', true );
-wp_enqueue_style( 'datatables-bootstrap-css', 'https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css', array('datatables-css'), '1.13.8' );
-wp_enqueue_script( 'datatables-bootstrap-js', 'https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js', array('datatables-js', 'bootstrap'), '1.13.8', true );
-    wp_enqueue_style( 'k-commoncss',plugin_dir_url( __FILE__ ).'css/kendo.common.min.css');
-    wp_enqueue_style( 'k-common1',plugin_dir_url( __FILE__ ).'css/kendo.custom.min.css',array(),'4.2.2');
+    wp_enqueue_style( 'datatables-bootstrap-css', 'https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css', array('datatables-css'), '1.13.8' );
+    wp_enqueue_script( 'datatables-bootstrap-js', 'https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js', array('datatables-js', 'bootstrap'), '1.13.8', true );
+    
+    // Flatpickr für Datepicker
+    wp_enqueue_style( 'flatpickr-css', 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css', array(), '4.6.13' );
+    wp_enqueue_script( 'flatpickr-js', 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js', array(), '4.6.13', true );
+    wp_enqueue_script( 'flatpickr-de', 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/de.js', array('flatpickr-js'), '4.6.13', true );
+    
+    // jQuery UI Shim (ersetzt jQuery UI durch Flatpickr)
+    wp_enqueue_script( 'jquery-ui-shim', plugin_dir_url( __FILE__ ).'js/jquery-ui-shim.js', array('jquery', 'flatpickr-js'), '1.0.0', true );
+    
+    // Bootstrap & Theme
     wp_enqueue_style( 'bootstrap',plugin_dir_url( __FILE__ ).'inc/bootstrap/css/bootstrap-'.$style.'.min.css');
     wp_enqueue_style( 'extend',plugin_dir_url( __FILE__ ).'css/extend-'.$style.'.css');
     wp_enqueue_style( 'smartcrm',plugin_dir_url( __FILE__ ).'css/smartcrm.css');
-    wp_enqueue_script( 'kendoc', plugin_dir_url( __FILE__ ).'js/kendo.custom.min.js',array('jquery'),"2.2",false );
+    wp_enqueue_style( 'crm-vanilla', plugin_dir_url( __FILE__ ).'css/crm-vanilla.css', array(), '1.0.0');
+    
+    // CRM Core JavaScript
+    wp_enqueue_script( 'pscrm-core', plugin_dir_url( __FILE__ ).'js/crm-core.js', array(), '1.0.0', true );
+    wp_enqueue_script( 'pscrm-grid', plugin_dir_url( __FILE__ ).'js/crm-grid.js', array('pscrm-core', 'datatables-js'), '1.0.0', true );
+    wp_enqueue_script( 'pscrm-datepicker', plugin_dir_url( __FILE__ ).'js/crm-datepicker.js', array('pscrm-core', 'flatpickr-js'), '1.0.0', true );
+    wp_enqueue_script( 'pscrm-modal', plugin_dir_url( __FILE__ ).'js/crm-modal.js', array('pscrm-core'), '1.0.0', true );
+    wp_enqueue_script( 'pscrm-dropdown', plugin_dir_url( __FILE__ ).'js/crm-dropdown.js', array('pscrm-core'), '1.0.0', true );
+    
+    // CRM Component JavaScript
+    wp_enqueue_script( 'pscrm-customer-grid', plugin_dir_url( __FILE__ ).'js/components/customer-grid.js', array('pscrm-grid'), '1.0.0', true );
+    wp_enqueue_script( 'pscrm-scheduler-grid', plugin_dir_url( __FILE__ ).'js/components/scheduler-grid.js', array('pscrm-grid'), '1.0.0', true );
+    wp_enqueue_script( 'pscrm-documents-grid', plugin_dir_url( __FILE__ ).'js/components/documents-grid.js', array('pscrm-grid'), '1.0.0', true );
+    
+
+    // Legacy Scripts
     wp_enqueue_script( 'mainjs', plugin_dir_url( __FILE__ ).'js/adminScript.min.js',array('jquery'),"1.1",true );
     wp_enqueue_script( 'signature',  plugin_dir_url( __FILE__ ).'js/signature.js',array('jquery'),"1.3",false );
-    wp_enqueue_script( 'culture',  plugin_dir_url( __FILE__ ).'js/cultures/kendo.culture.'.WPsCRM_CULTURE.'.min.js',array(), "1.4",false );
     wp_enqueue_script( 'noty',  plugin_dir_url( __FILE__ ).'js/noty-2.3.8/js/noty/packaged/jquery.noty.packaged.min.js', array('jquery'),"1.4",false );
     wp_enqueue_script( 'pako',  plugin_dir_url( __FILE__ ).'js/pako/pako.min.js', array('jquery'),"1.4",false );
     wp_enqueue_script('underscore',plugin_dir_url( __FILE__ ).'js/underscore.js',array('jquery'),false);
+    
+    // Externe Libraries
     wp_enqueue_media();
     wp_enqueue_script( 'autonumeric', 'https://cdn.jsdelivr.net/npm/autonumeric@4.10.5/dist/autoNumeric.min.js', array('jquery'), null, true );
     wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
     wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'));
     wp_enqueue_script('parsley', 'https://cdn.jsdelivr.net/npm/parsleyjs@2.9.2/dist/parsley.min.js', array('jquery'));
     wp_enqueue_script('sortablejs', 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js');
-    wp_enqueue_script('jquery-ui-datepicker');
-    wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css');
-    wp_enqueue_script('jquery-ui-tooltip');
+    
+    // PSCRM Config für JavaScript
+    $pscrm_config = array(
+        'locale' => str_replace('_', '-', get_locale()),
+        'dateFormat' => WPsCRM_DATEFORMAT,
+        'dateTimeFormat' => WPsCRM_DATETIMEFORMAT,
+        'currency' => WPsCRM_DEFAULT_CURRENCY,
+        'currencySymbol' => html_entity_decode(WPsCRM_DEFAULT_CURRENCY_SYMBOL),
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('pscrm_ajax_nonce'),
+        'debug' => defined('WP_DEBUG') && WP_DEBUG
+    );
+    
+    wp_localize_script('pscrm-core', 'PSCRMConfig', $pscrm_config);
 }
 if ( isset( $_GET['page'] ) &&  ( $_GET['page'] == 'smart-crm'  || $_GET['page'] == 'smartcrm_custom-fields' || $_GET['page'] == 'smartcrm_subscription-rules' || $_GET['page'] == 'smartcrm_settings') )
 	add_action('admin_enqueue_scripts','WPsCRM_add_smartcrm_scripts',99);
@@ -314,24 +351,6 @@ function WPsCRM_hide_admin_bar(){
     return false;
 }
 add_action('admin_footer','WPsCRM_hide_admin_bar');
-/**
- *
- * Localization of Kendo controls
- *
- **/
-function WPsCRM_add_culture(){
-?>
-<script>
-        if (pagenow.search('smart-crm') != -1 || pagenow.search('smartcrm') != -1){
-        	kendo.culture("<?php echo WPsCRM_CULTURE?>");
-			var localCulture="<?php echo WPsCRM_CULTURE?>";
-			var $format = "<?php echo WPsCRM_DATEFORMAT ?>";
-			var $formatTime = "<?php echo WPsCRM_DATETIMEFORMAT ?>";
-		}
-</script>
-<?php
-}
-add_action( 'admin_head', 'WPsCRM_add_culture' );
 
 /**
  *

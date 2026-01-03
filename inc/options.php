@@ -467,8 +467,9 @@ class CRM_Options_Settings{
 		$html .= '</select></div>';
 		echo $html;
 
-	} 
-    /**
+	}
+	
+	/**
 	 * 
 	 * Optionally redirect to CRM dashboard on login
 	 * 

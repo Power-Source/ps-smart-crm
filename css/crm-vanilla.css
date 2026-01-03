@@ -1,0 +1,404 @@
+/**
+ * PS Smart CRM - Vanilla UI Styles
+ * 
+ * CSS für die Vanilla.js Komponenten
+ * Version: 1.0.0
+ */
+
+/* ===== PSCRM Grid Styles ===== */
+.pscrm-grid {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pscrm-grid thead th {
+    background: #f5f5f5;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.pscrm-grid tbody td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.pscrm-grid tbody tr:hover {
+    background: #f9f9f9;
+}
+
+/* DataTables Anpassungen */
+.dataTables_wrapper {
+    padding: 15px 0;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 5px 10px;
+    margin: 0 2px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #f5f5f5;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* ===== PSCRM Modal Styles ===== */
+.pscrm-modal-overlay {
+    transition: opacity 0.3s ease;
+}
+
+.pscrm-modal {
+    transition: opacity 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.pscrm-modal-header {
+    background: #f8f9fa;
+}
+
+.pscrm-modal-close:hover {
+    color: #000;
+}
+
+.pscrm-modal-content {
+    line-height: 1.6;
+}
+
+.pscrm-modal-footer {
+    background: #f8f9fa;
+}
+
+.pscrm-modal-btn:hover {
+    opacity: 0.9;
+}
+
+.pscrm-modal-btn.btn-primary {
+    background: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+.pscrm-modal-btn.btn-primary:hover {
+    background: #0056b3 !important;
+}
+
+.pscrm-modal-btn.btn-secondary {
+    background: #6c757d !important;
+    color: white !important;
+    border-color: #6c757d !important;
+}
+
+/* ===== PSCRM Notification Styles ===== */
+.pscrm-notification {
+    animation: slideInRight 0.3s ease-out;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.pscrm-notification-success {
+    background: #4caf50 !important;
+}
+
+.pscrm-notification-error {
+    background: #f44336 !important;
+}
+
+.pscrm-notification-warning {
+    background: #ff9800 !important;
+}
+
+.pscrm-notification-info {
+    background: #2196f3 !important;
+}
+
+/* ===== Flatpickr Anpassungen ===== */
+.flatpickr-calendar {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ===== Select2 Anpassungen ===== */
+.select2-container--default .select2-selection--single {
+    height: 36px;
+    padding: 5px;
+    border: 1px solid #ddd;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 24px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 34px;
+}
+
+/* ===== Grid Toolbar ===== */
+.pscrm-grid-toolbar {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pscrm-grid-toolbar label {
+    margin: 0 5px 0 15px;
+    font-weight: 500;
+}
+
+.pscrm-grid-toolbar input[type="text"],
+.pscrm-grid-toolbar select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.pscrm-grid-toolbar .btn {
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+/* ===== Button Styles ===== */
+.btn._flat {
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.btn._flat:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.btn_appuntamento_1 {
+    background: #6f42c1;
+    color: white;
+    border-color: #6f42c1;
+}
+
+.btn_appuntamento_1:hover {
+    background: #5a32a3;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-inverse {
+    background: #343a40;
+    color: white;
+    border-color: #343a40;
+}
+
+.btn-inverse:hover {
+    background: #23272b;
+}
+
+.button-primary._flat {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.button-secondary._flat {
+    background: #6c757d;
+    color: white;
+    border-color: #6c757d;
+}
+
+/* ===== Status Icons ===== */
+.status-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+}
+
+/* ===== Legend ===== */
+.select-action {
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.select-action li {
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.select-action li:not(.no-link):hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.select-action li.no-link {
+    cursor: default;
+}
+
+.select-action li.no-link:hover {
+    transform: none;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 768px) {
+    .pscrm-modal {
+        width: 95% !important;
+        max-width: 95%;
+    }
+    
+    .pscrm-grid-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .pscrm-grid-toolbar input,
+    .pscrm-grid-toolbar select,
+    .pscrm-grid-toolbar .btn {
+        width: 100%;
+    }
+    
+    .select-action {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ===== Loading Spinner ===== */
+.pscrm-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== Filter Controls ===== */
+.pscrm-filter-row {
+    background: #f8f9fa;
+    padding: 15px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.pscrm-filter-row label {
+    font-weight: 500;
+    margin-right: 8px;
+}
+
+/* ===== Grid Container ===== */
+.datagrid {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.customerGrid,
+.statsGrid,
+._scheduler {
+    margin-top: 20px;
+}
+
+/* ===== Tabstrip Integration ===== */
+#tabstrip,
+#statsTabstrip {
+    margin-top: 20px;
+}
+
+/* ===== Dark Mode Support (optional) ===== */
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles können hier hinzugefügt werden */
+}

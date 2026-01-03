@@ -7,7 +7,6 @@
 <script type="text/javascript">
 
 jQuery(document).ready(function ($) {
-//	$("#file_csv").kendoUpload();
 	$("#btn_save").on('click', function () {
 		var formData = new FormData();
 		var file = jQuery(document).find('input[type="file"]');

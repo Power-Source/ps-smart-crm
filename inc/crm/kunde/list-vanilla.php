@@ -7,35 +7,38 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Moderne Kundenliste mit Vanilla.js statt Kendo UI
  */
 
-function WPsCRM_display_customers_list() {
-	$delete_nonce = wp_create_nonce( "delete_customer" );
-	$update_nonce= wp_create_nonce( "update_customer" );
-	$scheduler_nonce= wp_create_nonce( "update_scheduler" );
-	$options=get_option('CRM_general_settings');
-	$clients_options = get_option('CRM_clients_settings');
+$delete_nonce = wp_create_nonce( "delete_customer" );
+$update_nonce= wp_create_nonce( "update_customer" );
+$scheduler_nonce= wp_create_nonce( "update_scheduler" );
+$options=get_option('CRM_general_settings');
+$clients_options = get_option('CRM_clients_settings');
 
-	if(isset($options['customersGridHeight']) && $options['customersGridHeight'] !="")
-		$gridHeight=$options['customersGridHeight'];
-	else
-		$gridHeight="600";
+if(isset($options['customersGridHeight']) && $options['customersGridHeight'] !="")
+	$gridHeight=$options['customersGridHeight'];
+else
+	$gridHeight="600";
 ?>
 
 <!-- TODO/Termin/Aktivität Dialoge -->
 <div id="dialog_todo" style="display:none;" data-from="list" data-fkcliente="">
 	<?php include ( WPsCRM_DIR."/inc/crm/kunde/form_todo.php" ) ?>
 </div>
+<?php include (WPsCRM_DIR."/inc/crm/kunde/script_todo.php" ) ?>
 
 <div id="dialog_appuntamento" style="display:none;" data-from="list" data-fkcliente="">
 	<?php include (WPsCRM_DIR."/inc/crm/kunde/form_appuntamento.php" ) ?>
 </div>
+<?php include (WPsCRM_DIR."/inc/crm/kunde/script_appuntamento.php" ) ?>
 
 <div id="dialog_attivita" style="display:none;" data-from="list" data-fkcliente="">
 	<?php include (WPsCRM_DIR."/inc/crm/kunde/form_attivita.php" ) ?>
 </div>
+<?php include (WPsCRM_DIR."/inc/crm/kunde/script_attivita.php" ) ?>
 
 <div id="dialog_mail" style="display:none;" data-from="list" data-fkcliente="">
 	<?php include (WPsCRM_DIR."/inc/crm/kunde/form_mail.php" ) ?>
 </div>
+<?php include (WPsCRM_DIR."/inc/crm/kunde/script_mail.php" ) ?>
 
 <!-- Hauptcontainer -->
 <div id="tabstrip">
@@ -74,51 +77,33 @@ function WPsCRM_display_customers_list() {
 
 <div id="createPdf"></div>
 <div id="createDocument"></div>
-<?php 
-	do_action('WPsCRM_kunde_grid_toolbar'); 
-?>
+
+<?php do_action('WPsCRM_kunde_grid_toolbar') ?>
 
 <script type="text/javascript">
-(function($) {
-    'use strict';
+jQuery(document).ready(function($) {
+    console.log('🚀 Vanilla.js Customer Grid wird initialisiert...');
     
-    $(document).ready(function() {
-        // Prüfe ob PSCRM vorhanden ist
-        if (typeof PSCRM === 'undefined' || typeof PSCRM.createCustomerGrid !== 'function') {
-            console.error('PSCRM oder createCustomerGrid nicht geladen!');
-            return;
-        }
-        
-        try {
-            // Grid-Konfiguration
-            const gridOptions = {
-                height: <?php echo intval($gridHeight) ?>,
-                showCategories: <?php echo (isset($clients_options['gridShowCat']) && $clients_options['gridShowCat'] == 1) ? 'true' : 'false' ?>,
-                showInterests: <?php echo (isset($clients_options['gridShowInt']) && $clients_options['gridShowInt'] == 1) ? 'true' : 'false' ?>,
-                showOrigin: <?php echo (isset($clients_options['gridShowOr']) && $clients_options['gridShowOr'] == 1) ? 'true' : 'false' ?>,
-                deleteNonce: '<?php echo esc_attr($delete_nonce) ?>',
-                baseUrl: 'admin.php?page=smart-crm'
-            };
-            
-            // Customer Grid erstellen
-            const customerGrid = PSCRM.createCustomerGrid('#grid', gridOptions);
-            
-            // ===== Include Modal Handler Scripts =====
-            <?php 
-                ob_start();
-                include(WPsCRM_DIR."/inc/crm/kunde/script_todo.php");
-                include(WPsCRM_DIR."/inc/crm/kunde/script_appuntamento.php");
-                include(WPsCRM_DIR."/inc/crm/kunde/script_attivita.php");
-                include(WPsCRM_DIR."/inc/crm/kunde/script_mail.php");
-                $allScripts = ob_get_clean();
-                echo $allScripts;
-            ?>
-            
-        } catch(err) {
-            console.error('Fehler beim Initialisieren:', err);
-        }
-    });
-})(jQuery);
+    // Grid-Konfiguration
+    const gridOptions = {
+        height: <?php echo $gridHeight ?>,
+        showCategories: <?php echo (isset($clients_options['gridShowCat']) && $clients_options['gridShowCat'] == 1) ? 'true' : 'false' ?>,
+        showInterests: <?php echo (isset($clients_options['gridShowInt']) && $clients_options['gridShowInt'] == 1) ? 'true' : 'false' ?>,
+        showOrigin: <?php echo (isset($clients_options['gridShowOr']) && $clients_options['gridShowOr'] == 1) ? 'true' : 'false' ?>,
+        deleteNonce: '<?php echo $delete_nonce ?>',
+        baseUrl: 'admin.php?page=smart-crm'
+    };
+    
+    // Customer Grid erstellen
+    const customerGrid = PSCRM.createCustomerGrid('#grid', gridOptions);
+    
+    console.log('✅ Vanilla.js Customer Grid initialisiert');
+    
+    // Notification anzeigen
+    setTimeout(function() {
+        PSCRM.notify('Vanilla.js UI ist aktiv! 🎉', 'info', 5000);
+    }, 500);
+});
 </script>
 
 <style>
@@ -137,5 +122,3 @@ function WPsCRM_display_customers_list() {
         font-weight: bold;
     }
 </style>
-<?php
-}

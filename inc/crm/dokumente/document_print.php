@@ -282,20 +282,6 @@ $serverName=site_url();
 
 
 <script>
-        // Import DejaVu Sans font for embedding
-
-        // NOTE: Only required if the Kendo UI stylesheets are loaded
-        // from a different origin, e.g. cdn.kendostatic.com
-        kendo.pdf.defineFont({
-            "DejaVu Sans"             : "<?php echo WPsCRM_URL ?>css/fonts/DejaVu/DejaVuSans.ttf",
-            "DejaVu Sans|Bold": "<?php echo WPsCRM_URL ?>css/fonts/DejaVu/DejaVuSans-Bold.ttf",
-            "DejaVu Sans|Bold|Italic": "<?php echo WPsCRM_URL ?>css/fonts/DejaVu/DejaVuSans-Oblique.ttf",
-            "DejaVu Sans|Italic": "<?php echo WPsCRM_URL ?>css/fonts/DejaVu/DejaVuSans-Oblique.ttf"
-        });
-</script>
-
-
-<script>
 	jQuery.fn.closestToOffset = function (offset) {
 		var el = null, elOffset, x = offset.left, y = offset.top, distance, dx, dy, minDistance;
 		this.each(function () {
@@ -421,33 +407,10 @@ $serverName=site_url();
 
     		var PDF;
     		$(".export-pdf").on('click', function (e) {
-    			showMouseLoader();
-	     		$('#mouse_loader').offset({ left: e.pageX, top: e.pageY });
-    		$('.export-info').show();
-	     		kendo.drawing.drawDOM($('.page-container'), {
-    			//paperSize: "auto",
-    			//multiPage: true,
-    			forcePageBreak: '.page-break'
-    		})
-			.then(function (group) {
-				console.log(group)
-        	// Render the result as a PDF file
-				return kendo.drawing.exportPDF(group, {
-				//paperSize: "a4",
-        		//multiPage: true, forcePageBreak: '.page-break',
-        		margin: { left: "2cm", top: "1cm", right: "2cm", bottom: "1cm" }
-        	});
-        })
-        .done(function (data) {
-        	// Save the PDF file
-        	PDF=data;
-        	kendo.saveAs({
-        		dataURI: data,
-        		fileName: "<?php echo $filename?>",
-				//proxyURL:"<?php echo admin_url('admin.php?page=smart-crm&p='.urlencode('dokumente/save_pdf.php').'&security='.$print_nonce ) ?>",
-        		//forceProxy: true
-        	});
-        	$.ajax({
+    			// PDF-Export deaktiviert (benötigte Kendo UI-Bibliotheken entfernt)
+    			alert('PDF-Export ist nicht mehr verfügbar. Bitte nutzen Sie den Browser-Druckdialog (Strg+P) stattdessen.');
+    			hideMouseLoader();
+    			$.ajax({
         		url: ajaxurl,
 				method:'POST',
 				data: {

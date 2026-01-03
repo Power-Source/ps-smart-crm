@@ -146,20 +146,20 @@ $document->alignHeader = function($index) {
 function WPsCRM_get_clients_array($exclude_self = null) {
   global $wpdb;
   $arr = array();
-  $table = WPsCRM_TABLE . "clienti";
+  $table = WPsCRM_TABLE."kunde";
   $ID_azienda = 1;
   $client = $exclude_self;
 
   $where = "eliminato=0";
   if ($exclude_self == null)
-    $where .= " AND ID_clienti <> 1";
+    $where .= " AND ID_kunde <> 1";
 
-  $sql = "select distinct ID_clienti, ragione_sociale, nome, cognome, indirizzo, telefono1, $table.email from $table where $where";
+  $sql = "select distinct ID_kunde, ragione_sociale, nome, cognome, indirizzo, telefono1, $table.email from $table where $where";
 
 
   foreach ($wpdb->get_results($sql) as $record) {
     $cliente = $record->ragione_sociale ? $record->ragione_sociale : $record->nome . " " . $record->cognome;
-    $arr[] = array("ID_clienti" => $record->ID_clienti, "ragione_sociale" => $cliente, "indirizzo" => $record->indirizzo, "telefono1" => $record->telefono1, "email" => $record->email);
+    $arr[] = array("ID_kunde" => $record->ID_kunde, "ragione_sociale" => $cliente, "indirizzo" => $record->indirizzo, "telefono1" => $record->telefono1, "email" => $record->email);
   }
   return $arr;
 }
@@ -171,7 +171,7 @@ function WPsCRM_get_clients2() {
     do_action('AGsCRM_get_clients_hook');
   } else {
     global $wpdb;
-    $table = WPsCRM_TABLE . "clienti";
+    $table = WPsCRM_TABLE."kunde";
     $f_table = WPsCRM_TABLE . "fields";
     $ID_azienda = 1;
     $arr = array();
@@ -179,7 +179,7 @@ function WPsCRM_get_clients2() {
     //$where="$table.FK_aziende=$ID_azienda and eliminato=0";
     $where = "eliminato=0";
     if (!$client)
-      $where .= " AND ID_clienti <> 1";
+      $where .= " AND ID_kunde <> 1";
     $current_user = wp_get_current_user();
     $user_id = $current_user->ID;
     if (WPsCRM_is_agent() && !WPsCRM_agent_can())
@@ -225,7 +225,7 @@ function WPsCRM_get_clients2() {
       $cliente = $record->ragione_sociale ? $record->ragione_sociale : $record->nome . " " . $record->cognome;
       $arr_custom_fields = maybe_unserialize($record->custom_fields);
       $arr[$index] = array(
-          "ID_clienti" => $record->ID_clienti,
+          "ID_kunde" => $record->ID_kunde,
           "ragione_sociale" => stripslashes($cliente),
           "p_iva" => $record->p_iva,
           "cod_fis" => $record->cod_fis,
@@ -286,7 +286,7 @@ add_action('wp_ajax_WPsCRM_get_clients2', 'WPsCRM_get_clients2');
 
 function WPsCRM_get_clients3() {
   global $wpdb;
-  $table = WPsCRM_TABLE . "clienti";
+  $table = WPsCRM_TABLE."kunde";
   $f_table = WPsCRM_TABLE . "fields";
   $ID_azienda = 1;
   $arr = array();
@@ -294,7 +294,7 @@ function WPsCRM_get_clients3() {
   //$where="$table.FK_aziende=$ID_azienda and eliminato=0";
   $where = "eliminato=0";
   if (!$client)
-    $where .= " AND ID_clienti <> 1";
+    $where .= " AND ID_kunde <> 1";
   $current_user = wp_get_current_user();
   $user_id = $current_user->ID;
   if (WPsCRM_is_agent() && !WPsCRM_agent_can())
@@ -337,7 +337,7 @@ function WPsCRM_get_clients3() {
     $cliente = $record->ragione_sociale ? $record->ragione_sociale : $record->nome . " " . $record->cognome;
     $arr_custom_fields = maybe_unserialize($record->custom_fields);
     $arr[$index] = array(
-        "ID_clienti" => $record->ID_clienti,
+        "ID_kunde" => $record->ID_kunde,
         "ragione_sociale" => stripslashes($cliente),
         "p_iva" => $record->p_iva,
         "cod_fis" => $record->cod_fis,
@@ -400,7 +400,7 @@ function WPsCRM_get_client_contacts() {
   global $wpdb;
   $table = WPsCRM_TABLE . "contatti";
   $client_id = $_REQUEST["client_id"];
-  $where = "fk_clienti=$client_id";
+  $where = "fk_kunde=$client_id";
   $arr = array();
 
   $sql = "select id, nome, cognome, email, telefono, qualifica from $table where $where order by cognome";
@@ -442,7 +442,7 @@ function WPsCRM_save_client_contact() {
     else {
       $wpdb->insert(
               $table, array(
-          'fk_clienti' => $client_id,
+          'fk_kunde' => $client_id,
           'nome' => $nome,
           'cognome' => $cognome,
           'email' => $email,
@@ -555,14 +555,14 @@ function WPsCRM_get_documents() {
   } else {
     global $wpdb;
     $arr = array();
-    $table = WPsCRM_TABLE . "documenti";
-    $c_table = WPsCRM_TABLE . "clienti";
+    $table = WPsCRM_TABLE."dokumente";
+    $c_table = WPsCRM_TABLE."kunde";
     $m_table = "email";
     $current_user = wp_get_current_user();
     $user_id = $current_user->ID;
     $tipo = $_REQUEST['type'];
     $from = ", $c_table";
-    $where = "tipo=" . $tipo . " and fk_clienti=ID_clienti";
+    $where = "tipo=" . $tipo . " and fk_kunde=ID_kunde";
     // TEST: ALLE Dokumente ohne User/Agenten-Filter
       $sql = "SELECT * FROM " . $table . " $from where $where order by data desc";
       $results = $wpdb->get_results($sql);
@@ -587,7 +587,7 @@ function WPsCRM_get_documents() {
             'oggetto'=>'Test',
             'email'=>'test@example.com',
             'documentSent'=>1,
-            'ID_clienti'=>1,
+            'ID_kunde'=>1,
             'agente'=>1,
             'agenteName'=>'Test Agent',
             'filename'=>'',
@@ -626,8 +626,8 @@ function WPsCRM_get_documents_for_customer() {
       $document->culture_data_inserimento = $date;
     }
 
-    $table = WPsCRM_TABLE . "clienti";
-    $SQL = "SELECT uploads FROM $table WHERE ID_clienti=$customer";
+    $table = WPsCRM_TABLE."kunde";
+    $SQL = "SELECT uploads FROM $table WHERE ID_kunde=$customer";
     $customerFiles = maybe_unserialize($wpdb->get_var($SQL));
     $uploads = array();
     foreach ($customerFiles as $file) {
@@ -663,7 +663,7 @@ add_action('wp_ajax_WPsCRM_get_documents_for_customer', 'WPsCRM_get_documents_fo
 function WPsCRM_delete_document_row() {
   if (check_ajax_referer('delete_document', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
-    $table = WPsCRM_TABLE . "documenti_dettaglio";
+    $table = WPsCRM_TABLE . "dokumente_dettaglio";
     $row_id = $_REQUEST["row_id"];
     $wpdb->update(
             $table, array(
@@ -683,7 +683,7 @@ function WPsCRM_save_pdf_document() {
   if (check_ajax_referer('print_document', 'security', false) && current_user_can('manage_crm')) {
 
     global $wpdb;
-    $d_table = WPsCRM_TABLE . "documenti";
+    $d_table = WPsCRM_TABLE."dokumente";
     $fileName = $_REQUEST["fileName"];
     $doc_id = $_REQUEST["doc_id"];
     $pdf_content = $_REQUEST['PDF'];
@@ -723,7 +723,7 @@ function WPsCRM_make_invoice() {
   if (check_ajax_referer('delete_document', 'security', false) && current_user_can('manage_crm')) {
 
     global $wpdb;
-    $d_table = WPsCRM_TABLE . "documenti";
+    $d_table = WPsCRM_TABLE."dokumente";
     $doc_id = $_REQUEST["doc_id"];
     $cur_year = date("Y");
     $sql = "select data_timestamp from $d_table where tipo=2 order by data_timestamp desc limit 0,1";
@@ -797,9 +797,9 @@ function WPsCRM_get_scheduler() {
 
     $where .= $tipo ? " and tipo_agenda=$tipo" : " and tipo_agenda<>0";
     if (!$client)
-      $where .= " AND fk_clienti <> 1";
+      $where .= " AND fk_kunde <> 1";
 
-    $sql = "SELECT id_agenda, fk_clienti, fk_utenti_ins, oggetto, annotazioni, start_date, end_date, tipo_agenda, fk_subscriptionrules,esito, fatto FROM " . $a_table . " where $where and eliminato=0 order by fatto, start_date asc";
+    $sql = "SELECT id_agenda, fk_kunde, fk_utenti_ins, oggetto, annotazioni, start_date, end_date, tipo_agenda, fk_subscriptionrules,esito, fatto FROM " . $a_table . " where $where and eliminato=0 order by fatto, start_date asc";
     //echo $sql;
     foreach ($wpdb->get_results($sql) as $r_scheduler) {
       switch ($tipo_agenda = $r_scheduler->tipo_agenda) {
@@ -829,12 +829,12 @@ function WPsCRM_get_scheduler() {
       }
 
       $id_s = $r_scheduler->fk_subscriptionrules;
-      $fk_clienti = $r_scheduler->fk_clienti;
+      $fk_kunde = $r_scheduler->fk_kunde;
       $start_date = $r_scheduler->start_date;
       $end_date = $r_scheduler->end_date;
       list ($anno, $mese, $giorno) = explode("-", $start_date);
-      if ($fk_clienti) {
-        $sqlc = "SELECT nome, cognome, ragione_sociale FROM " . WPsCRM_TABLE . "clienti  where ID_clienti=$fk_clienti";
+      if ($fk_kunde) {
+        $sqlc = "SELECT nome, cognome, ragione_sociale FROM " . WPsCRM_TABLE . "clienti  where ID_kunde=$fk_kunde";
         $qc = $wpdb->get_row($sqlc);
         if ($qc->ragione_sociale)
           $cliente = $qc->ragione_sociale;
@@ -937,9 +937,9 @@ function WPsCRM_get_client_scheduler() {
     $s_table = WPsCRM_TABLE . "subscriptionrules";
     $arr_results = array();
     $where = " tipo_agenda<>0";
-    $where .= $id_cliente ? " and fk_clienti=$id_cliente" : "";
+    $where .= $id_cliente ? " and fk_kunde=$id_cliente" : "";
 
-    $sql = "SELECT id_agenda, fk_clienti, oggetto, annotazioni, start_date, tipo_agenda, fk_subscriptionrules, fatto, esito FROM " . $a_table . " where $where and eliminato=0 order by start_date asc";
+    $sql = "SELECT id_agenda, fk_kunde, oggetto, annotazioni, start_date, tipo_agenda, fk_subscriptionrules, fatto, esito FROM " . $a_table . " where $where and eliminato=0 order by start_date asc";
     foreach ($wpdb->get_results($sql) as $r_scheduler) {
       switch ($tipo_agenda = $r_scheduler->tipo_agenda) {
         case 1:
@@ -964,11 +964,11 @@ function WPsCRM_get_client_scheduler() {
           break;
       }
       $id_s = $r_scheduler->fk_subscriptionrules;
-      $fk_clienti = $r_scheduler->fk_clienti;
+      $fk_kunde = $r_scheduler->fk_kunde;
       $start_date = $r_scheduler->start_date;
       list ($anno, $mese, $giorno) = explode("-", $start_date);
-      if ($fk_clienti) {
-        $sqlc = "SELECT nome, cognome, ragione_sociale FROM " . WPsCRM_TABLE . "clienti  where ID_clienti=$fk_clienti";
+      if ($fk_kunde) {
+        $sqlc = "SELECT nome, cognome, ragione_sociale FROM " . WPsCRM_TABLE . "clienti  where ID_kunde=$fk_kunde";
         $qc = $wpdb->get_row($sqlc);
         if ($qc->ragione_sociale)
           $cliente = $qc->ragione_sociale;
@@ -1059,9 +1059,9 @@ add_action('wp_ajax_WPsCRM_get_client_scheduler', 'WPsCRM_get_client_scheduler')
 function WPsCRM_get_client_info() {
   global $wpdb;
   $id_clienti = $_GET["id_clienti"];
-  $table = WPsCRM_TABLE . "clienti";
+  $table = WPsCRM_TABLE."kunde";
   $ID_azienda = 1;
-  $sql = "select indirizzo, cap, localita, provincia, cod_fis, p_iva, tipo_cliente from $table where ID_clienti=$id_clienti";
+  $sql = "select indirizzo, cap, localita, provincia, cod_fis, p_iva, tipo_cliente from $table where ID_kunde=$id_clienti";
   //echo $sql;
   foreach ($wpdb->get_results($sql) as $record) {
     $arr[] = stripslashes_deep($record);
@@ -1318,7 +1318,7 @@ function WPsCRM_save_todo() {
     $wpdb->insert(
             $a_table, array(
         'oggetto' => $oggetto,
-        'fk_clienti' => $id_cliente,
+        'fk_kunde' => $id_cliente,
         'annotazioni' => $annotazioni,
         'start_date' => WPsCRM_sanitize_date_format($start_date),
         'end_date' => WPsCRM_sanitize_date_format($end_date),
@@ -1342,7 +1342,7 @@ add_action('wp_ajax_WPsCRM_save_todo', 'WPsCRM_save_todo');
 
 function WPsCRM_save_annotation() {
   global $wpdb;
-  $c_table = WPsCRM_TABLE . "clienti";
+  $c_table = WPsCRM_TABLE."kunde";
   var_dump($_POST);
   $id_cliente = $_POST['id_cliente'];
   $data_attivita = $_POST['data_attivita'];
@@ -1353,7 +1353,7 @@ function WPsCRM_save_annotation() {
   $annotazioni = $data_attivita . "~" . $user_firstname . " " . $user_lastname . "~" . $_POST['annotazioni'] . "|";
   $result = $wpdb->query(
           $wpdb->prepare(
-                  "UPDATE $c_table SET annotazioni=concat(IFNULL(annotazioni,''),%s) WHERE ID_clienti=%d", $annotazioni, $id_cliente
+                  "UPDATE $c_table SET annotazioni=concat(IFNULL(annotazioni,''),%s) WHERE ID_kunde=%d", $annotazioni, $id_cliente
           )
   );
 
@@ -1364,10 +1364,10 @@ add_action('wp_ajax_WPsCRM_save_annotation', 'WPsCRM_save_annotation');
 
 function WPsCRM_delete_annotation() {
   global $wpdb;
-  $c_table = WPsCRM_TABLE . "clienti";
+  $c_table = WPsCRM_TABLE."kunde";
   $id_cliente = $_REQUEST['id_cliente'];
   $index = $_REQUEST['index'];
-  $SQL = "SELECT ID_clienti,annotazioni FROM $c_table WHERE ID_clienti=$id_cliente";
+  $SQL = "SELECT ID_kunde,annotazioni FROM $c_table WHERE ID_kunde=$id_cliente";
 
   $annotazioni = $wpdb->get_row($SQL);
   $array_annotazioni = explode('|', $annotazioni->annotazioni);
@@ -1378,7 +1378,7 @@ function WPsCRM_delete_annotation() {
   $wpdb->update(
           $c_table, array(
       'annotazioni' => $_annotazioni
-          ), array('ID_clienti' => $id_cliente), array('%s')
+          ), array('ID_kunde' => $id_cliente), array('%s')
   );
   die();
 }
@@ -1387,8 +1387,8 @@ add_action('wp_ajax_WPsCRM_delete_annotation', 'WPsCRM_delete_annotation');
 
 function WPsCRM_reload_annotation() {
   global $wpdb;
-  $table = WPsCRM_TABLE . "clienti";
-  $sql = "select * from $table where ID_clienti=" . $_REQUEST['id_cliente'];
+  $table = WPsCRM_TABLE."kunde";
+  $sql = "select * from $table where ID_kunde=" . $_REQUEST['id_cliente'];
   $riga = $wpdb->get_row($sql);
   $field_separator = "~";
   $row_separator = "|";
@@ -1427,7 +1427,7 @@ add_action('wp_ajax_WPsCRM_reload_annotation', 'WPsCRM_reload_annotation');
 function WPsCRM_register_invoices() {
   if (check_ajax_referer('update_document', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
-    $table = WPsCRM_TABLE . "documenti";
+    $table = WPsCRM_TABLE."dokumente";
     $data_from = WPsCRM_sanitize_date_format($_POST["data_from"]);
     $data_to = WPsCRM_sanitize_date_format($_POST["data_to"]);
     $result = $wpdb->query(
@@ -1455,7 +1455,7 @@ function WPsCRM_import_customers() {
     else
       $newsletter = 0;
     global $wpdb;
-    $table = WPsCRM_TABLE . "clienti";
+    $table = WPsCRM_TABLE."kunde";
     $ID_azienda = "1";
     $data_inserimento = date("Y-m-d");
     $data_modifica = date("Y-m-d");
@@ -1467,7 +1467,7 @@ function WPsCRM_import_customers() {
                 $wpdb->prepare(
                         "
                      DELETE FROM $table
-		             WHERE ID_clienti<>%d
+		             WHERE ID_kunde<>%d
 		            ", 1
                 )
         );
@@ -2024,19 +2024,19 @@ function WPsCRM_insert_notification($subscriptionrules, $document_id, $document_
   $SQL = "SELECT * FROM " . WPsCRM_TABLE . "subscriptionrules WHERE ID=" . $subscriptionrules;
   $months = $wpdb->get_row($SQL)->length;
   if ($document_id) {
-    $res_d = $wpdb->get_row("select progressivo, fk_clienti, data from " . WPsCRM_TABLE . "documenti where id=$document_id");
+    $res_d = $wpdb->get_row("select progressivo, fk_kunde, data from " . WPsCRM_TABLE . "documenti where id=$document_id");
     $prog = $res_d->progressivo;
-    $fk_clienti = $res_d->fk_clienti;
+    $fk_kunde = $res_d->fk_kunde;
     $data = $res_d->data;
     list ($anno, $mese, $giorno) = explode("-", $data);
     $data_scadenza = date("Y-m-d", mktime(0, 0, 0, $mese + $months, $giorno, $anno));
     if ($document_row_id) {
-      $sql = "select descrizione from " . WPsCRM_TABLE . "documenti_dettaglio where id=$document_row_id";
+      $sql = "select descrizione from " . WPsCRM_TABLE . "dokumente_dettaglio where id=$document_row_id";
       $qd = $wpdb->get_row($sql);
       $descrizione = $qd->descrizione;
     }
-    if ($fk_clienti) {
-      $sqlc = "SELECT nome, cognome, ragione_sociale, email FROM " . WPsCRM_TABLE . "clienti  where ID_clienti=$fk_clienti";
+    if ($fk_kunde) {
+      $sqlc = "SELECT nome, cognome, ragione_sociale, email FROM " . WPsCRM_TABLE . "clienti  where ID_kunde=$fk_kunde";
       $qc = $wpdb->get_row($sqlc);
       if ($qc->ragione_sociale)
         $cliente = $qc->ragione_sociale;
@@ -2054,16 +2054,16 @@ function WPsCRM_insert_notification($subscriptionrules, $document_id, $document_
     $scheduler_notes .= " " . $cliente;
     $wpdb->insert(
             WPsCRM_TABLE . "agenda", array(
-        'fk_clienti' => $fk_clienti,
+        'fk_kunde' => $fk_kunde,
         'start_date' => $data_scadenza,
         'end_date' => $data_scadenza,
-        'fk_documenti' => $document_id,
+        'fk_dokumente' => $document_id,
         'oggetto' => $scheduler_subject,
         'annotazioni' => $scheduler_notes,
         'tipo_agenda' => 5,
         'data_inserimento' => $data_inserimento,
         'fk_subscriptionrules' => $subscriptionrules,
-        'fk_documenti_dettaglio' => $document_row_id
+        'fk_dokumente_dettaglio' => $document_row_id
             ), array('%d', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%d')
     );
     $fk_agenda = $wpdb->insert_id;
@@ -2075,7 +2075,7 @@ function WPsCRM_save_client() {
 
   if (check_ajax_referer('update_customer', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
-    $table = WPsCRM_TABLE . "clienti";
+    $table = WPsCRM_TABLE."kunde";
     parse_str($_POST['fields'], $fields);
     $ID_azienda = "1";
     $taxObj = array();
@@ -2128,7 +2128,7 @@ function WPsCRM_save_client() {
       $serialized_custom_fields = "";
     if ($ID = $fields["ID"]) {
       $wpdb->update(
-              $table, array('FK_aziende' => $ID_azienda, 'nome' => $fields["nome"], 'cognome' => $fields["cognome"], 'categoria' => $fields["customerCategory"], 'ragione_sociale' => $fields["ragione_sociale"], 'indirizzo' => $fields["indirizzo"], 'cap' => $fields["cap"], 'localita' => $fields["localita"], 'provincia' => $fields["provincia"], 'nazione' => $fields["nazione"], 'telefono1' => $fields["telefono1"], 'telefono2' => $fields["telefono2"], 'fax' => $fields["fax"], 'email' => $fields["email"], 'sitoweb' => $fields["sitoweb"], 'skype' => $fields["skype"], 'p_iva' => $fields["p_iva"], 'cod_fis' => $fields["cod_fis"], 'data_modifica' => $data_modifica, 'provenienza' => $fields["customerComesfrom"], 'agente' => $selectAgent, 'data_nascita' => $data_nascita, 'luogo_nascita' => $fields["luogo_nascita"], 'tipo_cliente' => $fields["tipo_cliente"], 'interessi' => $fields["customerInterests"], 'fatturabile' => $fields["fatturabile"], 'custom_fields' => $serialized_custom_fields, 'custom_tax' => $serialized_tax), array('ID_clienti' => $ID), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s')
+              $table, array('FK_aziende' => $ID_azienda, 'nome' => $fields["nome"], 'cognome' => $fields["cognome"], 'categoria' => $fields["customerCategory"], 'ragione_sociale' => $fields["ragione_sociale"], 'indirizzo' => $fields["indirizzo"], 'cap' => $fields["cap"], 'localita' => $fields["localita"], 'provincia' => $fields["provincia"], 'nazione' => $fields["nazione"], 'telefono1' => $fields["telefono1"], 'telefono2' => $fields["telefono2"], 'fax' => $fields["fax"], 'email' => $fields["email"], 'sitoweb' => $fields["sitoweb"], 'skype' => $fields["skype"], 'p_iva' => $fields["p_iva"], 'cod_fis' => $fields["cod_fis"], 'data_modifica' => $data_modifica, 'provenienza' => $fields["customerComesfrom"], 'agente' => $selectAgent, 'data_nascita' => $data_nascita, 'luogo_nascita' => $fields["luogo_nascita"], 'tipo_cliente' => $fields["tipo_cliente"], 'interessi' => $fields["customerInterests"], 'fatturabile' => $fields["fatturabile"], 'custom_fields' => $serialized_custom_fields, 'custom_tax' => $serialized_tax), array('ID_kunde' => $ID), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s')
       );
     } else {
       $wpdb->insert(
@@ -2187,11 +2187,11 @@ function WPsCRM_syncro_newsletter($fields) {
 function WPsCRM_save_crm_user_fields() {
   global $wpdb;
   $user = wp_get_current_user();
-  $table = WPsCRM_TABLE . "clienti";
+  $table = WPsCRM_TABLE."kunde";
   parse_str($_POST['fields'], $fields);
   print_r($fields);
   $wpdb->update(
-          $table, array('nome' => $fields["nome"], 'cognome' => $fields["cognome"], 'indirizzo' => $fields["indirizzo"], 'cap' => $fields["cap"], 'localita' => $fields["localita"], 'telefono1' => $fields["telefono1"], 'email' => $fields["email"], 'ragione_sociale' => $fields["ragione_sociale"], 'p_iva' => $fields["p_iva"], 'cod_fis' => $fields["cod_fis"]), array('ID_clienti' => $_POST["client_ID"]), array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+          $table, array('nome' => $fields["nome"], 'cognome' => $fields["cognome"], 'indirizzo' => $fields["indirizzo"], 'cap' => $fields["cap"], 'localita' => $fields["localita"], 'telefono1' => $fields["telefono1"], 'email' => $fields["email"], 'ragione_sociale' => $fields["ragione_sociale"], 'p_iva' => $fields["p_iva"], 'cod_fis' => $fields["cod_fis"]), array('ID_kunde' => $_POST["client_ID"]), array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
   );
   echo $wpdb->last_query;
   wp_update_user(array(
@@ -2220,11 +2220,11 @@ function WPsCRM_view_activity_modal() {
   $ID = $_GET['id'];
   $report = $_REQUEST['report'];
   $a_table = WPsCRM_TABLE . "agenda";
-  $c_table = WPsCRM_TABLE . "clienti";
+  $c_table = WPsCRM_TABLE."kunde";
   $s_table = WPsCRM_TABLE . "subscriptionrules";
 
 
-  $sql = "select oggetto,tipo_agenda, annotazioni, start_date,end_date, data_agenda, fk_clienti, fk_contatti,fk_subscriptionrules, fatto, esito, priorita from $a_table where id_agenda=$ID";
+  $sql = "select oggetto,tipo_agenda, annotazioni, start_date,end_date, data_agenda, fk_kunde, fk_contatti,fk_subscriptionrules, fatto, esito, priorita from $a_table where id_agenda=$ID";
   $riga = $wpdb->get_row($sql);
 
   switch ($riga->priorita) {
@@ -2241,8 +2241,8 @@ function WPsCRM_view_activity_modal() {
       $priorita = __("Normal", "cpsmartcrm");
       break;
   }
-  if ($riga->fk_clienti) {
-    $sql = "select ragione_sociale, nome, cognome from $c_table where ID_clienti=" . $riga->fk_clienti;
+  if ($riga->fk_kunde) {
+    $sql = "select ragione_sociale, nome, cognome from $c_table where ID_kunde=" . $riga->fk_kunde;
     $rigac = $wpdb->get_row($sql);
     $cliente = $rigac->ragione_sociale ? $rigac->ragione_sociale : $rigac->nome . " " . $rigac->cognome;
   }
@@ -2310,7 +2310,7 @@ function WPsCRM_view_activity_modal() {
 <table border="0" cellpadding="2" cellspacing="2" class="view table">
     <tr>
 	    <td class="view">' . __('Kunde', 'cpsmartcrm') . ':</td>
-	    <td class="view_text"><a href="' . admin_url('admin.php?page=smart-crm&p=clienti/form.php& ID=' . $riga->fk_clienti) . '">' . stripslashes($cliente) . '</a></td>
+	    <td class="view_text"><a href="' . admin_url('admin.php?page=smart-crm&p=kunde/form.php& ID=' . $riga->fk_kunde) . '">' . stripslashes($cliente) . '</a></td>
     </tr>
     <tr>
 	    <td class="view">' . __('Kontakt', 'cpsmartcrm') . ':</td>
@@ -2476,10 +2476,10 @@ add_action('wp_ajax_WPsCRM_dismiss_notice', 'WPsCRM_dismiss_notice');
 function WPsCRM_save_client_partial() {
   if (check_ajax_referer('update_document', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
-    $table = WPsCRM_TABLE . "clienti";
+    $table = WPsCRM_TABLE."kunde";
     parse_str($_POST['values'], $arr);
     $wpdb->update(
-            $table, array('indirizzo' => $arr["indirizzo"], 'cap' => $arr["cap"], 'localita' => $arr["localita"], 'provincia' => $arr["provincia"], 'p_iva' => $arr["p_iva"], 'cod_fis' => $arr["cod_fis"]), array('ID_clienti' => $arr['hidden_fk_clienti']), array('%s', '%s', '%s', '%s', '%s', '%s')
+            $table, array('indirizzo' => $arr["indirizzo"], 'cap' => $arr["cap"], 'localita' => $arr["localita"], 'provincia' => $arr["provincia"], 'p_iva' => $arr["p_iva"], 'cod_fis' => $arr["cod_fis"]), array('ID_kunde' => $arr['hidden_fk_kunde']), array('%s', '%s', '%s', '%s', '%s', '%s')
     );
   } else
     die('Security Issue');
@@ -2516,7 +2516,7 @@ function WPsCRM_check_client_one() {
   $data_inserimento = date("Y-m-d");
   $data_modifica = date("Y-m-d");
   $cur_year = date("Y");
-  $table = WPsCRM_TABLE . "clienti";
+  $table = WPsCRM_TABLE."kunde";
   if (empty($clients)) {
       $wpdb->insert(
           $table, array(
@@ -2567,7 +2567,7 @@ function WPsCRM_check_client_one() {
               'provenienza' => '',
               'agente' => ''
           ),
-          array('ID_clienti' => 1),
+          array('ID_kunde' => 1),
           array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d')
       );
   }
@@ -2961,7 +2961,7 @@ function WPsCRM_agent_can() {
 function WPsCRM_set_payment_status() {
   if (check_ajax_referer('update_document', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
-    $table = WPsCRM_TABLE . "documenti";
+    $table = WPsCRM_TABLE."dokumente";
     $wpdb->update(
             $table, array(
         'pagato' => (int) $_REQUEST['value']
@@ -3099,9 +3099,9 @@ function WPsCRM_generate_document_HTML($ID) {
   $signature = $document->signature();
   $formatted_signature = html_entity_decode($document->formatted_signature());
 
-  $c_table = WPsCRM_TABLE . "clienti";
-  $d_table = WPsCRM_TABLE . "documenti";
-  $dd_table = WPsCRM_TABLE . "documenti_dettaglio";
+  $c_table = WPsCRM_TABLE."kunde";
+  $d_table = WPsCRM_TABLE."dokumente";
+  $dd_table = WPsCRM_TABLE . "dokumente_dettaglio";
 
   $general_options = get_option('CRM_general_settings');
   $document_options = get_option('CRM_documents_settings');
@@ -3280,7 +3280,7 @@ function WPsCRM_generate_document_HTML($ID) {
         $document_prefix = $document_numbering['offers_prefix'];
         $document_suffix = $document_numbering['offers_suffix'];
         $document_dear = $document_messages['offers_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=documenti/form_quotation.php&ID=' . $ID);
+        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php&ID=' . $ID);
         break;
       case 2:
         $progressivo = $riga["progressivo"];
@@ -3290,7 +3290,7 @@ function WPsCRM_generate_document_HTML($ID) {
         $document_prefix = $document_numbering['invoices_prefix'];
         $document_suffix = $document_numbering['invoices_suffix'];
         $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=documenti/form_invoice.php&ID=' . $ID);
+        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=' . $ID);
         break;
       case 3:
         $progressivo = $riga["id"];
@@ -3300,14 +3300,14 @@ function WPsCRM_generate_document_HTML($ID) {
         $document_prefix = $document_numbering['invoices_prefix'];
         $document_suffix = $document_numbering['invoices_suffix'];
         $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=documenti/form_invoice_informal.php&ID=' . $ID);
+        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice_informal.php&ID=' . $ID);
 
         break;
     }
     $riferimento = $riga["riferimento"];
     $oggetto = $tipo == 1 ? $riga["oggetto"] : "";
-    if ($FK_clienti = $riga["fk_clienti"]) {
-      $sql = "select ragione_sociale, nome, cognome, email, indirizzo, cap, localita, provincia, p_iva, cod_fis, tipo_cliente from $c_table where ID_clienti=" . $FK_clienti;
+    if ($FK_clienti = $riga["fk_kunde"]) {
+      $sql = "select ragione_sociale, nome, cognome, email, indirizzo, cap, localita, provincia, p_iva, cod_fis, tipo_cliente from $c_table where ID_kunde=" . $FK_clienti;
       //  	echo $sql;
       $rigac = $wpdb->get_row($sql, ARRAY_A);
       $cliente = $rigac["ragione_sociale"] ? $rigac["ragione_sociale"] : $rigac["nome"] . " " . $rigac["cognome"];
@@ -3387,19 +3387,19 @@ function WPsCRM_generate_document_HTML($ID) {
    */
   switch ($accontOptions['accountability']) {
     case 0:
-      include (WPsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_0.php');
+      include (WPsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_0.php');
       break;
     case "1":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_1.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_1.php');
       break;
     case "2":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_2.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_2.php');
       break;
     case "3":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_3.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_3.php');
       break;
     case "4":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_4.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_4.php');
       break;
   }
   $tab_cond = "";
@@ -3454,9 +3454,9 @@ function _WPsCRM_generate_document_HTML($ID) {
   $signature = $document->signature();
   $formatted_signature = html_entity_decode($document->formatted_signature());
 
-  $c_table = WPsCRM_TABLE . "clienti";
-  $d_table = WPsCRM_TABLE . "documenti";
-  $dd_table = WPsCRM_TABLE . "documenti_dettaglio";
+  $c_table = WPsCRM_TABLE."kunde";
+  $d_table = WPsCRM_TABLE."dokumente";
+  $dd_table = WPsCRM_TABLE . "dokumente_dettaglio";
 
   $general_options = get_option('CRM_general_settings');
   $document_options = get_option('CRM_documents_settings');
@@ -3610,7 +3610,7 @@ function _WPsCRM_generate_document_HTML($ID) {
         $document_prefix = $document_numbering['offers_prefix'];
         $document_suffix = $document_numbering['offers_suffix'];
         $document_dear = $document_messages['offers_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=documenti/form_quotation.php&ID=' . $ID);
+        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php&ID=' . $ID);
         break;
       case 2:
         $progressivo = $riga["progressivo"];
@@ -3620,7 +3620,7 @@ function _WPsCRM_generate_document_HTML($ID) {
         $document_prefix = $document_numbering['invoices_prefix'];
         $document_suffix = $document_numbering['invoices_suffix'];
         $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=documenti/form_invoice.php&ID=' . $ID);
+        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=' . $ID);
         break;
       case 3:
         $progressivo = $riga["id"];
@@ -3630,14 +3630,14 @@ function _WPsCRM_generate_document_HTML($ID) {
         $document_prefix = $document_numbering['invoices_prefix'];
         $document_suffix = $document_numbering['invoices_suffix'];
         $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=documenti/form_invoice_informal.php&ID=' . $ID);
+        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice_informal.php&ID=' . $ID);
 
         break;
     }
     $riferimento = $riga["riferimento"];
     $oggetto = $tipo == 1 ? $riga["oggetto"] : "";
-    if ($FK_clienti = $riga["fk_clienti"]) {
-      $sql = "select ragione_sociale, nome, cognome, email, indirizzo, cap, localita, provincia, p_iva, cod_fis, tipo_cliente from $c_table where ID_clienti=" . $FK_clienti;
+    if ($FK_clienti = $riga["fk_kunde"]) {
+      $sql = "select ragione_sociale, nome, cognome, email, indirizzo, cap, localita, provincia, p_iva, cod_fis, tipo_cliente from $c_table where ID_kunde=" . $FK_clienti;
       //  	echo $sql;
       $rigac = $wpdb->get_row($sql, ARRAY_A);
       $cliente = $rigac["ragione_sociale"] ? $rigac["ragione_sociale"] : $rigac["nome"] . " " . $rigac["cognome"];
@@ -3695,19 +3695,19 @@ function _WPsCRM_generate_document_HTML($ID) {
    */
   switch ($accontOptions['accountability']) {
     case 0:
-      include (WPsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_0.php');
+      include (WPsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_0.php');
       break;
     case "1":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_1.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_1.php');
       break;
     case "2":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_2.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_2.php');
       break;
     case "3":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_3.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_3.php');
       break;
     case "4":
-      include (ACCsCRM_DIR . '/inc/crm/documenti/accountabilities/accountability_print_4.php');
+      include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_print_4.php');
       break;
   }
   $tab_cond = "";
@@ -3757,7 +3757,7 @@ function _WPsCRM_generate_document_HTML($ID) {
 function WPsCRM_create_pdf_document($ID, $content, $attachment = 0, $old_file = null, $tipo = null, $WOOmail = null) {
   global $wpdb;
 
-  $d_table = WPsCRM_TABLE . "documenti";
+  $d_table = WPsCRM_TABLE."dokumente";
   $_customer = new CRM_customer();
   $_customer->set_customerbyID_doc($ID);
   $email = $_customer->email;
@@ -4019,8 +4019,8 @@ function WPsCRM_save_document() {
     global $wpdb;
     parse_str($_POST['fields'], $fields);
     //var_dump($fields);
-    $table = WPsCRM_TABLE . "documenti";
-    $d_table = WPsCRM_TABLE . "documenti_dettaglio";
+    $table = WPsCRM_TABLE."dokumente";
+    $d_table = WPsCRM_TABLE . "dokumente_dettaglio";
     $s_table = WPsCRM_TABLE . "subscriptionrules";
     $a_table = WPsCRM_TABLE . "agenda";
     $totale = WPsCRM_numfmt( $fields["totale"]);    
@@ -4069,17 +4069,17 @@ function WPsCRM_save_document() {
     $quotation_value = isset($fields["quotation_value"]) ? WPsCRM_numfmt( $fields["quotation_value"]) : 0;
     $num_righe = $fields["num_righe"];
     $tipo_sconto = isset($fields["tipo_sconto"]) ? (int) $fields["tipo_sconto"] : 0;
-    $fk_clienti = isset($fields["fk_clienti"]) ? $fields["fk_clienti"] : 0;
-    $hidden_fk_clienti = isset($fields["hidden_fk_clienti"]) ? $fields["hidden_fk_clienti"] : 0;
+    $fk_kunde = isset($fields["fk_kunde"]) ? $fields["fk_kunde"] : 0;
+    $hidden_fk_kunde = isset($fields["hidden_fk_kunde"]) ? $fields["hidden_fk_kunde"] : 0;
     if ($ID = $fields["ID"]) {
       //delete scheduler, rules, emails associated to document
-      $wpdb->delete(WPsCRM_TABLE . "emails", array('fk_documenti' => $ID));
+      $wpdb->delete(WPsCRM_TABLE . "emails", array('fk_dokumente' => $ID));
       $result = $wpdb->query(
               $wpdb->prepare(
-                      "delete $s_table.* from $s_table inner join $a_table on $s_table.ID= $a_table.fk_subscriptionrules where s_specific<>0 and $a_table.fk_documenti=%d", $ID
+                      "delete $s_table.* from $s_table inner join $a_table on $s_table.ID= $a_table.fk_subscriptionrules where s_specific<>0 and $a_table.fk_dokumente=%d", $ID
               )
       );
-      $wpdb->delete(WPsCRM_TABLE . "agenda", array('fk_documenti' => $ID));
+      $wpdb->delete(WPsCRM_TABLE . "agenda", array('fk_dokumente' => $ID));
 
       $wpdb->update(
               $table, array('progressivo' => "$progressivo", 'data_inserimento' => "$data_inserimento", 'oggetto' => "$oggetto", 'riferimento' => "$riferimento", 'data' => "$data", 'modalita_pagamento' => "$modalita_pagamento", 'annotazioni' => "$annotazioni", 'totale_imponibile' => "$totale_imponibile", 'totale_imposta' => "$totale_imposta", 'totale' => "$totale", 'tot_cassa_inps' => "$totale_cassa", 'ritenuta_acconto' => "$ritenuta_acconto", 'totale_netto' => "$totale_netto", 'commento' => "$commento", 'testo_libero' => $testo_libero, 'giorni_pagamento' => $notificationDays, 'pagato' => $pagato, 'notifica_pagamento' => $notify_payment, 'perc_realizzo' => $perc_realizzo, 'valore_preventivo' => $quotation_value, 'data_scadenza' => $data_scadenza, 'data_scadenza_timestamp' => $data_scadenza_timestamp, 'tipo_sconto' => $tipo_sconto), array('id' => $ID), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%s', '%s', '%d', '%d', '%d', '%s', '%f', '%s', '%d', '%d')
@@ -4134,13 +4134,13 @@ function WPsCRM_save_document() {
         $document_options['invoices_start'] = $document_start;
       update_option('CRM_documents_settings', $document_options);
       $wpdb->insert(
-              $table, array('progressivo' => "$new_reg", 'tipo' => "$type", 'fk_clienti' => "$fk_clienti", 'data' => "$data", 'fk_utenti_ins' => "$user_id", 'oggetto' => "$oggetto", 'riferimento' => "$riferimento", 'modalita_pagamento' => "$modalita_pagamento", 'annotazioni' => "$annotazioni", 'totale_imponibile' => "$totale_imponibile", 'totale_imposta' => "$totale_imposta", 'totale' => "$totale", 'tot_cassa_inps' => "$totale_cassa", 'ritenuta_acconto' => "$ritenuta_acconto", 'totale_netto' => "$totale_netto", 'data_inserimento' => "$data_inserimento", 'commento' => "$commento", 'testo_libero' => $testo_libero, 'giorni_pagamento' => $notificationDays, 'perc_realizzo' => $perc_realizzo, 'notifica_pagamento' => $notify_payment, 'valore_preventivo' => $quotation_value, 'data_scadenza' => $data_scadenza, 'data_timestamp' => $data_timestamp, 'data_scadenza_timestamp' => $data_scadenza_timestamp, 'origine_proforma' => $origine_proforma, 'tipo_sconto' => $tipo_sconto), array('%d', '%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%s', '%s', '%s', '%d', '%s', '%d', '%f', '%s', '%d', '%d', '%d', '%d')
+              $table, array('progressivo' => "$new_reg", 'tipo' => "$type", 'fk_kunde' => "$fk_kunde", 'data' => "$data", 'fk_utenti_ins' => "$user_id", 'oggetto' => "$oggetto", 'riferimento' => "$riferimento", 'modalita_pagamento' => "$modalita_pagamento", 'annotazioni' => "$annotazioni", 'totale_imponibile' => "$totale_imponibile", 'totale_imposta' => "$totale_imposta", 'totale' => "$totale", 'tot_cassa_inps' => "$totale_cassa", 'ritenuta_acconto' => "$ritenuta_acconto", 'totale_netto' => "$totale_netto", 'data_inserimento' => "$data_inserimento", 'commento' => "$commento", 'testo_libero' => $testo_libero, 'giorni_pagamento' => $notificationDays, 'perc_realizzo' => $perc_realizzo, 'notifica_pagamento' => $notify_payment, 'valore_preventivo' => $quotation_value, 'data_scadenza' => $data_scadenza, 'data_timestamp' => $data_timestamp, 'data_scadenza_timestamp' => $data_scadenza_timestamp, 'origine_proforma' => $origine_proforma, 'tipo_sconto' => $tipo_sconto), array('%d', '%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%s', '%s', '%s', '%d', '%s', '%d', '%f', '%s', '%d', '%d', '%d', '%d')
       );
     }
     //var_dump( $wpdb->last_query );
     $ID_ret = $ID ? $ID : $wpdb->insert_id;
     //articoli
-    $wpdb->delete($d_table, array('fk_documenti' => $ID_ret, 'eliminato' => 1));
+    $wpdb->delete($d_table, array('fk_dokumente' => $ID_ret, 'eliminato' => 1));
     $i = 1;
     $c_riga = 1;
     while (true) {
@@ -4162,12 +4162,12 @@ function WPsCRM_save_document() {
         //se nuovo lo aggiungo, altrimenti lo modifico
         if ($idd) {
           $wpdb->update(
-                  $d_table, array('fk_documenti' => $ID_ret, 'fk_articoli' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva), array('id' => $idd), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'fk_artikel' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva), array('id' => $idd), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d')
           );
           $id_dd = $idd;
         } else {
           $wpdb->insert(
-                  $d_table, array('fk_documenti' => $ID_ret, 'fk_articoli' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%d', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'fk_artikel' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%d', '%d')
           );
 //		var_dump( $wpdb->last_query );
 
@@ -4184,12 +4184,12 @@ function WPsCRM_save_document() {
         //  		$q=mysql_query($sql);
         if ($res) {
           $wpdb->update(
-                  $d_table, array('fk_documenti' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva), array('id' => $idd), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva), array('id' => $idd), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d')
           );
           $id_dd = $idd;
         } else {
           $wpdb->insert(
-                  $d_table, array('fk_documenti' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%d', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%d', '%d')
           );
 //		var_dump( $wpdb->last_query );
           $id_dd = $wpdb->insert_id;
@@ -4207,7 +4207,7 @@ function WPsCRM_save_document() {
     //die;
     //echo "salvato<br>";
     //subscription rules
-    $client_id = $fk_clienti ? $fk_clienti : $hidden_fk_clienti;
+    $client_id = $fk_kunde ? $fk_kunde : $hidden_fk_kunde;
     if ($notify_payment && $type == 2) {
       $s_table = WPsCRM_TABLE . "subscriptionrules";
       $a_table = WPsCRM_TABLE . "agenda";
@@ -4233,7 +4233,7 @@ function WPsCRM_save_document() {
       $s .= '}';
       $s .= ']';
 
-      if ($res = $wpdb->get_row("select * from $a_table where fk_documenti=$ID_ret AND fk_documenti_dettaglio = 0 ")) {
+      if ($res = $wpdb->get_row("select * from $a_table where fk_dokumente=$ID_ret AND fk_dokumente_dettaglio = 0 ")) {
         //modify records in $a_table and $s_table
         $wpdb->update(
                 $a_table, array(
@@ -4270,7 +4270,7 @@ function WPsCRM_save_document() {
         $wpdb->insert(
                 $a_table, array(
             'oggetto' => sanitize_text_field($oggetto),
-            'fk_clienti' => $client_id,
+            'fk_kunde' => $client_id,
             'annotazioni' => sanitize_text_field($annotazioni),
             'start_date' => $data_scadenza,
             'end_date' => $data_scadenza,
@@ -4281,8 +4281,8 @@ function WPsCRM_save_document() {
             'data_inserimento' => date("Y-m-d H:i"),
             'fk_subscriptionrules' => $id_sr,
             'tipo_agenda' => 3,
-            'fk_documenti' => $ID_ret,
-            'fk_documenti_dettaglio' => 0
+            'fk_dokumente' => $ID_ret,
+            'fk_dokumente_dettaglio' => 0
                 ), array('%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%d', '%d', '%d')
         );
       }
@@ -4326,7 +4326,7 @@ function WPsCRM_save_document() {
               $table, array('filename' => "$document_name"), array('id' => $ID_ret), array('%s')
       );
 //	$ret= WPsCRM_create_pdf_document($ID_ret, $content, $attachment, $old_file, $type, $WOOmail);
-      //include($plugin_dir."/inc/crm/documenti/document_print2.php");
+      //include($plugin_dir."/inc/crm/dokumente/document_print2.php");
     }
     echo "OK~" . $ID_ret;
     die;
@@ -4381,7 +4381,7 @@ function cpsmartcrm_get_umsatzsteuer_info($options) {
  * @section documents (list,form_invoice,form_quote)
  * @section scheduler (list,form todo, form appointments)
  * */
-include_once(WPsCRM_DIR . '/inc/pluggable/clienti/list.php');
-include_once(WPsCRM_DIR . '/inc/pluggable/clienti/form.php');
-include_once(WPsCRM_DIR . '/inc/pluggable/documenti/list.php');
+include_once(WPsCRM_DIR . '/inc/pluggable/kunde/list.php');
+include_once(WPsCRM_DIR . '/inc/pluggable/kunde/form.php');
+include_once(WPsCRM_DIR . '/inc/pluggable/dokumente/list.php');
 include_once(WPsCRM_DIR . '/inc/pluggable/scheduler/list.php');

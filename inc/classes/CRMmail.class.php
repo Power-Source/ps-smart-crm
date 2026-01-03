@@ -117,11 +117,11 @@ class CRM_mail{
 	 *
 	 **/
 	public function get_customerMail($id,$print=0){
-		$table=WPsCRM_TABLE."clienti";
+		$table=WPsCRM_TABLE."kunde";
 		global $wpdb;
 		if($print ==1)
-			echo $wpdb->get_var( "SELECT email FROM $table WHERE ID_clienti =$id" );
-		return $wpdb->get_var( "SELECT email FROM $table WHERE ID_clienti =$id" );
+			echo $wpdb->get_var( "SELECT email FROM $table WHERE ID_kunde =$id" );
+		return $wpdb->get_var( "SELECT email FROM $table WHERE ID_kunde =$id" );
 	}
 
 	/**
@@ -130,10 +130,10 @@ class CRM_mail{
 	 *
 	 **/
 	public function get_customerName($id,$print=0){
-		$table=WPsCRM_TABLE."clienti";
+		$table=WPsCRM_TABLE."kunde";
 		global $wpdb;
 
-		$data=$wpdb->get_row( "SELECT nome, cognome, ragione_sociale FROM $table WHERE ID_clienti =$id" ) ;
+		$data=$wpdb->get_row( "SELECT nome, cognome, ragione_sociale FROM $table WHERE ID_kunde =$id" ) ;
 
 		$data->ragione_sociale !="" ? $name=$data->ragione_sociale : $name=$data->nome. " ". $data->cognome;
 
@@ -205,8 +205,8 @@ class CRM_mail{
 				$activita['time'] = date('H:i',strtotime($activityData->start_date) );
 				$activita['timestamp'] = strtotime($activityData->start_date);
 				$activita['rule'] = (int) $activityData->fk_subscriptionrules ;
-				$activita['customerID'] = (int) $activityData->fk_clienti ;
-				$activita['documentID']= (int) $activityData->fk_documenti ;
+				$activita['customerID'] = (int) $activityData->fk_kunde ;
+				$activita['documentID']= (int) $activityData->fk_dokumente ;
                                 $activita['timezone_offset']=$activityData->timezone_offset;
                                 array_push($activity,$activita);
 			}
@@ -225,13 +225,13 @@ class CRM_mail{
 	public function get_activitybyID_doc($id){
 		$culture=get_locale();
 		$a_table=WPsCRM_TABLE."agenda";
-		$d_table=WPsCRM_TABLE."documenti";
+		$d_table=WPsCRM_TABLE."dokumente";
 		$r_table=WPsCRM_TABLE."subscriptionrules";
 		global $wpdb;
 
 		$SQL="SELECT * FROM $a_table AS A
 				JOIN $d_table AS D
-				ON (D.id=A.fk_documenti)
+				ON (D.id=A.fk_dokumente)
 				WHERE D.id = $id";
 
 		//echo $SQL;
@@ -269,9 +269,9 @@ class CRM_mail{
 				$activita['time'] = date('H:s',strtotime($activityData->end_date) );
 				$activita['timestamp'] = strtotime($activityData->end_date);
 				$activita['rule'] = (int) $activityData->fk_subscriptionrules ;
-				$activita['customerID'] = (int) $activityData->fk_clienti ;
-				$activita['documentID']= (int) $activityData->fk_documenti ;
-				$activita['rowID']= (int) $activityData->fk_documenti_dettaglio ;
+				$activita['customerID'] = (int) $activityData->fk_kunde ;
+				$activita['documentID']= (int) $activityData->fk_dokumente ;
+				$activita['rowID']= (int) $activityData->fk_dokumente_dettaglio ;
 				//print_r($activita);echo "<br><br>";
 				array_push($activity,$activita);
 			}
@@ -630,7 +630,7 @@ class CRM_mail{
 		$query=
 		$wpdb->prepare(
 			"INSERT INTO $table
-			( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_documenti,fk_documenti_dettaglio, fk_clienti, attachments)
+			( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_dokumente,fk_dokumente_dettaglio, fk_kunde, attachments)
 			VALUES ( %s, %s, %s , %s, %s, %d, %d, %d, %d, %s)
 			",
 			$e_from,
@@ -682,7 +682,7 @@ class CRM_mail{
 		        $query=
 		        $wpdb->prepare(
 			        "INSERT INTO $table
-			        ( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_documenti,fk_documenti_dettaglio, fk_clienti, e_sent)
+			        ( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_dokumente,fk_dokumente_dettaglio, fk_kunde, e_sent)
 			        VALUES ( %s, %s, %s , %s, %s, %d, %d, %d, %d, %d)
 			        ",
 			        $e_from,
@@ -729,7 +729,7 @@ class CRM_mail{
 		        $query=
 		        $wpdb->prepare(
 			        "INSERT INTO $table
-			        ( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_documenti,fk_documenti_dettaglio, e_sent, fk_clienti, attachments)
+			        ( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_dokumente,fk_dokumente_dettaglio, e_sent, fk_kunde, attachments)
 			        VALUES ( %s, %s, %s , %s, %s, %d, %d, %d, %d, %d, %s)
 			        ",
 			        $e_from,
@@ -775,7 +775,7 @@ class CRM_mail{
 		        $query=
 		        $wpdb->prepare(
 			        "INSERT INTO $table
-			        ( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_documenti,fk_documenti_dettaglio, e_sent, fk_clienti, attachments)
+			        ( e_from, e_to, e_subject, e_body,e_date,fk_agenda,fk_dokumente,fk_dokumente_dettaglio, e_sent, fk_kunde, attachments)
 			        VALUES ( %s, %s, %s , %s, %s, %d, %d, %d, %d, %d, %s)
 			        ",
 			        $e_from,

@@ -206,7 +206,6 @@
                           });
                       }
                       window.sessionStorage.setItem('tmp_amount', amount);
-                      // $('#reverseCalculator').data('kendoWindow').close(); // ggf. ersetzen
                       aggiornatot();
                   },
                   error: function (errorThrown) {
