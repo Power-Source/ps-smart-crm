@@ -27,11 +27,33 @@ if (isset($_POST['save_accounting_settings']) && check_admin_referer('accounting
         }
     }
 
+    $income_categories = array();
+    if (!empty($_POST['income_categories']) && is_array($_POST['income_categories'])) {
+        foreach ($_POST['income_categories'] as $cat) {
+            $cat = trim($cat);
+            if ($cat !== '') {
+                $income_categories[] = substr(sanitize_text_field($cat), 0, 20);
+            }
+        }
+    }
+
+    $expense_categories = array();
+    if (!empty($_POST['expense_categories']) && is_array($_POST['expense_categories'])) {
+        foreach ($_POST['expense_categories'] as $cat) {
+            $cat = trim($cat);
+            if ($cat !== '') {
+                $expense_categories[] = substr(sanitize_text_field($cat), 0, 20);
+            }
+        }
+    }
+
     $acc_options['tax_rates'] = $tax_rates;
     $acc_options['booking_date_auto'] = (int) ($_POST['booking_date_auto'] ?? 0);
     $acc_options['booking_number_prefix'] = sanitize_text_field($_POST['booking_number_prefix'] ?? 'B');
     $acc_options['booking_number_start'] = (int) ($_POST['booking_number_start'] ?? 1000);
     $acc_options['currency'] = sanitize_text_field($_POST['currency'] ?? 'EUR');
+    $acc_options['income_categories'] = array_values(array_unique($income_categories));
+    $acc_options['expense_categories'] = array_values(array_unique($expense_categories));
     $acc_options['notes'] = wp_kses_post($_POST['notes'] ?? '');
 
     update_option('CRM_accounting_settings', $acc_options);
@@ -44,6 +66,15 @@ if (empty($acc_options['tax_rates'])) {
         array('label' => __('Ermäßigt (7%)', 'cpsmartcrm'), 'percentage' => 7, 'account' => '1601'),
         array('label' => __('Null (0%)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1602'),
     );
+}
+
+// Defaults for categories if none saved yet
+if (empty($acc_options['income_categories'])) {
+    $acc_options['income_categories'] = array('dienstleistung', 'produktverkauf', 'wartung', 'abo', 'sonstiges');
+}
+
+if (empty($acc_options['expense_categories'])) {
+    $acc_options['expense_categories'] = array('material', 'software', 'travel', 'office', 'marketing', 'other');
 }
 
 $is_kleinunternehmer = isset($bus_options['crm_kleinunternehmer']) && $bus_options['crm_kleinunternehmer'] == 1;
@@ -73,7 +104,7 @@ $is_kleinunternehmer = isset($bus_options['crm_kleinunternehmer']) && $bus_optio
         
         <h3><?php _e('Steuersätze', 'cpsmartcrm'); ?></h3>
         <p style="color: #666; font-size: 13px;">
-            <?php _e('Definieren Sie die Steuersätze, die in Ihren Rechnungen verwendet werden. Für Kleinunternehmer sind diese informativ.', 'cpsmartcrm'); ?>
+            <?php _e('Definiere die Steuersätze, die in Deinen Rechnungen verwendet werden. Für Kleinunternehmer sind diese informativ.', 'cpsmartcrm'); ?>
         </p>
 
         <table class="widefat" style="margin: 12px 0;">
@@ -146,6 +177,45 @@ $is_kleinunternehmer = isset($bus_options['crm_kleinunternehmer']) && $bus_optio
 
         <hr style="margin: 20px 0;" />
 
+        <h3><?php _e('Kategorien für Einnahmen & Ausgaben', 'cpsmartcrm'); ?></h3>
+        <p style="color: #666; font-size: 13px;">
+            <?php _e('Eine Zeile pro Begriff, max. 20 Zeichen. Per + kannst du weitere Zeilen hinzufügen.', 'cpsmartcrm'); ?>
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4 style="margin-top: 0;"><?php _e('Einnahmen-Kategorien', 'cpsmartcrm'); ?></h4>
+                <div id="income_categories_wrap" style="display: flex; flex-direction: column; gap: 6px;">
+                    <?php foreach ($acc_options['income_categories'] as $idx => $cat) : ?>
+                        <div class="cat-row" style="display: flex; gap: 6px; align-items: center;">
+                            <input type="text" name="income_categories[]" value="<?php echo esc_attr($cat); ?>" maxlength="20" class="widefat" />
+                            <button type="button" class="button button-small remove-income-category" aria-label="<?php _e('Kategorie entfernen', 'cpsmartcrm'); ?>">&minus;</button>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" class="button button-small" id="add_income_category" style="margin-top: 6px;">
+                    <?php _e('+ Kategorie', 'cpsmartcrm'); ?>
+                </button>
+            </div>
+
+            <div>
+                <h4 style="margin-top: 0;"><?php _e('Ausgaben-Kategorien', 'cpsmartcrm'); ?></h4>
+                <div id="expense_categories_wrap" style="display: flex; flex-direction: column; gap: 6px;">
+                    <?php foreach ($acc_options['expense_categories'] as $idx => $cat) : ?>
+                        <div class="cat-row" style="display: flex; gap: 6px; align-items: center;">
+                            <input type="text" name="expense_categories[]" value="<?php echo esc_attr($cat); ?>" maxlength="20" class="widefat" />
+                            <button type="button" class="button button-small remove-expense-category" aria-label="<?php _e('Kategorie entfernen', 'cpsmartcrm'); ?>">&minus;</button>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" class="button button-small" id="add_expense_category" style="margin-top: 6px;">
+                    <?php _e('+ Kategorie', 'cpsmartcrm'); ?>
+                </button>
+            </div>
+        </div>
+
+        <hr style="margin: 20px 0;" />
+
         <h3><?php _e('Notizen', 'cpsmartcrm'); ?></h3>
         <textarea name="notes" rows="4" class="widefat" placeholder="<?php _e('z.B. Hinweise für Buchführung, Steuerberaterkontakt, etc.', 'cpsmartcrm'); ?>"><?php echo esc_textarea($acc_options['notes'] ?? ''); ?></textarea>
 
@@ -189,6 +259,34 @@ jQuery(function($) {
     $(document).on('click', '.remove-tax-row', function(e) {
         e.preventDefault();
         $(this).closest('tr').remove();
+    });
+
+    $('#add_income_category').on('click', function(e) {
+        e.preventDefault();
+        $('#income_categories_wrap').append('<div class="cat-row" style="display: flex; gap: 6px; align-items: center;"><input type="text" name="income_categories[]" value="" maxlength="20" class="widefat" /><button type="button" class="button button-small remove-income-category" aria-label="<?php _e('Kategorie entfernen', 'cpsmartcrm'); ?>">&minus;</button></div>');
+    });
+
+    $('#add_expense_category').on('click', function(e) {
+        e.preventDefault();
+        $('#expense_categories_wrap').append('<div class="cat-row" style="display: flex; gap: 6px; align-items: center;"><input type="text" name="expense_categories[]" value="" maxlength="20" class="widefat" /><button type="button" class="button button-small remove-expense-category" aria-label="<?php _e('Kategorie entfernen', 'cpsmartcrm'); ?>">&minus;</button></div>');
+    });
+
+    $(document).on('click', '.remove-income-category', function(e) {
+        e.preventDefault();
+        const wrap = $('#income_categories_wrap');
+        $(this).closest('.cat-row').remove();
+        if (wrap.children().length === 0) {
+            wrap.append('<div class="cat-row" style="display: flex; gap: 6px; align-items: center;"><input type="text" name="income_categories[]" value="" maxlength="20" class="widefat" /><button type="button" class="button button-small remove-income-category" aria-label="<?php _e('Kategorie entfernen', 'cpsmartcrm'); ?>">&minus;</button></div>');
+        }
+    });
+
+    $(document).on('click', '.remove-expense-category', function(e) {
+        e.preventDefault();
+        const wrap = $('#expense_categories_wrap');
+        $(this).closest('.cat-row').remove();
+        if (wrap.children().length === 0) {
+            wrap.append('<div class="cat-row" style="display: flex; gap: 6px; align-items: center;"><input type="text" name="expense_categories[]" value="" maxlength="20" class="widefat" /><button type="button" class="button button-small remove-expense-category" aria-label="<?php _e('Kategorie entfernen', 'cpsmartcrm'); ?>">&minus;</button></div>');
+        }
     });
 });
 </script>

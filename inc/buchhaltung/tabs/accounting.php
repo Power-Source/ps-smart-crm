@@ -17,6 +17,7 @@ global $wpdb;
 $d_table = WPsCRM_TABLE . 'documenti';
 $k_table = WPsCRM_TABLE . 'kunde';
 $i_table = WPsCRM_TABLE . 'incomes';
+$e_table = WPsCRM_TABLE . 'expenses';
 
 // Get current year and month
 $current_year = (int) ($_GET['year'] ?? date('Y'));
@@ -26,6 +27,37 @@ $period_str = $current_year . '-' . $current_month;
 // Get business settings
 $is_kleinunternehmer = WPsCRM_is_kleinunternehmer();
 $tax_rates = WPsCRM_get_tax_rates();
+$acc_options = get_option('CRM_accounting_settings', array());
+
+// Kategorien aus Einstellungen; fallback auf Defaults
+$income_categories_raw = (isset($acc_options['income_categories']) && is_array($acc_options['income_categories'])) ? $acc_options['income_categories'] : array();
+$expense_categories_raw = (isset($acc_options['expense_categories']) && is_array($acc_options['expense_categories'])) ? $acc_options['expense_categories'] : array();
+
+$income_categories = array();
+foreach ($income_categories_raw as $cat) {
+    $cat = trim($cat);
+    if ($cat !== '') {
+        $income_categories[] = sanitize_text_field($cat);
+    }
+}
+$income_categories = array_values(array_unique($income_categories));
+
+$expense_categories = array();
+foreach ($expense_categories_raw as $cat) {
+    $cat = trim($cat);
+    if ($cat !== '') {
+        $expense_categories[] = sanitize_text_field($cat);
+    }
+}
+$expense_categories = array_values(array_unique($expense_categories));
+
+if (empty($income_categories)) {
+    $income_categories = array('dienstleistung', 'produktverkauf', 'wartung', 'abo', 'sonstiges');
+}
+
+if (empty($expense_categories)) {
+    $expense_categories = array('material', 'software', 'travel', 'office', 'marketing', 'other');
+}
 
 // Handle form submissions
 $action_message = '';
@@ -115,107 +147,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Get revenue data for current month
-$revenue_data = $wpdb->get_row(
-    $wpdb->prepare(
-        "SELECT 
-            COUNT(*) as count,
-            COALESCE(SUM(CASE WHEN pagato = 1 THEN totale_imponibile ELSE 0 END), 0) as paid_net,
-            COALESCE(SUM(CASE WHEN pagato = 1 THEN totale_imposta ELSE 0 END), 0) as paid_tax,
-            COALESCE(SUM(CASE WHEN pagato = 1 THEN totale ELSE 0 END), 0) as paid_total,
-            COALESCE(SUM(CASE WHEN pagato = 0 THEN totale_imponibile ELSE 0 END), 0) as unpaid_net,
-            COALESCE(SUM(CASE WHEN pagato = 0 THEN totale_imposta ELSE 0 END), 0) as unpaid_tax,
-            COALESCE(SUM(CASE WHEN pagato = 0 THEN totale ELSE 0 END), 0) as unpaid_total
-         FROM {$d_table}
-         WHERE tipo = 2 AND DATE_FORMAT(data, '%Y-%m') = %s",
-        $period_str
-    )
-);
-
-// Get expenses for current month
-$expenses_data = $wpdb->get_row(
-    $wpdb->prepare(
-        "SELECT 
-            COUNT(*) as count,
-            COALESCE(SUM(imponibile), 0) as total_net,
-            COALESCE(SUM(imposta), 0) as total_tax,
-            COALESCE(SUM(totale), 0) as total
-         FROM " . WPsCRM_TABLE . "expenses
-         WHERE DATE_FORMAT(data, '%Y-%m') = %s",
-        $period_str
-    )
-);
-
-// Get manual incomes for current month
-$incomes_data = $wpdb->get_row(
-    $wpdb->prepare(
-        "SELECT 
-            COUNT(*) as count,
-            COALESCE(SUM(imponibile), 0) as total_net,
-            COALESCE(SUM(imposta), 0) as total_tax,
-            COALESCE(SUM(totale), 0) as total
-         FROM {$i_table}
-         WHERE DATE_FORMAT(data, '%Y-%m') = %s",
-        $period_str
-    )
-);
-
-// Get detailed expenses list
-$expenses_list = $wpdb->get_results(
-    $wpdb->prepare(
-        "SELECT * FROM " . WPsCRM_TABLE . "expenses
-         WHERE DATE_FORMAT(data, '%Y-%m') = %s
-         ORDER BY data DESC",
-        $period_str
-    )
-);
-
-// Get manual incomes list
-$incomes_list = $wpdb->get_results(
-    $wpdb->prepare(
-        "SELECT * FROM {$i_table}
-         WHERE DATE_FORMAT(data, '%Y-%m') = %s
-         ORDER BY data DESC",
-        $period_str
-    )
-);
-
-// Get invoices for detail view
-$invoices_list = $wpdb->get_results(
-    $wpdb->prepare(
-        "SELECT d.*, k.firmenname, k.name, k.nachname
-         FROM {$d_table} d
-         LEFT JOIN {$k_table} k ON d.fk_kunde = k.ID_kunde
-         WHERE d.tipo = 2 AND DATE_FORMAT(d.data, '%Y-%m') = %s
-         ORDER BY d.data DESC",
-        $period_str
-    )
-);
-
-// Calculate totals
-$manual_income_net = $incomes_data->total_net ?? 0;
-$manual_income_tax = $incomes_data->total_tax ?? 0;
-$manual_income_total = $incomes_data->total ?? 0;
-
-$total_revenue_net = ($revenue_data->paid_net ?? 0) + $manual_income_net;
-$total_revenue_tax = ($revenue_data->paid_tax ?? 0) + $manual_income_tax;
-$total_revenue = ($revenue_data->paid_total ?? 0) + $manual_income_total;
-$total_expenses_net = $expenses_data->total_net ?? 0;
-$total_expenses_tax = $expenses_data->total_tax ?? 0;
-$total_expenses = $expenses_data->total ?? 0;
-
-// Calculate profit/loss
-$profit_loss_net = $total_revenue_net - $total_expenses_net;
-$profit_loss_gross = $total_revenue - $total_expenses;
-
-// Get available months
+// Get available months (invoices, manual incomes, expenses)
 $available_months = $wpdb->get_results(
     "SELECT DISTINCT period FROM (
         SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$d_table} WHERE tipo = 2
         UNION
         SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$i_table}
         UNION
-        SELECT DATE_FORMAT(data, '%Y-%m') as period FROM " . WPsCRM_TABLE . "expenses
+        SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$e_table}
     ) p
     ORDER BY period DESC
     LIMIT 36"
@@ -392,7 +331,7 @@ document.getElementById('month_picker').addEventListener('change', function() {
             </tr>
         </table>
 
-        <button class="button button-secondary" id="toggle_income_form" style="margin-top: 12px; width: 100%;">
+        <button type="button" class="button button-secondary" id="toggle_income_form" style="margin-top: 12px; width: 100%;">
             <?php _e('+ Manuelle Einnahme', 'cpsmartcrm'); ?>
         </button>
         <p style="margin-top: 8px; font-size: 12px; color: #666;">
@@ -434,133 +373,134 @@ document.getElementById('month_picker').addEventListener('change', function() {
             </tr>
         </table>
 
-        <button class="button button-secondary" id="toggle_expense_form" style="margin-top: 12px; width: 100%;">
+        <button type="button" class="button button-secondary" id="toggle_expense_form" style="margin-top: 12px; width: 100%;">
             <?php _e('+ Neue Ausgabe', 'cpsmartcrm'); ?>
         </button>
     </div>
 </div>
 
-<!-- New Income Form (Hidden by default) -->
-<div id="income_form_container" class="card" style="padding: 20px; margin-bottom: 20px; display: none;">
-    <h3><?php _e('Manuelle Einnahme erfassen', 'cpsmartcrm'); ?></h3>
-    <form method="post" action="">
-        <input type="hidden" name="action" value="add_income" />
-        <?php wp_nonce_field('add_income_action', 'nonce'); ?>
+<!-- New Income Form Modal -->
+<div id="income_modal" class="buch-modal-overlay" style="display: none;">
+    <div class="buch-modal-content">
+        <a href="#" class="buch-modal-close" data-close-modal="income_modal">&times;</a>
+        <h3><?php _e('Manuelle Einnahme erfassen', 'cpsmartcrm'); ?></h3>
+        <form method="post" action="">
+            <input type="hidden" name="action" value="add_income" />
+            <?php wp_nonce_field('add_income_action', 'nonce'); ?>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div>
-                <label for="income_date"><strong><?php _e('Datum:', 'cpsmartcrm'); ?></strong></label>
-                <input type="date" id="income_date" name="income_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
-                       required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <label for="income_date"><strong><?php _e('Datum:', 'cpsmartcrm'); ?></strong></label>
+                    <input type="date" id="income_date" name="income_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
+                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+
+                <div>
+                    <label for="income_category"><strong><?php _e('Kategorie:', 'cpsmartcrm'); ?></strong></label>
+                    <select id="income_category" name="income_category" required 
+                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
+                        <?php foreach ($income_categories as $cat) : ?>
+                            <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div style="grid-column: 1/-1;">
+                    <label for="income_description"><strong><?php _e('Beschreibung:', 'cpsmartcrm'); ?></strong></label>
+                    <input type="text" id="income_description" name="income_description" 
+                           style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+
+                <div>
+                    <label for="income_amount"><strong><?php _e('Betrag (netto):', 'cpsmartcrm'); ?></strong></label>
+                    <input type="number" id="income_amount" name="income_amount" step="0.01" min="0" 
+                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+
+                <div>
+                    <label for="income_tax_rate"><strong><?php _e('Steuersatz:', 'cpsmartcrm'); ?></strong></label>
+                    <select id="income_tax_rate" name="income_tax_rate" 
+                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="0">0%</option>
+                        <option value="7">7%</option>
+                        <option value="19" selected>19%</option>
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <label for="income_category"><strong><?php _e('Kategorie:', 'cpsmartcrm'); ?></strong></label>
-                <select id="income_category" name="income_category" required 
-                        style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
-                    <option value="dienstleistung"><?php _e('Dienstleistung', 'cpsmartcrm'); ?></option>
-                    <option value="produktverkauf"><?php _e('Produktverkauf', 'cpsmartcrm'); ?></option>
-                    <option value="wartung"><?php _e('Wartung/Service', 'cpsmartcrm'); ?></option>
-                    <option value="abo"><?php _e('Abos/Lizenzen', 'cpsmartcrm'); ?></option>
-                    <option value="sonstiges"><?php _e('Sonstiges', 'cpsmartcrm'); ?></option>
-                </select>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button type="submit" class="button button-primary">
+                    <?php _e('Einnahme speichern', 'cpsmartcrm'); ?>
+                </button>
+                <button type="button" class="button button-secondary" data-close-modal="income_modal">
+                    <?php _e('Abbrechen', 'cpsmartcrm'); ?>
+                </button>
             </div>
-
-            <div style="grid-column: 1/-1;">
-                <label for="income_description"><strong><?php _e('Beschreibung:', 'cpsmartcrm'); ?></strong></label>
-                <input type="text" id="income_description" name="income_description" 
-                       style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <div>
-                <label for="income_amount"><strong><?php _e('Betrag (netto):', 'cpsmartcrm'); ?></strong></label>
-                <input type="number" id="income_amount" name="income_amount" step="0.01" min="0" 
-                       required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <div>
-                <label for="income_tax_rate"><strong><?php _e('Steuersatz:', 'cpsmartcrm'); ?></strong></label>
-                <select id="income_tax_rate" name="income_tax_rate" 
-                        style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="0">0%</option>
-                    <option value="7">7%</option>
-                    <option value="19" selected>19%</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="margin-top: 12px; display: flex; gap: 8px;">
-            <button type="submit" class="button button-primary">
-                <?php _e('Einnahme speichern', 'cpsmartcrm'); ?>
-            </button>
-            <button type="button" class="button button-secondary" id="cancel_income_form">
-                <?php _e('Abbrechen', 'cpsmartcrm'); ?>
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
-<!-- New Expense Form (Hidden by default) -->
-<div id="expense_form_container" class="card" style="padding: 20px; margin-bottom: 20px; display: none;">
-    <h3><?php _e('Neue Ausgabe erfassen', 'cpsmartcrm'); ?></h3>
-    <form method="post" action="">
-        <input type="hidden" name="action" value="add_expense" />
-        <?php wp_nonce_field('add_expense_action', 'nonce'); ?>
+<!-- New Expense Form Modal -->
+<div id="expense_modal" class="buch-modal-overlay" style="display: none;">
+    <div class="buch-modal-content">
+        <a href="#" class="buch-modal-close" data-close-modal="expense_modal">&times;</a>
+        <h3><?php _e('Neue Ausgabe erfassen', 'cpsmartcrm'); ?></h3>
+        <form method="post" action="">
+            <input type="hidden" name="action" value="add_expense" />
+            <?php wp_nonce_field('add_expense_action', 'nonce'); ?>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div>
-                <label for="expense_date"><strong><?php _e('Datum:', 'cpsmartcrm'); ?></strong></label>
-                <input type="date" id="expense_date" name="expense_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
-                       required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <label for="expense_date"><strong><?php _e('Datum:', 'cpsmartcrm'); ?></strong></label>
+                    <input type="date" id="expense_date" name="expense_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
+                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+
+                <div>
+                    <label for="expense_category"><strong><?php _e('Kategorie:', 'cpsmartcrm'); ?></strong></label>
+                    <select id="expense_category" name="expense_category" required 
+                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
+                        <?php foreach ($expense_categories as $cat) : ?>
+                            <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div style="grid-column: 1/-1;">
+                    <label for="expense_description"><strong><?php _e('Beschreibung:', 'cpsmartcrm'); ?></strong></label>
+                    <input type="text" id="expense_description" name="expense_description" 
+                           style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+
+                <div>
+                    <label for="expense_amount"><strong><?php _e('Betrag (netto):', 'cpsmartcrm'); ?></strong></label>
+                    <input type="number" id="expense_amount" name="expense_amount" step="0.01" min="0" 
+                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+
+                <div>
+                    <label for="expense_tax_rate"><strong><?php _e('Steuersatz:', 'cpsmartcrm'); ?></strong></label>
+                    <select id="expense_tax_rate" name="expense_tax_rate" 
+                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="0">0%</option>
+                        <option value="7">7%</option>
+                        <option value="19" selected>19%</option>
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <label for="expense_category"><strong><?php _e('Kategorie:', 'cpsmartcrm'); ?></strong></label>
-                <select id="expense_category" name="expense_category" required 
-                        style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
-                    <option value="material"><?php _e('Material/Waren', 'cpsmartcrm'); ?></option>
-                    <option value="software"><?php _e('Software/Lizenzen', 'cpsmartcrm'); ?></option>
-                    <option value="travel"><?php _e('Reisen/Mobilität', 'cpsmartcrm'); ?></option>
-                    <option value="office"><?php _e('Büro/Miete', 'cpsmartcrm'); ?></option>
-                    <option value="marketing"><?php _e('Marketing', 'cpsmartcrm'); ?></option>
-                    <option value="other"><?php _e('Sonstiges', 'cpsmartcrm'); ?></option>
-                </select>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button type="submit" class="button button-primary">
+                    <?php _e('Ausgabe speichern', 'cpsmartcrm'); ?>
+                </button>
+                <button type="button" class="button button-secondary" data-close-modal="expense_modal">
+                    <?php _e('Abbrechen', 'cpsmartcrm'); ?>
+                </button>
             </div>
-
-            <div style="grid-column: 1/-1;">
-                <label for="expense_description"><strong><?php _e('Beschreibung:', 'cpsmartcrm'); ?></strong></label>
-                <input type="text" id="expense_description" name="expense_description" 
-                       style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <div>
-                <label for="expense_amount"><strong><?php _e('Betrag (netto):', 'cpsmartcrm'); ?></strong></label>
-                <input type="number" id="expense_amount" name="expense_amount" step="0.01" min="0" 
-                       required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <div>
-                <label for="expense_tax_rate"><strong><?php _e('Steuersatz:', 'cpsmartcrm'); ?></strong></label>
-                <select id="expense_tax_rate" name="expense_tax_rate" 
-                        style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="0">0%</option>
-                    <option value="7">7%</option>
-                    <option value="19" selected>19%</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="margin-top: 12px; display: flex; gap: 8px;">
-            <button type="submit" class="button button-primary">
-                <?php _e('Ausgabe speichern', 'cpsmartcrm'); ?>
-            </button>
-            <button type="button" class="button button-secondary" id="cancel_expense_form">
-                <?php _e('Abbrechen', 'cpsmartcrm'); ?>
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 <!-- Invoices List for Current Month -->
@@ -680,23 +620,35 @@ document.getElementById('month_picker').addEventListener('change', function() {
 <?php endif; ?>
 
 <script>
-// Toggle expense form
-document.getElementById('toggle_expense_form').addEventListener('click', function() {
-    const el = document.getElementById('expense_form_container');
-    el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
-});
+function buchShowModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+}
+function buchHideModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+}
 
-document.getElementById('cancel_expense_form').addEventListener('click', function() {
-    document.getElementById('expense_form_container').style.display = 'none';
-});
-
-// Toggle income form
 document.getElementById('toggle_income_form').addEventListener('click', function() {
-    const el = document.getElementById('income_form_container');
-    el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+    buchShowModal('income_modal');
 });
 
-document.getElementById('cancel_income_form').addEventListener('click', function() {
-    document.getElementById('income_form_container').style.display = 'none';
+document.getElementById('toggle_expense_form').addEventListener('click', function() {
+    buchShowModal('expense_modal');
+});
+
+document.querySelectorAll('[data-close-modal]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        buchHideModal(btn.getAttribute('data-close-modal'));
+    });
+});
+
+document.querySelectorAll('.buch-modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            buchHideModal(overlay.id);
+        }
+    });
 });
 </script>
