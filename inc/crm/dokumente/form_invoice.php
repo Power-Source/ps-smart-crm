@@ -99,6 +99,12 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
   <style>
       h4.page-header{background:gainsboro;padding:10px 4px}
       ._forminvoice li{padding:2px!important}
+      /* Simple tabs replacement (was Kendo) */
+      #tabstrip > ul {list-style:none;margin:0 0 10px;padding:0;display:flex;gap:2px;border-bottom:1px solid #ccc;}
+      #tabstrip > ul > li {padding:8px 12px;background:#f2f2f2;border:1px solid #ccc;border-bottom:none;cursor:pointer;}
+      #tabstrip > ul > li.active {background:#fff;font-weight:700;}
+      #tabstrip > div {display:none;}
+      #tabstrip > div.active {display:block;}
       <?php if (isset($_GET['layout']) && $_GET['layout'] == "iframe") { ?>
         #wpadminbar, #adminmenumain, #mainMenu,.wrap h1,.btn-warning,.select-action:first-of-type {
             display: none;
@@ -108,7 +114,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
         }
       <?php } ?>
   </style>
-  <script>
+    <script>
   <?php
   if (in_array('wp-smart-crm-agents/wp-smart-crm-agents.php', apply_filters('active_plugins', $filter))) {
     ?>
@@ -119,7 +125,25 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
   <?php } ?>
     var $format = "<?php echo WPsCRM_DATEFORMAT ?>";
     var $formatTime = "<?php echo WPsCRM_DATETIMEFORMAT ?>";
-    var cliente = "<?php if (isset($cliente)) echo $cliente ?>";</script>
+    var cliente = "<?php if (isset($cliente)) echo $cliente ?>";
+
+    jQuery(function($){
+        var $ts = $('#tabstrip');
+        if (!$ts.length) return;
+        var $tabs = $ts.children('ul').children('li');
+        var $panes = $ts.children('div');
+        function activate(i){
+            $tabs.removeClass('active');
+            $panes.removeClass('active').hide();
+            $tabs.eq(i).addClass('active');
+            $panes.eq(i).addClass('active').show();
+        }
+        $tabs.each(function(i){
+            $(this).on('click', function(e){ e.preventDefault(); activate(i); });
+        });
+        activate(0);
+    });
+  </script>
   <form name="form_insert" action="" method="post" id="form_insert">
       <input type="hidden" name="num_righe" id="num_righe" value="">
       <input type="hidden" name="ID" id="ID" value="<?php echo $ID ?>">

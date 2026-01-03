@@ -92,15 +92,37 @@ loadTodoGroups();
 // Replace legacy jQuery UI datetimepicker with Flatpickr (local)
 (function(){
     var input = document.getElementById('t_data_scadenza');
-    if (input && typeof flatpickr === 'function') {
+    if (!input) return;
+
+    // helper: parse dd-mm-YYYY or dd.mm.YYYY to ISO datetime-local string
+    function toIsoLocal(val) {
+        if (!val || typeof val !== 'string') return '';
+        var clean = val.replace(/[.]/g,'-');
+        var parts = clean.split('-');
+        if (parts.length < 3) return '';
+        var d = parseInt(parts[0],10);
+        var m = parseInt(parts[1],10) - 1;
+        var y = parseInt(parts[2],10);
+        if (isNaN(d)||isNaN(m)||isNaN(y)) return '';
+        var dt = new Date(y, m, d, 0, 0, 0, 0);
+        if (isNaN(dt.getTime())) return '';
+        var pad = function(n){ return (n<10?'0':'') + n; };
+        return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate()) + 'T' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+    }
+
+    if (typeof flatpickr === 'function') {
         flatpickr(input, {
             enableTime: true,
             dateFormat: "d.m.Y H:i",
-            defaultDate: new Date()
+            defaultDate: input.value || new Date()
         });
-    } else if (input) {
+    } else {
         // Fallback: native control
         input.type = 'datetime-local';
+        var iso = toIsoLocal(input.value);
+        if (iso) {
+            input.value = iso;
+        }
     }
 })();
 

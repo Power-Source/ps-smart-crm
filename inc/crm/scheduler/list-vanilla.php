@@ -72,7 +72,6 @@ $options = get_option('CRM_general_settings');
 
 <script type="text/javascript">
 jQuery(document).ready(function($) {
-    console.log('🚀 Vanilla.js Scheduler Grid wird initialisiert...');
     
     // Grid-Konfiguration
     const gridOptions = {
@@ -125,25 +124,6 @@ jQuery(document).ready(function($) {
         $('._modal').fadeOut('fast');
         $('input[type="reset"]').trigger('click');
     });
-    
-    // Notification anzeigen
-    setTimeout(function() {
-        PSCRM.notify('Vanilla.js Scheduler ist aktiv! 🎉', 'info', 5000);
-    }, 500);
+
 });
 </script>
-
-<style>
-    /* Vanilla UI Badge */
-    .pscrm-filter-row::before {
-        content: "Vanilla UI";
-        background: #28a745;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 3px;
-        font-size: 11px;
-        margin-right: 15px;
-        font-weight: bold;
-        display: inline-block;
-    }
-</style>

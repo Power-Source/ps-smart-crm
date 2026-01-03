@@ -114,28 +114,9 @@ function WPsCRM_display_customers_list() {
                 echo $allScripts;
             ?>
             
-        } catch(err) {
-            console.error('Fehler beim Initialisieren:', err);
         }
     });
 })(jQuery);
 </script>
-
-<style>
-    .btn-danger{margin-right:6px!important}
-    .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button{min-width:34px}
-    
-    /* Vanilla UI Badge */
-    #tabstrip ul li:first-child::after {
-        content: "Vanilla";
-        background: #28a745;
-        color: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 10px;
-        margin-left: 8px;
-        font-weight: bold;
-    }
-</style>
 <?php
 }

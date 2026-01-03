@@ -134,31 +134,8 @@ function WPsCRM_display_scheduler_list() {
 				$('input[type="reset"]').trigger('click');
 			});
 			
-		} catch(err) {
-			console.error('Fehler beim Initialisieren der Scheduler Grid:', err);
 		}
 	});
 })(jQuery);
-</script>
-    setTimeout(function() {
-        PSCRM.notify('Vanilla.js Scheduler ist aktiv! 🎉', 'info', 5000);
-    }, 500);
-});
-</script>
-
-<style>
-    /* Vanilla UI Badge */
-    .pscrm-filter-row::before {
-        content: "Vanilla UI";
-        background: #28a745;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 3px;
-        font-size: 11px;
-        margin-right: 15px;
-        font-weight: bold;
-        display: inline-block;
-    }
-</style>
 <?php
 }
