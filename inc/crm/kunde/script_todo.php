@@ -3,10 +3,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // Nur JavaScript Code - ohne <script> Tags!
 // Dies wird per include() in den Haupt-Script-Block eingefügt
 ?>
+var PSCRM_INLINE_MODE = !!window.PSCRM_INLINE_FORM;
+
 // ===== TODO Modal Handler =====
 let todoModal = null;
 
 const initTodoModal = function() {
+    if (PSCRM_INLINE_MODE) return; // In inline mode kein Modal
     if (todoModal) return;
     
     todoModal = new PSCRM.Modal('dialog_todo', {
@@ -33,10 +36,12 @@ const initTodoModal = function() {
     });
 };
 
-$('.btn_todo').on('click', function () {
-    initTodoModal();
-    todoModal.open();
-});
+if (!PSCRM_INLINE_MODE) {
+    $('.btn_todo').on('click', function () {
+        initTodoModal();
+        todoModal.open();
+    });
+}
 
 // TODO Modal Funktionen
 function loadTodoUsers() {
@@ -84,11 +89,20 @@ function loadTodoGroups() {
 }
 loadTodoGroups();
 
-$("#t_data_scadenza").datetimepicker({
-    dateFormat: "dd.mm.yy",
-    timeFormat: "HH:mm",
-    defaultDate: new Date()
-});
+// Replace legacy jQuery UI datetimepicker with Flatpickr (local)
+(function(){
+    var input = document.getElementById('t_data_scadenza');
+    if (input && typeof flatpickr === 'function') {
+        flatpickr(input, {
+            enableTime: true,
+            dateFormat: "d.m.Y H:i",
+            defaultDate: new Date()
+        });
+    } else if (input) {
+        // Fallback: native control
+        input.type = 'datetime-local';
+    }
+})();
 
 $("#t_remindToUser").on('change', function () {
     $('#t_selectedUsers').val($(this).val());
@@ -104,7 +118,7 @@ $('#new_todo').parsley({
 });
 
 function saveTodo() {
-    var opener = $('#dialog_todo').data('from');
+    var opener = $('#dialog_todo').data('from') || $('#scheduler-inline-form').data('from') || 'list';
     var id_cliente = '';
     if(opener =="kunde")
         id_cliente ='<?php if (isset($ID)) echo $ID?>'
@@ -167,7 +181,7 @@ function saveTodo() {
         type: "POST",
         success: function (response) {
             PSCRM.notify("<?php _e('TODO wurde hinzugefügt','cpsmartcrm')?>", 'success');
-            todoModal.close();
+            if (todoModal) { todoModal.close(); }
             $('#new_todo').find(':reset').click();
             $('.modal_loader').hide();
         }

@@ -23,15 +23,22 @@ else
 <div id="dialog_todo" style="display:none;" data-from="list" data-fkcliente="">
 	<?php include ( WPsCRM_DIR."/inc/crm/kunde/form_todo.php" ) ?>
 </div>
-<?php include (WPsCRM_DIR."/inc/crm/kunde/script_todo.php" ) ?>
 
 <div id="dialog_appuntamento" style="display:none;" data-from="list" data-fkcliente="">
 	<?php include (WPsCRM_DIR."/inc/crm/kunde/form_appuntamento.php" ) ?>
 </div>
-<?php include (WPsCRM_DIR."/inc/crm/kunde/script_appuntamento.php" ) ?>
 
 <div id="dialog_attivita" style="display:none;" data-from="list" data-fkcliente="">
 	<?php include (WPsCRM_DIR."/inc/crm/kunde/form_attivita.php" ) ?>
+</div>
+
+<script type="text/javascript">
+<?php 
+include (WPsCRM_DIR."/inc/crm/kunde/script_todo.php" );
+include (WPsCRM_DIR."/inc/crm/kunde/script_appuntamento.php" );
+include (WPsCRM_DIR."/inc/crm/kunde/script_attivita.php" );
+?>
+</script>
 </div>
 <?php include (WPsCRM_DIR."/inc/crm/kunde/script_attivita.php" ) ?>
 

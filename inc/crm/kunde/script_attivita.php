@@ -2,10 +2,13 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 // Nur JavaScript Code - ohne <script> Tags!
 ?>
+var PSCRM_INLINE_MODE = !!window.PSCRM_INLINE_FORM;
+
 // ===== ATTIVITA (Aktivität) Modal Handler =====
 let attivitaModal = null;
 
 const initAttivitaModal = function() {
+	if (PSCRM_INLINE_MODE) return; // kein Modal im Inline-Modus
 	if (attivitaModal) return;
 	
 	attivitaModal = new PSCRM.Modal('dialog_attivita', {
@@ -34,10 +37,12 @@ const initAttivitaModal = function() {
 	});
 };
 
-$(document).on('click', '.btn-activity, .btn-attivita', function() {
-	initAttivitaModal();
-	attivitaModal.open();
-});
+if (!PSCRM_INLINE_MODE) {
+    $(document).on('click', '.btn-activity, .btn-attivita', function() {
+		initAttivitaModal();
+		attivitaModal.open();
+    });
+}
 
 function saveAttivita() {
 	// Attività speichern

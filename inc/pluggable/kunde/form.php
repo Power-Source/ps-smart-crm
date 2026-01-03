@@ -62,27 +62,8 @@ else{
     var $format = "<?php echo WPsCRM_DATEFORMAT ?>";
     var $formatTime = "<?php echo WPsCRM_DATETIMEFORMAT ?>";
 </script>
-<div id="dialog_todo" style="display:none;" data-from="kunde" data-fkcliente="<?php echo $ID?>">
-    <?php include ( WPsCRM_DIR."/inc/crm/kunde/form_todo.php" ) ?>
-</div>
-<?php include ( WPsCRM_DIR."/inc/crm/kunde/script_todo.php" ) ?>
+<!-- Todo/Termin/Aktivität Modals entfernt aus dem Kundenformular (werden im Scheduler verwaltet) -->
 
-<div id="dialog_appuntamento" style="display:none;" data-from="kunde" data-fkcliente="<?php echo $ID?>">
-    <?php include ( WPsCRM_DIR."/inc/crm/kunde/form_appuntamento.php" ) ?>
-</div>
-<?php include ( WPsCRM_DIR."/inc/crm/kunde/script_appuntamento.php" ) ?>
-
-<div id="dialog_attivita" style="display:none;" data-from="kunde" data-fkcliente="<?php echo $ID?>">
-    <?php include ( WPsCRM_DIR."/inc/crm/kunde/form_attivita.php" ) ?>
-</div>
-<?php include ( WPsCRM_DIR."/inc/crm/kunde/script_attivita.php" ) ?>
-
-<?php if (isset($email) && $email!="") { ?>
-    <div id="dialog_mail" style="display:none;" data-from="kunde" data-fkcliente="<?php echo $ID?>">
-        <?php include ( WPsCRM_DIR."/inc/crm/kunde/form_mail.php" ) ?>
-    </div>
-    <?php include ( WPsCRM_DIR."/inc/crm/kunde/script_mail.php" );
-} ?>
 <script type="text/javascript">
 jQuery(document).ready(function ($) {
     $('._showLoader').on('click', function (e) {
@@ -94,11 +75,14 @@ jQuery(document).ready(function ($) {
         $('#invoiceFrame').attr('src', "<?php echo admin_url('admin.php?page=smart-crm&p=dokumente%2Fform_invoice.php&cliente=').$ID?>" + "&layout=iframe");
         $('#invoiceModal').modal('show');
     });
+    
+    <?php if (isset($email) && $email!="") { ?>
     $('.btn_quote').on('click', function () {
         $('#quoteFrame').attr('src', "<?php echo admin_url('admin.php?page=smart-crm&p=dokumente%2Fform_quotation.php&cliente=').$ID?>" + "&layout=iframe");
         $('#quoteModal').modal('show');
     });
-
+    <?php } ?>
+    
     <?php do_action('WPsCRM_menu_tooltip') ?>
 
     <?php if($ID){ ?>
@@ -420,18 +404,6 @@ jQuery(document).ready(function ($) {
             <b> <?php _e('Löschen','cpsmartcrm')?></b>
         </li>
         <li class="_tooltip"><i class="glyphicon glyphicon-menu-right"></i></li>
-        <li class="btn btn-info btn-sm _flat btn_todo" style="margin-left:10px" title="<?php _e('NEUE TODO','cpsmartcrm')?>">
-            <i class="glyphicon glyphicon-tag"></i>
-            <b> </b>
-        </li>
-        <li class="btn  btn-sm _flat btn_appuntamento" title="<?php _e('NEUER TERMIN','cpsmartcrm')?>">
-            <i class="glyphicon glyphicon-pushpin"></i>
-            <b> </b>
-        </li>
-        <li class="btn btn-primary btn-sm _flat btn_activity" title="<?php _e('NEUE ANMERKUNG','cpsmartcrm')?>">
-            <i class="glyphicon glyphicon-option-horizontal"></i>
-            <b> </b>
-        </li>
         <?php do_action('WPsCRM_advanced_buttons',$email);?>
         <?php } ?>
     </ul>
@@ -1082,3 +1054,4 @@ jQuery(document).ready(function ($) {
 </style>
 <?php
 }
+?>

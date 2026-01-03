@@ -133,6 +133,14 @@ function WPsCRM_add_smartcrm_scripts(){
 			$style="light";
     }
     
+    // Entferne veraltete jQuery UI-Skripte (ClassicPress Deprecation)
+    wp_dequeue_script( 'jquery-ui-core' );
+    wp_dequeue_script( 'jquery-ui-mouse' );
+    wp_dequeue_script( 'jquery-ui-sortable' );
+    wp_deregister_script( 'jquery-ui-core' );
+    wp_deregister_script( 'jquery-ui-mouse' );
+    wp_deregister_script( 'jquery-ui-sortable' );
+
     // DataTables für Grid-Funktionalität
     wp_enqueue_style( 'datatables-css', 'https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css', array(), '1.13.8' );
     wp_enqueue_script( 'datatables-js', 'https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js', array('jquery'), '1.13.8', true );
@@ -182,7 +190,6 @@ function WPsCRM_add_smartcrm_scripts(){
     wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
     wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'));
     wp_enqueue_script('parsley', 'https://cdn.jsdelivr.net/npm/parsleyjs@2.9.2/dist/parsley.min.js', array('jquery'));
-    wp_enqueue_script('sortablejs', 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js');
     
     // PSCRM Config für JavaScript
     $pscrm_config = array(

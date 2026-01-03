@@ -1315,18 +1315,43 @@ class CRM_Options_Settings{
 		$('#innerTabstrip > ul > li').first().addClass('active');
 		$('#innerTabstrip > div').hide().first().show();
 
-		// Drag & Drop für Header-Elemente (jQuery UI Sortable)
-		if ($.fn.sortable) {
-			$("#sortable-horizontal").sortable({
-				axis: "x",
-				update: function(event, ui) {
-					var order = $("#sortable-horizontal").children().map(function() {
-						return this.id;
-					}).get().join(',');
-					$('#header_alignment').val(order === "_logo,_intestazione" ? "logo,text" : "text,logo");
-				}
+		// Drag & Drop für Header-Elemente (Vanilla HTML5 Drag & Drop, ersetzt jQuery UI/SortableJS)
+		(function initHorizontalDragDrop() {
+			var container = document.getElementById('sortable-horizontal');
+			if (!container) return;
+			var items = Array.prototype.slice.call(container.children);
+			items.forEach(function(el) {
+				el.setAttribute('draggable', 'true');
 			});
-		}
+			var dragged = null;
+			container.addEventListener('dragstart', function(e) {
+				dragged = e.target.closest('li');
+				if (!dragged) return;
+				e.dataTransfer.effectAllowed = 'move';
+			});
+			container.addEventListener('dragover', function(e) {
+				e.preventDefault();
+				var target = e.target.closest('li');
+				if (!target || target === dragged) return;
+				var rect = target.getBoundingClientRect();
+				var before = e.clientX < rect.left + rect.width / 2;
+				container.insertBefore(dragged, before ? target : target.nextSibling);
+			});
+			function updateAlignment() {
+				var order = Array.prototype.map.call(container.children, function(el) { return el.id; }).join(',');
+				var field = document.getElementById('header_alignment');
+				if (field) {
+					field.value = (order === '_logo,_intestazione') ? 'logo,text' : 'text,logo';
+				}
+			}
+			container.addEventListener('drop', function(e) {
+				e.preventDefault();
+				updateAlignment();
+			});
+			container.addEventListener('dragend', function() {
+				updateAlignment();
+			});
+		})();
 
 		// Editor-Ersatz für Signatur (contenteditable)
 		$('#editor_signature_formatted').attr('contenteditable', true).on('input blur', function() {

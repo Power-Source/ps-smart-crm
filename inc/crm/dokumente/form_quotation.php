@@ -345,39 +345,26 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
   </ul>
   <div id="dialog"></div>
   <div id="dialog_todo" style="display:none;" data-from="dokumente" data-fkcliente="<?php if (isset($fk_kunde)) echo $fk_kunde ?>">
-      <?php
-      include ( WPsCRM_DIR . "/inc/crm/kunde/form_todo.php" )
-      ?>
+      <?php include ( WPsCRM_DIR . "/inc/crm/kunde/form_todo.php" ) ?>
   </div>
-  <?php
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_todo.php" )
-  ?>
   <div id="dialog_appuntamento" style="display:none;" data-from="dokumente" data-fkcliente="<?php if (isset($fk_kunde)) echo $fk_kunde ?>">
-      <?php
-      include (WPsCRM_DIR . "/inc/crm/kunde/form_appuntamento.php" )
-      ?>
+      <?php include (WPsCRM_DIR . "/inc/crm/kunde/form_appuntamento.php" ) ?>
   </div>
-  <?php
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_appuntamento.php" )
-  ?>
   <div id="dialog_attivita" style="display:none;"  data-from="dokumente" data-fkcliente="<?php if (isset($fk_kunde)) echo $fk_kunde ?>">
-      <?php
-      include (WPsCRM_DIR . "/inc/crm/kunde/form_attivita.php" )
-      ?>
+      <?php include (WPsCRM_DIR . "/inc/crm/kunde/form_attivita.php" ) ?>
   </div>
-  <?php
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_attivita.php" )
-  ?>
   <div id="dialog_mail" style="display:none;" data-from="dokumente" data-fkcliente="<?php if (isset($fk_kunde)) echo $fk_kunde ?>">
-      <?php
-      include (WPsCRM_DIR . "/inc/crm/kunde/form_mail.php" )
-      ?>    
+      <?php include (WPsCRM_DIR . "/inc/crm/kunde/form_mail.php" ) ?>    
   </div>
-  <?php
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_mail.php" )
-  ?>
 
  <script type="text/javascript">
+ <?php
+  include (WPsCRM_DIR . "/inc/crm/kunde/script_todo.php" );
+  include (WPsCRM_DIR . "/inc/crm/kunde/script_appuntamento.php" );
+  include (WPsCRM_DIR . "/inc/crm/kunde/script_attivita.php" );
+  include (WPsCRM_DIR . "/inc/crm/kunde/script_mail.php" );
+  ?>
+
 jQuery(document).ready(function ($) {
     // Tooltip bleibt wie gehabt
     $("._tooltip").tooltip({
