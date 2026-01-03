@@ -1024,7 +1024,7 @@ jQuery(document).ready(function ($) {
 					</div>
 					<label class="col-sm-1 control-label"><?php _e('Interessen','cpsmartcrm')?></label>
 					<div class="col-sm-4">
-						<input id="customerInterests" name="customerInterests" value="<?php if(isset($riga)) echo $riga["interessi"]?>" />
+						<select id="customerInterests" name="customerInterests" multiple="multiple" style="width:100%;"></select>
 						<?php
 						$ints = WPsCRM_get_customer_field_values('interessi');
 						if (empty($ints)): ?>

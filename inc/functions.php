@@ -52,6 +52,7 @@ $document->master_data = function() {
     $options = get_option('CRM_business_settings');
     $number = isset($options['business_number']) ? $options['business_number'] : "";
     $prov  = isset($options['crm_business_provinz']) ? " (".$options['crm_business_provinz'].")" : "";
+    $extraName = isset($options['business_extra_name']) ? $options['business_extra_name'] : "";
 
     $master_data = array(
         array('full_header' => "<h2 class=\"WPsCRM_businessName\">" . html_entity_decode($options['business_name']) . "</h2>" . $extraName . "<div class=\"WPsCRM_businessAddress\"> " . html_entity_decode($options['business_address']) . $number." <br /> " . html_entity_decode($options['business_zip']) . ", " . html_entity_decode($options['business_town']) .$prov. "</div>", 'show' => 1),
