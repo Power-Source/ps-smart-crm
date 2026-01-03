@@ -2194,6 +2194,80 @@ function WPsCRM_get_customer_assigned_terms($customer_id, $field_name) {
   return $term_ids;
 }
 
+/**
+ * Save customer values to WordPress Taxonomies
+ * Handles saving of categoria, provenienza, and interessi to term_relationships
+ */
+function WPsCRM_save_customer_taxonomies($customer_id, $fields) {
+  global $wpdb;
+  
+  // Map field names to taxonomy names
+  $field_taxonomy_map = array(
+    'customerCategory' => 'WPsCRM_customersCat',
+    'customerComesfrom' => 'WPsCRM_customersProv',
+    'customerInterests' => 'WPsCRM_customersInt'
+  );
+  
+  foreach ($field_taxonomy_map as $field_name => $taxonomy) {
+    // Get the IDs from the field
+    $ids_string = isset($fields[$field_name]) ? $fields[$field_name] : '';
+    
+    if (empty($ids_string)) {
+      // Clear all relationships for this taxonomy
+      $wpdb->query($wpdb->prepare("
+        DELETE tr FROM {$wpdb->prefix}term_relationships tr
+        JOIN {$wpdb->prefix}term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+        WHERE tr.object_id = %d AND tt.taxonomy = %s
+      ", $customer_id, $taxonomy));
+      error_log("WPsCRM_save_customer_taxonomies: Cleared all terms for $field_name");
+      continue;
+    }
+    
+    // Split the IDs (they come as comma-separated)
+    $term_ids = array_map('intval', array_filter(explode(',', $ids_string)));
+    error_log("WPsCRM_save_customer_taxonomies: Saving $field_name with IDs: " . print_r($term_ids, true));
+    
+    if (empty($term_ids)) {
+      // Clear all relationships for this taxonomy
+      $wpdb->query($wpdb->prepare("
+        DELETE tr FROM {$wpdb->prefix}term_relationships tr
+        JOIN {$wpdb->prefix}term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+        WHERE tr.object_id = %d AND tt.taxonomy = %s
+      ", $customer_id, $taxonomy));
+      continue;
+    }
+    
+    // First, remove all existing relationships for this object and taxonomy
+    $wpdb->query($wpdb->prepare("
+      DELETE tr FROM {$wpdb->prefix}term_relationships tr
+      JOIN {$wpdb->prefix}term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+      WHERE tr.object_id = %d AND tt.taxonomy = %s
+    ", $customer_id, $taxonomy));
+    
+    // Now add the new relationships
+    foreach ($term_ids as $term_id) {
+      // Get the term_taxonomy_id for this term and taxonomy
+      $term_taxonomy_id = $wpdb->get_var($wpdb->prepare("
+        SELECT term_taxonomy_id FROM {$wpdb->prefix}term_taxonomy
+        WHERE term_id = %d AND taxonomy = %s
+      ", $term_id, $taxonomy));
+      
+      if ($term_taxonomy_id) {
+        // Insert the relationship
+        $wpdb->insert(
+          $wpdb->prefix . 'term_relationships',
+          array(
+            'object_id' => $customer_id,
+            'term_taxonomy_id' => $term_taxonomy_id
+          ),
+          array('%d', '%d')
+        );
+        error_log("WPsCRM_save_customer_taxonomies: Added relationship - object_id=$customer_id, term_taxonomy_id=$term_taxonomy_id");
+      }
+    }
+  }
+}
+
 function WPsCRM_save_client() {
 
   if (check_ajax_referer('update_customer', 'security', false) && current_user_can('manage_crm')) {
@@ -2322,6 +2396,9 @@ function WPsCRM_save_client() {
       );
     }
     $ID_ret = $ID ? $ID : $wpdb->insert_id;
+
+    // Save to WordPress Taxonomies
+    WPsCRM_save_customer_taxonomies($ID_ret, $fields);
 
     //newsletter
     do_action('wp_ajax_WPsCRM_syncro_newsletter', $fields);
