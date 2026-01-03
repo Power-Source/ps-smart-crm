@@ -1009,7 +1009,7 @@ function WPsCRM_get_scheduler() {
         }
         //      if (in_array($user_id, $arr_users) || strpos($user_role, $arr_groups))
         if ((in_array($user_id, $total_users) || ($user_role == 'administrator' && $options['administrator_all'] == 1) || $user_id == $r_scheduler->fk_utenti_ins ) && $cond) {
-          $arr_results[] = array("id_agenda" => $r_scheduler->id_agenda, "cliente" => stripslashes($cliente), "oggetto" => stripslashes($r_scheduler->oggetto), "annotazioni" => stripslashes(html_entity_decode($r_scheduler->annotazioni)), "esito" => stripslashes($r_scheduler->esito), "data_scadenza" => $end_date, "status" => $r_scheduler->fatto, "tipo_agenda" => $tipo, "class" => $rowClass . " " . strtolower(str_replace(" ", "_", $r_scheduler->fatto)), "destinatari" => $destinatari . " - " . $groups, "fk_utenti_ins" => implode(',', array_unique(array_merge($adminArray, $activity_owner))));
+          $arr_results[] = array("id_agenda" => $r_scheduler->id_agenda, "cliente" => stripslashes($cliente ?? ""), "oggetto" => stripslashes($r_scheduler->oggetto ?? ""), "annotazioni" => stripslashes(html_entity_decode($r_scheduler->annotazioni ?? "")), "esito" => stripslashes($r_scheduler->esito ?? ""), "data_scadenza" => $end_date, "status" => $r_scheduler->fatto, "tipo_agenda" => $tipo, "class" => $rowClass . " " . strtolower(str_replace(" ", "_", $r_scheduler->fatto)), "destinatari" => $destinatari . " - " . $groups, "fk_utenti_ins" => implode(',', array_unique(array_merge($adminArray, $activity_owner))));
         }
       }
     }
