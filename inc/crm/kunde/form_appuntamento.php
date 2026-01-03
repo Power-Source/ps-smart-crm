@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 //echo $data_agenda;
 ?>
 
-<form id="new_appointment" class="modal_form">
+<form id="new_appuntamento" class="modal_form">
     <div class="col-md-12 panel panel-primary _flat" style="padding:0!important">
         <div class="panel-body" style="padding:20px">
             <div class="row" style="padding-bottom:2px;padding-top:0px;border-bottom:1px solid #ccc">

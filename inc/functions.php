@@ -1102,6 +1102,100 @@ function WPsCRM_get_client_info() {
 
 add_action('wp_ajax_WPsCRM_get_client_info', 'WPsCRM_get_client_info');
 
+// Save activity/note for customer
+function WPsCRM_save_activity() {
+  global $wpdb;
+  
+  if (!isset($_POST['fk_cliente']) || !isset($_POST['note'])) {
+    wp_send_json_error(array('message' => 'Missing required fields'));
+    return;
+  }
+  
+  $fk_cliente = intval($_POST['fk_cliente']);
+  $note = wp_kses_post($_POST['note']); // Sanitize HTML
+  $datum = isset($_POST['datum']) ? sanitize_text_field($_POST['datum']) : date('d.m.Y');
+  
+  // Konvertiere Datum von DD.MM.YYYY zu YYYY-MM-DD für DB
+  $datum_parts = explode('.', $datum);
+  if (count($datum_parts) == 3) {
+    $datum_db = $datum_parts[2] . '-' . $datum_parts[1] . '-' . $datum_parts[0];
+  } else {
+    $datum_db = date('Y-m-d');
+  }
+  
+  // Hole aktuelle Annotationen des Kunden
+  $table = WPsCRM_TABLE . "kunde";
+  $sql = "SELECT annotazioni FROM $table WHERE ID_kunde = $fk_cliente";
+  $result = $wpdb->get_row($sql);
+  
+  if ($result) {
+    // Hole Benutzername
+    $current_user = wp_get_current_user();
+    $author = $current_user->display_name;
+    
+    // Format: DATUM~AUTOR~NOTIZ|DATUM~AUTOR~NOTIZ|...
+    $existing_annotations = $result->annotazioni ? $result->annotazioni : '';
+    
+    // Konvertiere alte serialisierte Arrays zum String-Format
+    $cleaned_annotations = '';
+    if ($existing_annotations) {
+      // Prüfe ob es ein serialisiertes Array ist
+      $maybe_array = @unserialize($existing_annotations);
+      if (is_array($maybe_array)) {
+        // Konvertiere Array zu String-Format
+        $temp_annotations = array();
+        foreach ($maybe_array as $old_note) {
+          if (isset($old_note['date']) && isset($old_note['note'])) {
+            $old_author = isset($old_note['user']) ? get_userdata($old_note['user'])->display_name : 'Unknown';
+            $temp_annotations[] = $old_note['date'] . '~' . $old_author . '~' . $old_note['note'];
+          }
+        }
+        $cleaned_annotations = implode('|', $temp_annotations);
+      } else {
+        // Bereits im String-Format, aber könnte gemischt sein
+        // Entferne serialisierte Teile
+        $parts = explode('|', $existing_annotations);
+        $valid_parts = array();
+        foreach ($parts as $part) {
+          // Prüfe ob es im Format DATUM~AUTOR~NOTIZ ist
+          if (substr_count($part, '~') >= 2 && !strpos($part, 'a:')) {
+            $valid_parts[] = $part;
+          }
+        }
+        $cleaned_annotations = implode('|', $valid_parts);
+      }
+    }
+    
+    // Erstelle neue Annotation im Format: DATUM~AUTOR~NOTIZ
+    $new_annotation = $datum_db . '~' . $author . '~' . $note;
+    
+    // Füge hinzu (am Anfang)
+    if ($cleaned_annotations) {
+      $new_annotations = $new_annotation . '|' . $cleaned_annotations;
+    } else {
+      $new_annotations = $new_annotation;
+    }
+    
+    // Speichere zurück
+    $update_result = $wpdb->update(
+      $table,
+      array('annotazioni' => $new_annotations),
+      array('ID_kunde' => $fk_cliente),
+      array('%s'),
+      array('%d')
+    );
+    
+    // Debug-Info
+    error_log('WPsCRM_save_activity - Kunde: ' . $fk_cliente . ', Update Result: ' . $update_result . ', Annotations: ' . substr($new_annotations, 0, 100));
+    
+    wp_send_json_success(array('message' => 'Notiz gespeichert', 'debug' => array('update_result' => $update_result, 'annotations_length' => strlen($new_annotations))));
+  } else {
+    wp_send_json_error(array('message' => 'Kunde nicht gefunden'));
+  }
+}
+
+add_action('wp_ajax_WPsCRM_save_activity', 'WPsCRM_save_activity');
+
 //get main info for chosen product
 /* function WPsCRM_get_product_info() {
   global $wpdb;
@@ -1997,6 +2091,27 @@ function WPsCRM_timeline_annotation($string_to_parse, $print = true, $field_sepa
     return array();
   }
 
+  // Bereinige alte serialisierte Daten (a:3:{...} etc.)
+  // Entferne alles nach dem letzten gültigen | das nicht mit 'a:' beginnt
+  $parts = explode($row_separator, $string_to_parse);
+  $valid_parts = array();
+  foreach ($parts as $part) {
+    // Gültig wenn es mindestens 2 ~ enthält und nicht mit 'a:' beginnt
+    if (substr_count($part, $field_separator) >= 2 && strpos($part, 'a:') === false) {
+      $valid_parts[] = trim($part);
+    }
+  }
+  
+  // Setze die bereinigte Version
+  $string_to_parse = implode($row_separator, $valid_parts);
+  
+  if ($string_to_parse === "") {
+    if ($print) {
+      return;
+    }
+    return array();
+  }
+
   $timeline = explode($row_separator, $string_to_parse);
   //usort($timeline, "WPsCRM_compare_date");
   //var_dump($timeline);
@@ -2006,19 +2121,20 @@ function WPsCRM_timeline_annotation($string_to_parse, $print = true, $field_sepa
   foreach ($timeline as $activity) {
     if ($activity != "") {
       $act = explode($field_separator, $activity);
-      $date = $act[0];
-      $author = $act[1];
-      $object = $act[2];
-      $arr_act[]=array("data_scadenza"=>$date, "autore"=>$author, "oggetto"=>$object);
+      // Sicherstellen dass alle 3 Teile existieren
+      if (count($act) >= 3) {
+        $date = isset($act[0]) ? $act[0] : '';
+        $author = isset($act[1]) ? $act[1] : '';
+        $object = isset($act[2]) ? $act[2] : '';
+        $arr_act[]=array("data_scadenza"=>$date, "autore"=>$author, "oggetto"=>$object);
+      }
     }
   }
   //var_dump($arr_act);
   usort($arr_act, "WPsCRM_compare_date");
   //var_dump($arr_act);
-  echo "<div id=\"_timeline\" style=\"display:none\">";
+  
   foreach ($arr_act as $act) {
-   // if ($activity != "") {
-    //  $act = explode($field_separator, $activity);
       $date = WPsCRM_sanitize_date_format($act["data_scadenza"]);
       $author = $act["autore"];
       $object = $act["oggetto"];
@@ -2031,7 +2147,7 @@ function WPsCRM_timeline_annotation($string_to_parse, $print = true, $field_sepa
 
             <div class="cd-timeline-content">
                 <h2><?php echo $author ?><i class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;font-size:1.2em;margin-right:10px"></i></h2>
-                <p><?php echo stripslashes($object) ?></p>
+                <p><?php echo $object ? stripslashes($object) : '' ?></p>
 
                 <span class="cd-date"><?php echo $date ?></span>
             </div>
@@ -2051,9 +2167,7 @@ function WPsCRM_timeline_annotation($string_to_parse, $print = true, $field_sepa
       }
 
       $index++;
-  //  }
   }
-  echo "</div>";
   return $html;
 }
 
@@ -2958,16 +3072,43 @@ add_action('add_option_CRM_business_settings', 'WPsCRM_check_client_one', 99);
 add_action('update_option_CRM_business_settings', 'WPsCRM_check_client_one', 99);
 
 function WPsCRM_inverti_data($data, $sep = "-") {
-  if ($data) {
-    $arr_dataora = explode(" ", $data);
-    $arr_data = explode($sep, $arr_dataora[0]);
-    $nuova_data = $arr_data[2] . "-" . $arr_data[1] . "-" . $arr_data[0];
-    if (isset($arr_dataora[1]))
-      $nuova_data .= $arr_dataora[1] ? " " . substr($arr_dataora[1], 0, 5) : "";
-    if ($nuova_data == "00-00-0000 00:00:00" || $nuova_data == "0000-00-00 00:00:00" || $nuova_data == "00-00-0000 00:00")
-      $nuova_data = "";
-    return $nuova_data;
+  if (!$data || $data == '0000-00-00' || $data == '00-00-0000' || $data == '0000-00-00 00:00:00') {
+    return "";
   }
+  
+  // Entferne Zeitstempel falls vorhanden
+  $arr_dataora = explode(" ", $data);
+  $date_part = $arr_dataora[0];
+  
+  // Erkenne Trennzeichen (- oder . oder /)
+  $separator = "-";
+  if (strpos($date_part, '.') !== false) {
+    $separator = '.';
+  } elseif (strpos($date_part, '/') !== false) {
+    $separator = '/';
+  }
+  
+  $arr_data = explode($separator, $date_part);
+  
+  if (count($arr_data) != 3) {
+    return ""; // Ungültiges Format
+  }
+  
+  // Prüfe ob bereits im Format DD.MM.YYYY (Tag > 12 oder erster Teil = 2-stellig)
+  if (strlen($arr_data[0]) <= 2 && strlen($arr_data[2]) == 4) {
+    // Bereits im Format DD.MM.YYYY - nur Trennzeichen auf Punkt ändern
+    $nuova_data = $arr_data[0] . "." . $arr_data[1] . "." . $arr_data[2];
+  } else {
+    // Format YYYY-MM-DD zu DD.MM.YYYY konvertieren
+    $nuova_data = $arr_data[2] . "." . $arr_data[1] . "." . $arr_data[0];
+  }
+  
+  // Zeit anhängen falls vorhanden
+  if (isset($arr_dataora[1]) && $arr_dataora[1]) {
+    $nuova_data .= " " . substr($arr_dataora[1], 0, 5);
+  }
+  
+  return $nuova_data;
 }
 
 function WPsCRM_inverti_data_short($Data, $sep = "-") {
@@ -3132,7 +3273,7 @@ function WPsCRM_get_countries($selected) {
   <option value="GA">Gabon</option>
   <option value="GM">Gambia</option>
   <option value="GE">Georgia</option>
-  <option value="DE">Germany</option>
+  <option value="DE">Deutschland</option>
   <option value="GH">Ghana</option>
   <option value="GI">Gibraltar</option>
   <option value="GR">Greece</option>

@@ -51,12 +51,41 @@ if (!PSCRM_INLINE_MODE) {
 }
 
 function saveAttivita() {
-	// Attività speichern
-	$('.modal_loader').show();
-	PSCRM.notify('Aktivität wird gespeichert...', 'info');
-	// AJAX wird später implementiert
-	setTimeout(function() {
-		attivitaModal.close();
-		$('.modal_loader').hide();
-	}, 500);
+	// Editor-Inhalt in Hidden Textarea kopieren
+	var editorContent = $('#attivita_editor').html();
+	$('#attivita_note_hidden').val(editorContent);
+	
+	var formData = $('#new_attivita').serialize();
+	
+	$.ajax({
+		url: ajaxurl,
+		type: 'POST',
+		data: formData,
+		success: function(response) {
+			if (response && response.success) {
+				if (typeof PSCRM !== 'undefined' && PSCRM.notify) {
+					PSCRM.notify('<?php _e('Notiz wurde gespeichert', 'cpsmartcrm') ?>', 'success');
+				}
+				if (attivitaModal) attivitaModal.close();
+				// Setze Hash für Tab 4 und lade neu
+				setTimeout(function() {
+					window.location.hash = 'tab-3'; // Tab 4 ist Index 3
+					location.reload();
+				}, 500);
+			} else {
+				if (typeof PSCRM !== 'undefined' && PSCRM.notify) {
+					PSCRM.notify('<?php _e('Fehler beim Speichern', 'cpsmartcrm') ?>', 'error');
+				} else {
+					alert('<?php _e('Fehler beim Speichern', 'cpsmartcrm') ?>');
+				}
+			}
+		},
+		error: function() {
+			if (typeof PSCRM !== 'undefined' && PSCRM.notify) {
+				PSCRM.notify('<?php _e('Fehler beim Speichern', 'cpsmartcrm') ?>', 'error');
+			} else {
+				alert('<?php _e('Fehler beim Speichern', 'cpsmartcrm') ?>');
+			}
+		}
+	});
 }

@@ -201,10 +201,63 @@ jQuery(document).ready(function ($) {
     // jQuery UI Datepicker
     $("#einstiegsdatum").datepicker({
         dateFormat: "dd.mm.yy",
-        defaultDate: new Date()
+        changeMonth: true,
+        changeYear: true,
+        yearRange: "1900:+10"
     });
+    
+    // Setze heutiges Datum für neue Kunden (wenn Feld leer ist)
+    <?php if (!$ID): ?>
+    if (!$("#einstiegsdatum").val()) {
+        $("#einstiegsdatum").datepicker('setDate', new Date());
+    }
+    <?php endif; ?>
+    
     $("#geburtsdatum").datepicker({
-        dateFormat: "dd.mm.yy"
+        dateFormat: "dd.mm.yy",
+        changeMonth: true,
+        changeYear: true,
+        yearRange: "1900:+10"
+    });
+
+    // Einfacher Editor für Aktivitäten-Notizen
+    $(document).on('click', '#attivita_editor_toolbar button', function(e) {
+        e.preventDefault();
+        var command = $(this).data('command');
+        document.execCommand(command, false, null);
+        $('#attivita_editor').focus();
+    });
+
+    // Beim Öffnen des Modals: Datum setzen und Editor leeren
+    $(document).on('click', '.btn-activity, .btn-attivita', function() {
+        var id = $(this).data('id');
+        $('#attivita_fk_cliente').val(id);
+        
+        // Setze heutiges Datum
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        $('#attivita_datum').val(dd + '.' + mm + '.' + yyyy);
+        
+        // Leere Editor
+        $('#attivita_editor').html('');
+    });
+
+    // Speichern-Button im Modal
+    $(document).on('click', '#btn_save_attivita', function() {
+        if (typeof saveAttivita === 'function') {
+            saveAttivita();
+        }
+    });
+
+    // Abbrechen-Button im Modal
+    $(document).on('click', '#btn_cancel_attivita', function() {
+        if (typeof attivitaModal !== 'undefined' && attivitaModal) {
+            attivitaModal.close();
+        } else {
+            $('.pscrm-modal-close').click();
+        }
     });
 
     // AGENT (Select2)
@@ -533,9 +586,23 @@ jQuery(document).ready(function ($) {
             $panes.eq(i).addClass('active').css('display', 'block');
         }
         $tabs.each(function(i){
-            $(this).on('click', function(e){ e.preventDefault(); activate(i); });
+            $(this).on('click', function(e){ 
+                e.preventDefault(); 
+                activate(i);
+                // Setze Hash für aktuellen Tab
+                window.location.hash = 'tab-' + i;
+            });
         });
-        activate(0);
+        
+        // Prüfe URL-Hash und aktiviere entsprechenden Tab
+        var hash = window.location.hash;
+        var initialTab = 0;
+        if (hash === '#tab-0') initialTab = 0;
+        else if (hash === '#tab-1') initialTab = 1;
+        else if (hash === '#tab-2') initialTab = 2;
+        else if (hash === '#tab-3') initialTab = 3;
+        
+        activate(initialTab);
         
         // Grid Initialisierung - nur bei vorhandenem Kunden
         <?php if ($ID): ?>
@@ -557,15 +624,18 @@ jQuery(document).ready(function ($) {
                     gridQuotesInitialized = true;
                     initQuotesGrid();
                 }
-                // TAB 4 - Zusammenfassung/Scheduler Grid
-                if (i === 3 && !gridSchedulerInitialized) {
-                    gridSchedulerInitialized = true;
-                    console.log('Loading Scheduler Grid...');
-                    initSchedulerGrid();
-                }
-                console.log('Tab clicked - Index:', i, 'gridContactsInitialized:', gridContactsInitialized, 'gridQuotesInitialized:', gridQuotesInitialized, 'gridSchedulerInitialized:', gridSchedulerInitialized);
+
             });
         });
+        
+        // Lade Grid für initial aktivierten Tab
+        if (initialTab === 1 && !gridContactsInitialized) {
+            gridContactsInitialized = true;
+            initContactsGrid();
+        } else if (initialTab === 2 && !gridQuotesInitialized) {
+            gridQuotesInitialized = true;
+            initQuotesGrid();
+        }
         
         // Kontakte Grid initialisieren
         function initContactsGrid() {
@@ -747,95 +817,6 @@ jQuery(document).ready(function ($) {
                 }
             });
         }
-        
-        // Scheduler/Zusammenfassung Grid initialisieren
-        function initSchedulerGrid() {
-            jQuery.ajax({
-                url: ajaxurl,
-                type: 'GET',
-                dataType: 'json',
-                data: {
-                    action: 'WPsCRM_get_client_scheduler',
-                    id_cliente: <?php echo $ID; ?>
-                },
-                success: function(response) {
-                    console.log('Scheduler response:', response);
-                    var items = response.scheduler || [];
-                    var $grid = jQuery('#grid');
-                    if ($grid.length) {
-                        // HTML mit leerer tbody
-                        var html = '<table id="scheduler_table" class="table table-striped table-hover" width="100%">';
-                        html += '<thead><tr>';
-                        html += '<th><?php _e("Datum","cpsmartcrm"); ?></th>';
-                        html += '<th><?php _e("Titel","cpsmartcrm"); ?></th>';
-                        html += '<th><?php _e("Typ","cpsmartcrm"); ?></th>';
-                        html += '<th><?php _e("Status","cpsmartcrm"); ?></th>';
-                        html += '<th><?php _e("Notizen","cpsmartcrm"); ?></th>';
-                        html += '</tr></thead><tbody></tbody>';
-                        html += '</table>';
-                        $grid.html(html);
-                        
-                        // Daten zu DataTable hinzufügen
-                        if (jQuery.fn.DataTable && jQuery.fn.dataTable) {
-                            var table = jQuery('#scheduler_table').DataTable({
-                                destroy: true,
-                                data: items,
-                                columns: [
-                                    { data: 'data_scadenza' },
-                                    { data: 'oggetto' },
-                                    { data: 'tipo' },
-                                    { 
-                                        data: 'status',
-                                        render: function(data) {
-                                            if (data == 1) return '<?php _e("Offen","cpsmartcrm"); ?>';
-                                            else if (data == 2) return '<?php _e("Abgeschlossen","cpsmartcrm"); ?>';
-                                            else if (data == 3) return '<?php _e("Wartet","cpsmartcrm"); ?>';
-                                            return data;
-                                        }
-                                    },
-                                    { data: 'annotazioni' }
-                                ],
-                                order: [[0, 'desc']],
-                                language: {
-                                    decimal: ',',
-                                    thousands: '.',
-                                    info: 'Zeige _START_ bis _END_ von _TOTAL_ Einträgen',
-                                    infoEmpty: 'Zeige 0 bis 0 von 0 Einträgen',
-                                    paginate: { first: 'Erste', last: 'Letzte', next: 'Nächste', previous: 'Vorherige' },
-                                    zeroRecords: 'Keine Daten verfügbar'
-                                }
-                            });
-                        } else {
-                            // Fallback ohne DataTables
-                            var tbody = '';
-                            if (items.length > 0) {
-                                items.forEach(function(item){
-                                    var status_text = '';
-                                    if (item.status == 1) status_text = '<?php _e("Offen","cpsmartcrm"); ?>';
-                                    else if (item.status == 2) status_text = '<?php _e("Abgeschlossen","cpsmartcrm"); ?>';
-                                    else if (item.status == 3) status_text = '<?php _e("Wartet","cpsmartcrm"); ?>';
-                                    
-                                    tbody += '<tr class="' + (item.class || '') + '">';
-                                    tbody += '<td>' + (item.data_scadenza || '') + '</td>';
-                                    tbody += '<td>' + (item.oggetto || '') + '</td>';
-                                    tbody += '<td>' + (item.tipo || '') + '</td>';
-                                    tbody += '<td>' + status_text + '</td>';
-                                    tbody += '<td>' + (item.annotazioni || '') + '</td>';
-                                    tbody += '</tr>';
-                                });
-                            } else {
-                                tbody += '<tr><td colspan="5"><?php _e("Keine Aktivitäten gefunden","cpsmartcrm"); ?></td></tr>';
-                            }
-                            jQuery('#scheduler_table tbody').html(tbody);
-                        }
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Scheduler Fehler:', error, xhr.responseText);
-                    jQuery('#grid').html('<div class="alert alert-warning"><?php _e("Fehler beim Laden der Aktivitäten","cpsmartcrm"); ?></div>');
-                }
-            });
-        }
         <?php endif; ?>
     }
     
@@ -877,7 +858,7 @@ jQuery(document).ready(function ($) {
 						<?php _e('Datum','cpsmartcrm')?>
 					</label>
 					<div class="col-sm-2">
-						<input type="text" id="einstiegsdatum" name="einstiegsdatum" />
+						<input type="text" id="einstiegsdatum" name="einstiegsdatum" value="<?php if(isset($riga)) echo WPsCRM_inverti_data($riga["einstiegsdatum"])?>" />
 					</div>
 					<?php do_action('WPsCRM_display_anagrafiche_in_form') ?>
 
@@ -1051,16 +1032,10 @@ jQuery(document).ready(function ($) {
 						<?php endif; ?>
 					</div>
 				</div>
-				<div class="row form-group">
-					<label class="col-sm-1 control-label"><?php _e('Notizen','cpsmartcrm')?></label>
-					<div class="col-sm-11">
-						<textarea name="note" rows="5" cols="50" class="form-control"><?php if(isset($riga) && isset($riga["note"])) echo stripslashes($riga["note"])?></textarea>
-					</div>
-				</div>
 			</div>
-        </div>
+		</div>
         <!--END TAB 1 -->
-        
+
         <!-- TAB 2: Kontakte -->
         <div>
             <div id="grid_contacts"></div>
@@ -1093,7 +1068,6 @@ jQuery(document).ready(function ($) {
                     </div>
                 </div>
             </div>
-            <div id="grid" style="margin-top:20px;"></div>
         </div>
         <!-- END TAB 4 -->
         <?php
@@ -1139,13 +1113,87 @@ jQuery(document).ready(function ($) {
 </form>
 
 <!-- Modal Dialogs für Todo, Termin und Aktivität -->
-<div id="dialog_todo" style="display:none"></div>
-<div id="dialog_appuntamento" style="display:none"></div>
-<div id="dialog_attivita" style="display:none"></div>
+<div id="dialog_todo" style="display:none">
+    <?php include(WPsCRM_DIR."/inc/crm/kunde/form_todo.php"); ?>
+</div>
+<div id="dialog_appuntamento" style="display:none">
+    <?php include(WPsCRM_DIR."/inc/crm/kunde/form_appuntamento.php"); ?>
+</div>
+<div id="dialog_attivita" style="display:none;">
+    <form id="new_attivita" class="form-horizontal">
+        <input type="hidden" name="fk_cliente" id="attivita_fk_cliente" value="">
+        <input type="hidden" name="action" value="WPsCRM_save_activity">
+        
+        <div class="form-group">
+            <label class="col-sm-2 control-label"><?php _e('Notiz für','cpsmartcrm')?>:</label>
+            <div class="col-sm-10">
+                <p class="form-control-static"><strong class="name_cliente"></strong></p>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="col-sm-2 control-label"><?php _e('Datum','cpsmartcrm')?>:</label>
+            <div class="col-sm-4">
+                <input type="text" id="attivita_datum" name="datum" class="form-control" readonly>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="col-sm-2 control-label"><?php _e('Notiz','cpsmartcrm')?>:</label>
+            <div class="col-sm-10">
+                <div id="attivita_editor_toolbar" style="margin-bottom: 5px;">
+                    <button type="button" class="btn btn-sm btn-default" data-command="bold" title="Fett">
+                        <i class="glyphicon glyphicon-bold"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default" data-command="italic" title="Kursiv">
+                        <i class="glyphicon glyphicon-italic"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default" data-command="insertUnorderedList" title="Liste">
+                        <i class="glyphicon glyphicon-list"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default" data-command="insertOrderedList" title="Nummerierte Liste">
+                        <i class="glyphicon glyphicon-th-list"></i>
+                    </button>
+                </div>
+                <div id="attivita_editor" contenteditable="true" style="min-height: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: white;">
+                </div>
+                <textarea name="note" id="attivita_note_hidden" style="display:none;"></textarea>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="button" class="btn btn-primary" id="btn_save_attivita">
+                    <i class="glyphicon glyphicon-save"></i> <?php _e('Notiz speichern','cpsmartcrm')?>
+                </button>
+                <button type="button" class="btn btn-default" id="btn_cancel_attivita">
+                    <i class="glyphicon glyphicon-remove"></i> <?php _e('Abbrechen','cpsmartcrm')?>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
 
 <style>
     input[type=checkbox] {
         float: initial;
+    }
+    
+    /* Sicherstellen dass alle Modals im Dialog sichtbar sind */
+    .pscrm-modal-content #dialog_todo,
+    .pscrm-modal-content #dialog_appuntamento,
+    .pscrm-modal-content #dialog_attivita,
+    .modal-content #dialog_todo,
+    .modal-content #dialog_appuntamento,
+    .modal-content #dialog_attivita {
+        display: block !important;
+    }
+    
+    /* Formulare außerhalb der Modals verstecken */
+    body > #dialog_todo,
+    body > #dialog_appuntamento,
+    body > #dialog_attivita {
+        display: none !important;
     }
 </style>
 <?php

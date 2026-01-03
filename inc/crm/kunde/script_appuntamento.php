@@ -48,13 +48,198 @@ if (!PSCRM_INLINE_MODE) {
     });
 }
 
-function saveAppuntamento() {
-	// Appuntamento speichern
-	$('.modal_loader').show();
-	PSCRM.notify('Termin wird gespeichert...', 'info');
-	// AJAX wird später implementiert
-	setTimeout(function() {
-		appuntamentoModal.close();
-		$('.modal_loader').hide();
-	}, 500);
+// Datepicker für Termin initialisieren
+(function(){
+    var inputStart = document.getElementById('a_data_scadenza_inizio');
+    var inputEnd = document.getElementById('a_data_scadenza_fine');
+    if (!inputStart || !inputEnd) return;
+
+    function toIsoLocal(val) {
+        if (!val || typeof val !== 'string') return '';
+        var clean = val.replace(/[.]/g,'-');
+        var parts = clean.split('-');
+        if (parts.length < 3) return '';
+        var d = parseInt(parts[0],10);
+        var m = parseInt(parts[1],10) - 1;
+        var y = parseInt(parts[2],10);
+        if (isNaN(d)||isNaN(m)||isNaN(y)) return '';
+        var dt = new Date(y, m, d, 0, 0, 0, 0);
+        if (isNaN(dt.getTime())) return '';
+        var pad = function(n){ return (n<10?'0':'') + n; };
+        return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate()) + 'T' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+    }
+
+    if (typeof flatpickr === 'function') {
+        flatpickr(inputStart, {
+            enableTime: true,
+            dateFormat: "d.m.Y H:i",
+            defaultDate: inputStart.value || new Date()
+        });
+        flatpickr(inputEnd, {
+            enableTime: true,
+            dateFormat: "d.m.Y H:i",
+            defaultDate: inputEnd.value || new Date()
+        });
+    } else {
+        inputStart.type = 'datetime-local';
+        inputEnd.type = 'datetime-local';
+        var iso = toIsoLocal(inputStart.value);
+        if (iso) inputStart.value = iso;
+        var iso2 = toIsoLocal(inputEnd.value);
+        if (iso2) inputEnd.value = iso2;
+    }
+})();
+
+// Benutzer für Termin laden
+function loadAppuntamentoUsers() {
+    $.ajax({
+        url: ajaxurl,
+        data: { 'action': 'WPsCRM_get_CRM_users' },
+        success: function (result) {
+            var users = [];
+            if (Array.isArray(result)) {
+                users = result.map(function(user) {
+                    return { id: user.ID, text: user.display_name };
+                });
+            }
+            $("#a_remindToUser").select2({
+                data: users,
+                placeholder: "<?php _e( 'Benutzer wählen', 'cpsmartcrm'); ?>...",
+                width: '100%',
+                multiple: true
+            });
+            $("#a_remindToUser").val(["<?php echo wp_get_current_user()->ID ?>"]).trigger('change');
+        }
+    });
 }
+loadAppuntamentoUsers();
+
+// Gruppen für Termin laden
+function loadAppuntamentoGroups() {
+    $.ajax({
+        url: ajaxurl,
+        data: { 'action': 'WPsCRM_get_registered_roles' },
+        success: function (result) {
+            var groups = [];
+            if (result && result.roles) {
+                groups = result.roles.map(function(role) {
+                    return { id: role.role, text: role.name };
+                });
+            }
+            $("#a_remindToGroup").select2({
+                data: groups,
+                placeholder: "<?php _e( 'Wähle Gruppe', 'cpsmartcrm'); ?>...",
+                width: '100%',
+                multiple: true
+            });
+        }
+    });
+}
+loadAppuntamentoGroups();
+
+// Select2 Event-Handler
+$("#a_remindToUser").on('change', function () {
+    $('#a_selectedUsers').val($(this).val());
+});
+$("#a_remindToGroup").on('change', function () {
+    $('#a_selectedGroups').val($(this).val());
+});
+
+// Parsley Validierung
+$('#new_appuntamento').parsley({
+    errorsWrapper: '<div class="parsley-errors-list"></div>',
+    errorTemplate: '<div></div>',
+    trigger: 'change'
+});
+
+function saveAppuntamento() {
+	var opener = $('#dialog_appuntamento').data('from') || 'kunde';
+	var id_cliente = '';
+	if(opener == "kunde")
+		id_cliente = '<?php if (isset($ID)) echo $ID?>';
+	else if (opener == 'dokumente')
+		id_cliente = '<?php if (isset($fk_kunde)) echo $fk_kunde?>';
+	else if (opener == 'list')
+		id_cliente = $('#dialog_appuntamento').data('fkcliente');
+	
+	var tipo_agenda = '2';
+	var scadenza_inizio = $("#a_data_scadenza_inizio").val();
+	var scadenza_fine = $("#a_data_scadenza_fine").val();
+	var annotazioni = $("#a_annotazioni").val();
+	var oggetto = $("#a_oggetto").val();
+	var priorita = $("#priorita").val();
+	var users = $("#a_selectedUsers").val();
+	var groups = $("#a_selectedGroups").val();
+	var days = $("#a_ruleStep").val();
+	
+	var s = "[";
+	s += '{"ruleStep":"' + days + '" ,"remindToCustomer":';
+	if ($('#a_remindToCustomer').prop('checked'))
+		s += '"on"';
+	else
+		s += '""';
+	s += ',"selectedUsers":"' + users + '"';
+	s += ',"selectedGroups":"' + groups + '"';
+	s += ',"userDashboard":';
+	if ($('#a_userDashboard').prop('checked'))
+		s += '"on"';
+	else
+		s += '""';
+	s += ',"groupDashboard":';
+	if ($('#a_groupDashboard').prop('checked'))
+		s += '"on"';
+	else
+		s += '""';
+	s += ',"mailToRecipients":';
+	if ($('#a_mailToRecipients').prop('checked'))
+		s += '"on"';
+	else
+		s += '""';
+	s += '}';
+	s += ']';
+
+	$('.modal_loader').show();
+
+	$.ajax({
+		url: ajaxurl,
+		data: {
+			'action': 'WPsCRM_save_appuntamento',
+			id_cliente: id_cliente,
+			tipo_agenda: tipo_agenda,
+			scadenza_inizio: scadenza_inizio,
+			scadenza_fine: scadenza_fine,
+			annotazioni: annotazioni,
+			oggetto: oggetto,
+			priorita: priorita,
+			'steps': encodeURIComponent(s),
+			'security':'<?php echo esc_attr($scheduler_nonce); ?>'
+		},
+		type: "POST",
+		success: function (response) {
+			PSCRM.notify("<?php _e('Termin wurde hinzugefügt','cpsmartcrm')?>", 'success');
+			if (appuntamentoModal) { appuntamentoModal.close(); }
+			$('#new_appuntamento').find(':reset').click();
+			$('.modal_loader').hide();
+		},
+		error: function(xhr, status, error) {
+			console.error('Fehler beim Speichern des Termins:', error);
+			PSCRM.notify("<?php _e('Fehler beim Speichern','cpsmartcrm')?>", 'error');
+			$('.modal_loader').hide();
+		}
+	});
+}
+
+$("#a_saveStep").on('click', function (e) {
+    e.preventDefault();
+    if ($('#new_appuntamento').parsley().validate()) {
+        saveAppuntamento();
+    }
+});
+
+$('._reset').on('click', function () {
+    if (appuntamentoModal) appuntamentoModal.close();
+});
+
+setTimeout(function () {
+    $('.modal_loader').hide()
+},200)
