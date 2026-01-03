@@ -15,7 +15,10 @@ global $wpdb;
 
 $d_table = WPsCRM_TABLE . 'documenti';
 $c_table = WPsCRM_TABLE . 'kunde';
+$i_table = WPsCRM_TABLE . 'incomes';
+$e_table = WPsCRM_TABLE . 'expenses';
 $invoice_type = 2;
+$acc_options = get_option('CRM_accounting_settings', array());
 
 // Parse filter parameters
 $year = (int) ($_GET['year'] ?? date('Y'));
@@ -27,7 +30,7 @@ $customer_filter = (int) ($_GET['customer'] ?? 0);
 $year_start = $year . '-01-01';
 $year_end = $year . '-12-31';
 
-// Build WHERE clause
+// Build WHERE clause for invoices
 $where_parts = array("tipo = %d", "pagato = 1"); // Only paid invoices
 $where_values = array($invoice_type);
 
@@ -47,8 +50,8 @@ if ($customer_filter > 0) {
 
 $where_clause = implode(' AND ', $where_parts);
 
-// Get yearly summary
-$yearly_summary = $wpdb->get_row(
+// Get summary from invoices
+$invoice_summary = $wpdb->get_row(
     $wpdb->prepare(
         "SELECT 
             COUNT(*) as invoice_count,
@@ -57,9 +60,47 @@ $yearly_summary = $wpdb->get_row(
             COALESCE(SUM(totale), 0) as total,
             AVG(totale) as avg_invoice_value
          FROM {$d_table}
-         WHERE tipo = %d AND pagato = 1 AND data >= %s AND data <= %s",
-        $invoice_type, $year_start, $year_end
+         WHERE " . $where_clause,
+        ...$where_values
     )
+);
+
+// Get summary from incomes (MarketPress + Manual)
+$income_where = array();
+$income_values = array();
+
+if (!empty($month)) {
+    $income_where[] = "DATE_FORMAT(data, '%Y-%m') = %s";
+    $income_values[] = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+} else {
+    $income_where[] = "data >= %s AND data <= %s";
+    $income_values[] = $year_start;
+    $income_values[] = $year_end;
+}
+
+$income_where_clause = implode(' AND ', $income_where);
+
+$income_summary = $wpdb->get_row(
+    $wpdb->prepare(
+        "SELECT 
+            COUNT(*) as income_count,
+            COALESCE(SUM(imponibile), 0) as total_net,
+            COALESCE(SUM(imposta), 0) as total_tax,
+            COALESCE(SUM(totale), 0) as total,
+            AVG(totale) as avg_income_value
+         FROM {$i_table}
+         WHERE " . $income_where_clause,
+        ...$income_values
+    )
+);
+
+// Combine both summaries
+$yearly_summary = (object) array(
+    'invoice_count' => (int)($invoice_summary->invoice_count ?? 0) + (int)($income_summary->income_count ?? 0),
+    'total_net' => (float)($invoice_summary->total_net ?? 0) + (float)($income_summary->total_net ?? 0),
+    'total_tax' => (float)($invoice_summary->total_tax ?? 0) + (float)($income_summary->total_tax ?? 0),
+    'total' => (float)($invoice_summary->total ?? 0) + (float)($income_summary->total ?? 0),
+    'avg_invoice_value' => ((float)($invoice_summary->total ?? 0) + (float)($income_summary->total ?? 0)) / max((int)($invoice_summary->invoice_count ?? 0) + (int)($income_summary->income_count ?? 0), 1)
 );
 
 // Monthly data for chart
@@ -76,6 +117,73 @@ $monthly_data = $wpdb->get_results(
      GROUP BY DATE_FORMAT(data, '%Y-%m')
      ORDER BY month ASC"
 );
+
+// Einnahmen/Ausgaben Chart-Daten (Netto) für gewähltes Jahr
+$chart_periods = array();
+for ($m = 1; $m <= 12; $m++) {
+    $chart_periods[] = sprintf('%04d-%02d', $year, $m);
+}
+
+$income_net_by_period = array_fill_keys($chart_periods, 0);
+$expense_net_by_period = array_fill_keys($chart_periods, 0);
+
+$invoice_rows = $wpdb->get_results(
+    $wpdb->prepare(
+        "SELECT DATE_FORMAT(data, '%Y-%m') as period, COALESCE(SUM(totale_imponibile), 0) as net
+         FROM {$d_table}
+         WHERE tipo = %d AND pagato = 1 AND data >= %s AND data <= %s
+         GROUP BY DATE_FORMAT(data, '%Y-%m')",
+        $invoice_type, $year_start, $year_end
+    )
+);
+foreach ($invoice_rows as $row) {
+    if (isset($income_net_by_period[$row->period])) {
+        $income_net_by_period[$row->period] += (float) $row->net;
+    }
+}
+
+$manual_income_rows = $wpdb->get_results(
+    $wpdb->prepare(
+        "SELECT DATE_FORMAT(data, '%Y-%m') as period, COALESCE(SUM(imponibile), 0) as net
+         FROM {$i_table}
+         WHERE data >= %s AND data <= %s
+         GROUP BY DATE_FORMAT(data, '%Y-%m')",
+        $year_start, $year_end
+    )
+);
+foreach ($manual_income_rows as $row) {
+    if (isset($income_net_by_period[$row->period])) {
+        $income_net_by_period[$row->period] += (float) $row->net;
+    }
+}
+
+$expense_rows = $wpdb->get_results(
+    $wpdb->prepare(
+        "SELECT DATE_FORMAT(data, '%Y-%m') as period, COALESCE(SUM(imponibile), 0) as net
+         FROM {$e_table}
+         WHERE data >= %s AND data <= %s
+         GROUP BY DATE_FORMAT(data, '%Y-%m')",
+        $year_start, $year_end
+    )
+);
+foreach ($expense_rows as $row) {
+    if (isset($expense_net_by_period[$row->period])) {
+        $expense_net_by_period[$row->period] += (float) $row->net;
+    }
+}
+
+$chart_labels = array();
+$chart_income_values = array();
+$chart_expense_values = array();
+foreach ($chart_periods as $p) {
+    $dt = DateTime::createFromFormat('Y-m', $p);
+    $chart_labels[] = $dt ? $dt->format('M') : $p;
+    $chart_income_values[] = round($income_net_by_period[$p] ?? 0, 2);
+    $chart_expense_values[] = round($expense_net_by_period[$p] ?? 0, 2);
+}
+
+$chart_js_url = plugins_url('js/chart.umd.min.js', dirname(__FILE__, 4) . '/ps-smart-crm.php');
+$chart_currency = $acc_options['currency'] ?? 'EUR';
 
 // Get top customers
 $top_customers = $wpdb->get_results(
@@ -117,6 +225,9 @@ $tax_breakdown = $wpdb->get_results(
 $available_years = $wpdb->get_col(
     "SELECT DISTINCT YEAR(data) as year FROM {$d_table} WHERE tipo = $invoice_type ORDER BY year DESC"
 );
+if (empty($available_years)) {
+    $available_years = array(date('Y'), date('Y') - 1);
+}
 
 // Available customers for filter
 $available_customers = $wpdb->get_results(
@@ -226,18 +337,91 @@ $available_customers = $wpdb->get_results(
     </div>
 </div>
 
-<!-- Monthly Chart Data (JSON for frontend charting) -->
+<!-- Monthly Chart: Einnahmen vs. Ausgaben (Netto) -->
 <div class="card" style="padding: 20px; margin-bottom: 20px;">
-    <h3><?php _e('Monatlicher Umsatz', 'cpsmartcrm'); ?></h3>
-    <div style="background: #f0f0f0; padding: 12px; border-radius: 4px; margin-top: 12px; height: 300px; display: flex; align-items: center; justify-content: center;">
-        <p style="color: #999; margin: 0;">
-            <?php _e('📊 Chart wird in Kürze implementiert (Chart.js)', 'cpsmartcrm'); ?>
-        </p>
+    <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">📈</span>
+        <?php _e('Verlauf Einnahmen vs. Ausgaben (Netto)', 'cpsmartcrm'); ?>
+    </h3>
+    <div style="height: 320px;">
+        <canvas id="stats_income_expense_chart"></canvas>
     </div>
     <small style="color: #666;">
-        <?php _e('Zeigt monatliche Umsatzentwicklung mit Trend-Linie', 'cpsmartcrm'); ?>
+        <?php _e('Zeigt monatliche Entwicklung für gewähltes Jahr', 'cpsmartcrm'); ?>
     </small>
 </div>
+
+<script src="<?php echo esc_url($chart_js_url); ?>"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('stats_income_expense_chart');
+    if (!ctx || typeof Chart === 'undefined') return;
+
+    const labels = <?php echo wp_json_encode($chart_labels); ?>;
+    const incomeData = <?php echo wp_json_encode($chart_income_values); ?>;
+    const expenseData = <?php echo wp_json_encode($chart_expense_values); ?>;
+    const currency = '<?php echo esc_js($chart_currency); ?>';
+
+    const formatMoney = (value) => {
+        try {
+            return new Intl.NumberFormat('de-DE', { style: 'currency', currency }).format(value);
+        } catch (e) {
+            return value;
+        }
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: '<?php echo esc_js(__('Einnahmen (netto)', 'cpsmartcrm')); ?>',
+                    data: incomeData,
+                    borderColor: 'rgb(0, 115, 170)',
+                    backgroundColor: 'rgba(0, 115, 170, 0.16)',
+                    tension: 0.25,
+                    fill: true,
+                    pointRadius: 3
+                },
+                {
+                    label: '<?php echo esc_js(__('Ausgaben (netto)', 'cpsmartcrm')); ?>',
+                    data: expenseData,
+                    borderColor: 'rgb(221, 51, 51)',
+                    backgroundColor: 'rgba(221, 51, 51, 0.16)',
+                    tension: 0.25,
+                    fill: true,
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) { return formatMoney(value); }
+                    },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: { display: true },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const val = ctx.parsed.y ?? 0;
+                            return ctx.dataset.label + ': ' + formatMoney(val);
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 
 <!-- Top Customers -->
 <div class="card" style="padding: 20px; margin-bottom: 20px;">

@@ -160,6 +160,67 @@ $available_months = $wpdb->get_results(
     LIMIT 36"
 );
 
+// Calculate financial data for the selected period
+$start_date = $current_year . '-' . $current_month . '-01';
+$end_date = $current_year . '-' . $current_month . '-31';
+
+// Get paid invoices data
+$revenue_data = $wpdb->get_row(
+    $wpdb->prepare(
+        "SELECT 
+            COUNT(*) as count,
+            COALESCE(SUM(importo_netto), 0) as paid_net,
+            COALESCE(SUM(iva), 0) as paid_tax
+         FROM {$d_table}
+         WHERE tipo = 2 AND pagato = 1 AND data BETWEEN %s AND %s",
+        $start_date, $end_date
+    )
+);
+if (!$revenue_data) {
+    $revenue_data = (object)array('count' => 0, 'paid_net' => 0, 'paid_tax' => 0);
+}
+
+// Get manual incomes (from incomes table)
+$manual_income_result = $wpdb->get_row(
+    $wpdb->prepare(
+        "SELECT 
+            COALESCE(SUM(imponibile), 0) as net,
+            COALESCE(SUM(imposta), 0) as tax
+         FROM {$i_table}
+         WHERE data BETWEEN %s AND %s",
+        $start_date, $end_date
+    )
+);
+$manual_income_net = $manual_income_result ? $manual_income_result->net : 0;
+$manual_income_tax = $manual_income_result ? $manual_income_result->tax : 0;
+
+// Get expenses data
+$expenses_data = $wpdb->get_row(
+    $wpdb->prepare(
+        "SELECT 
+            COUNT(*) as count,
+            COALESCE(SUM(imponibile), 0) as net,
+            COALESCE(SUM(imposta), 0) as tax
+         FROM {$e_table}
+         WHERE data BETWEEN %s AND %s",
+        $start_date, $end_date
+    )
+);
+if (!$expenses_data) {
+    $expenses_data = (object)array('count' => 0, 'net' => 0, 'tax' => 0);
+}
+
+// Calculate totals
+$total_revenue_net = (float)$revenue_data->paid_net + (float)$manual_income_net;
+$total_revenue_tax = (float)$revenue_data->paid_tax + (float)$manual_income_tax;
+$total_revenue = $total_revenue_net + $total_revenue_tax;
+
+$total_expenses_net = (float)$expenses_data->net;
+$total_expenses_tax = (float)$expenses_data->tax;
+$total_expenses = $total_expenses_net + $total_expenses_tax;
+
+$profit_loss_net = $total_revenue_net - $total_expenses_net;
+
 ?>
 
 <h2><?php _e('Buchhaltung', 'cpsmartcrm'); ?></h2>
@@ -377,6 +438,265 @@ document.getElementById('month_picker').addEventListener('change', function() {
             <?php _e('+ Neue Ausgabe', 'cpsmartcrm'); ?>
         </button>
     </div>
+</div>
+
+<!-- Transaction Details / Buchungen Übersicht -->
+<div style="margin: 30px 0; background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+    <h3 style="margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">📋</span> 
+        <?php _e('Alle Buchungen', 'cpsmartcrm'); ?>
+    </h3>
+
+    <?php
+    // Get all incomes and expenses for the period
+    $incomes = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, data, kategoria, descrizione, imponibile, aliquota, imposta, totale, 'income' as type 
+             FROM {$i_table}
+             WHERE data BETWEEN %s AND %s
+             ORDER BY data DESC, id DESC",
+            $start_date, $end_date
+        )
+    );
+
+    $expenses = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, data, kategoria, descrizione, imponibile, aliquota, imposta, totale, 'expense' as type 
+             FROM {$e_table}
+             WHERE data BETWEEN %s AND %s
+             ORDER BY data DESC, id DESC",
+            $start_date, $end_date
+        )
+    );
+
+    // Merge and sort chronologically
+    $transactions = array_merge((array)$incomes, (array)$expenses);
+    usort($transactions, function($a, $b) {
+        $cmp = strtotime($b->data) - strtotime($a->data);
+        return $cmp !== 0 ? $cmp : $b->id - $a->id;
+    });
+    ?>
+
+    <?php if (empty($transactions)) : ?>
+        <p style="color: #666; padding: 20px; text-align: center;">
+            <?php _e('Keine Buchungen für diesen Zeitraum.', 'cpsmartcrm'); ?>
+        </p>
+    <?php else : ?>
+        <div style="width: calc(100vw - 40px); max-width: 100%; overflow-y: auto; max-height: 900px; border: 1px solid #ddd; border-radius: 4px; margin-left: -20px; margin-right: -20px; padding: 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead style="position: sticky; top: 0; background: #f8f8f8; border-bottom: 2px solid #ddd; z-index: 10;">
+                    <tr>
+                        <th style="padding: 10px; text-align: left; font-weight: bold;"><?php _e('Datum', 'cpsmartcrm'); ?></th>
+                        <th style="padding: 10px; text-align: left; font-weight: bold;"><?php _e('Typ', 'cpsmartcrm'); ?></th>
+                        <th style="padding: 10px; text-align: left; font-weight: bold;"><?php _e('Kategorie', 'cpsmartcrm'); ?></th>
+                        <th style="padding: 10px; text-align: left; font-weight: bold;"><?php _e('Beschreibung', 'cpsmartcrm'); ?></th>
+                        <th style="padding: 10px; text-align: right; font-weight: bold;"><?php _e('Netto', 'cpsmartcrm'); ?></th>
+                        <th style="padding: 10px; text-align: right; font-weight: bold;"><?php _e('Steuersatz', 'cpsmartcrm'); ?></th>
+                        <th style="padding: 10px; text-align: right; font-weight: bold;"><?php _e('Steuer', 'cpsmartcrm'); ?></th>
+                        <th style="padding: 10px; text-align: right; font-weight: bold;"><?php _e('Brutto', 'cpsmartcrm'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($transactions as $t) : 
+                        // Strip HTML tags to get plain text for description display
+                        $description_text = wp_strip_all_tags($t->descrizione);
+                        $description_text = mb_strimwidth($description_text, 0, 100, '...');
+                    ?>
+                        <tr style="border-bottom: 1px solid #eee; <?php echo $t->type === 'income' ? 'background: #f0f9f0;' : 'background: #f9f0f0;'; ?>"
+                            data-date="<?php echo esc_attr($t->data); ?>" 
+                            data-type="<?php echo esc_attr($t->type); ?>" 
+                            data-totale="<?php echo esc_attr($t->totale); ?>">
+                            <td style="padding: 8px; white-space: nowrap;">
+                                <?php echo esc_html(date_i18n('d.m.Y', strtotime($t->data))); ?>
+                            </td>
+                            <td style="padding: 8px; white-space: nowrap;">
+                                <?php if ($t->type === 'income') : ?>
+                                    <span style="background: #46b450; color: #fff; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold;">
+                                        <?php _e('Einnahme', 'cpsmartcrm'); ?>
+                                    </span>
+                                <?php else : ?>
+                                    <span style="background: #d63638; color: #fff; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold;">
+                                        <?php _e('Ausgabe', 'cpsmartcrm'); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td style="padding: 8px;">
+                                <?php echo esc_html(ucfirst($t->kategoria)); ?>
+                            </td>
+                            <td style="padding: 8px; max-width: 300px;">
+                                <?php 
+                                // If description contains HTML links, display them (MarketPress orders, etc.)
+                                if (strpos($t->descrizione, '<a') !== false) {
+                                    echo wp_kses_post($t->descrizione);
+                                } else {
+                                    // Otherwise show plain text, truncated
+                                    echo esc_html($description_text);
+                                }
+                                ?>
+                            </td>
+                            <td style="padding: 8px; text-align: right; white-space: nowrap;">
+                                <?php echo esc_html(WPsCRM_format_currency($t->imponibile)); ?>
+                            </td>
+                            <td style="padding: 8px; text-align: right; white-space: nowrap;">
+                                <?php echo esc_html($t->aliquota); ?>%
+                            </td>
+                            <td style="padding: 8px; text-align: right; white-space: nowrap;">
+                                <?php echo esc_html(WPsCRM_format_currency($t->imposta)); ?>
+                            </td>
+                            <td style="padding: 8px; text-align: right; white-space: nowrap; font-weight: bold;">
+                                <?php echo esc_html(WPsCRM_format_currency($t->totale)); ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                <?php _e('Insgesamt', 'cpsmartcrm'); ?>: 
+                <strong><?php echo esc_html(count($transactions)); ?> <?php _e('Buchungen', 'cpsmartcrm'); ?></strong> 
+                (<?php echo count($incomes); ?> <?php _e('Einnahmen', 'cpsmartcrm'); ?> / 
+                <?php echo count($expenses); ?> <?php _e('Ausgaben', 'cpsmartcrm'); ?>)
+            </p>
+
+            <!-- Period Filter & Quick Stats -->
+            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start;">
+                <div>
+                    <label for="transaction_period_filter" style="display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px;">
+                        <?php _e('Zeitraum für Auswertung:', 'cpsmartcrm'); ?>
+                    </label>
+                    <select id="transaction_period_filter" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="month"><?php _e('Aktueller Monat', 'cpsmartcrm'); ?></option>
+                        <option value="week"><?php _e('Aktuelle Woche', 'cpsmartcrm'); ?></option>
+                        <option value="day"><?php _e('Heute', 'cpsmartcrm'); ?></option>
+                        <option value="year"><?php _e('Dieses Jahr', 'cpsmartcrm'); ?></option>
+                        <option value="all"><?php _e('Alle Zeiträume', 'cpsmartcrm'); ?></option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                    <div style="background: #f0f9f0; padding: 12px; border-radius: 4px; border-left: 4px solid #46b450;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                            <?php _e('Einnahmen', 'cpsmartcrm'); ?>
+                        </div>
+                        <div style="font-size: 18px; font-weight: bold; color: #46b450;" class="trans_filter_income">
+                            <?php 
+                            $income_sum = array_reduce($incomes, function($carry, $item) {
+                                return $carry + $item->totale;
+                            }, 0);
+                            echo esc_html(WPsCRM_format_currency($income_sum));
+                            ?>
+                        </div>
+                    </div>
+
+                    <div style="background: #f9f0f0; padding: 12px; border-radius: 4px; border-left: 4px solid #d63638;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                            <?php _e('Ausgaben', 'cpsmartcrm'); ?>
+                        </div>
+                        <div style="font-size: 18px; font-weight: bold; color: #d63638;" class="trans_filter_expenses">
+                            <?php 
+                            $expense_sum = array_reduce($expenses, function($carry, $item) {
+                                return $carry + $item->totale;
+                            }, 0);
+                            echo esc_html(WPsCRM_format_currency($expense_sum));
+                            ?>
+                        </div>
+                    </div>
+
+                    <div style="background: #f0f7ff; padding: 12px; border-radius: 4px; border-left: 4px solid #0073aa;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                            <?php _e('Differenz', 'cpsmartcrm'); ?>
+                        </div>
+                        <div style="font-size: 18px; font-weight: bold; color: #0073aa;" class="trans_filter_diff">
+                            <?php 
+                            $diff = $income_sum - $expense_sum;
+                            echo esc_html(WPsCRM_format_currency($diff));
+                            ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+        (function() {
+            const filterSelect = document.getElementById('transaction_period_filter');
+            if (!filterSelect) return;
+
+            function formatCurrency(value) {
+                return value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+            }
+
+            function calculateTotals() {
+                const period = filterSelect.value;
+                const today = new Date();
+                let startDate = new Date();
+
+                // Calculate start date based on period
+                switch(period) {
+                    case 'day':
+                        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                        break;
+                    case 'week':
+                        const day = today.getDay() || 7; // Sunday = 7
+                        const diff = today.getDate() - day + 1;
+                        startDate = new Date(today.getFullYear(), today.getMonth(), diff);
+                        break;
+                    case 'month':
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                        break;
+                    case 'year':
+                        startDate = new Date(today.getFullYear(), 0, 1);
+                        break;
+                    case 'all':
+                        startDate = new Date(1970, 0, 1);
+                        break;
+                }
+
+                let incomeTotal = 0;
+                let expenseTotal = 0;
+
+                // Get all rows
+                const rows = document.querySelectorAll('tbody tr[data-date]');
+                rows.forEach(function(row) {
+                    const dateStr = row.getAttribute('data-date'); // YYYY-MM-DD format
+                    const type = row.getAttribute('data-type');
+                    const totale = parseFloat(row.getAttribute('data-totale')) || 0;
+
+                    // Parse date
+                    const rowDate = new Date(dateStr + 'T00:00:00');
+
+                    // Check if within range
+                    if (rowDate >= startDate) {
+                        if (type === 'income') {
+                            incomeTotal += totale;
+                        } else {
+                            expenseTotal += totale;
+                        }
+                    }
+                });
+
+                const diff = incomeTotal - expenseTotal;
+
+                // Update display
+                const incomeEl = document.querySelector('.trans_filter_income');
+                const expenseEl = document.querySelector('.trans_filter_expenses');
+                const diffEl = document.querySelector('.trans_filter_diff');
+
+                if (incomeEl) incomeEl.textContent = formatCurrency(incomeTotal);
+                if (expenseEl) expenseEl.textContent = formatCurrency(expenseTotal);
+                if (diffEl) diffEl.textContent = formatCurrency(diff);
+            }
+
+            // Initial calculation
+            calculateTotals();
+
+            // Listen to changes
+            filterSelect.addEventListener('change', calculateTotals);
+        })();
+        </script>
+    <?php endif; ?>
 </div>
 
 <!-- New Income Form Modal -->

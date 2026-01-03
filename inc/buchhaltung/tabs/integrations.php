@@ -12,6 +12,8 @@ if (!current_user_can('manage_crm')) {
     wp_die(__('Du hast keine Berechtigung, diese Seite zu sehen.', 'cpsmartcrm'));
 }
 
+require_once dirname(__DIR__, 2) . '/integrations/plugin-helper.php';
+
 /**
  * Get registered accounting integrations
  * Plugins can add integrations via do_action('WPsCRM_register_integrations')
@@ -99,6 +101,18 @@ if (isset($_POST['save_integration']) && check_admin_referer('integration_settin
     }
 }
 
+// Handle plugin install requests for integrations
+if (isset($_POST['install_plugin']) && check_admin_referer('integration_plugin_action')) {
+    $download_url = esc_url_raw($_POST['download_url'] ?? '');
+    $result = WPsCRM_integration_install_plugin($download_url);
+
+    if (is_wp_error($result)) {
+        echo '<div class="notice notice-error"><p>' . esc_html($result->get_error_message()) . '</p></div>';
+    } else {
+        echo '<div class="notice notice-success"><p>' . __('Plugin wurde installiert. Bitte aktiviere es jetzt.', 'cpsmartcrm') . '</p></div>';
+    }
+}
+
 ?>
 
 <h2><?php _e('Integrationen', 'cpsmartcrm'); ?></h2>
@@ -109,6 +123,23 @@ if (isset($_POST['save_integration']) && check_admin_referer('integration_settin
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
     <?php foreach ($integrations as $integration_id => $integration) : ?>
+        <?php
+        $plugin_file = $integration['plugin'] ?? '';
+        $plugin_status = WPsCRM_integration_get_plugin_status($plugin_file);
+        $status_label = array(
+            'active' => __('Aktiv', 'cpsmartcrm'),
+            'inactive' => __('Installiert, inaktiv', 'cpsmartcrm'),
+            'missing' => __('Nicht installiert', 'cpsmartcrm'),
+        );
+
+        $activation_url = '';
+        if ($plugin_status === 'inactive' && !empty($plugin_file)) {
+            $activation_url = wp_nonce_url(
+                admin_url('plugins.php?action=activate&plugin=' . urlencode($plugin_file)),
+                'activate-plugin_' . $plugin_file
+            );
+        }
+        ?>
         <div class="card" style="padding: 20px;">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                 <?php if (!empty($integration['icon'])) : ?>
@@ -127,6 +158,11 @@ if (isset($_POST['save_integration']) && check_admin_referer('integration_settin
                             ?>
                         </small>
                     <?php endif; ?>
+                    <?php if (!empty($plugin_file)) : ?>
+                        <div style="font-size:12px; color:#555; margin-top:4px;">
+                            <?php echo esc_html($status_label[$plugin_status] ?? ''); ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -135,65 +171,83 @@ if (isset($_POST['save_integration']) && check_admin_referer('integration_settin
             </p>
 
             <?php if ($integration['status'] === 'available') : ?>
-                <form method="post" action="">
-                    <?php wp_nonce_field('integration_settings_nonce'); ?>
-                    <input type="hidden" name="integration_id" value="<?php echo esc_attr($integration_id); ?>" />
-                    <input type="hidden" name="save_integration" value="1" />
-
-                    <?php if (!empty($integration['fields'])) : ?>
-                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #eee;">
-                            <?php foreach ($integration['fields'] as $field_key => $field_config) : ?>
-                                <?php 
-                                $current_value = $integration_options[$integration_id][$field_key] ?? '';
-                                
-                                // Load tax rates for special field type
-                                if ($field_config['options'] === 'tax_rates') {
-                                    $field_config['options'] = array();
-                                    $tax_rates = WPsCRM_get_tax_rates();
-                                    foreach ($tax_rates as $rate) {
-                                        $field_config['options'][$rate['percentage']] = $rate['label'];
-                                    }
-                                }
-                                ?>
-                                
-                                <?php if ($field_config['type'] === 'checkbox') : ?>
-                                    <div style="margin-bottom: 12px;">
-                                        <label>
-                                            <input type="checkbox" name="<?php echo esc_attr($field_key); ?>" value="1" <?php checked($current_value, 1); ?> />
-                                            <strong><?php echo esc_html($field_config['label']); ?></strong>
-                                        </label>
-                                        <?php if (!empty($field_config['description'])) : ?>
-                                            <p style="color: #666; font-size: 12px; margin: 4px 0 0 24px;">
-                                                <?php echo esc_html($field_config['description']); ?>
-                                            </p>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php elseif ($field_config['type'] === 'select') : ?>
-                                    <div style="margin-bottom: 12px;">
-                                        <label for="<?php echo esc_attr($field_key); ?>">
-                                            <strong><?php echo esc_html($field_config['label']); ?></strong>
-                                        </label>
-                                        <select id="<?php echo esc_attr($field_key); ?>" name="<?php echo esc_attr($field_key); ?>" class="widefat" style="margin-top: 4px;">
-                                            <option value=""><?php _e('Wählen', 'cpsmartcrm'); ?></option>
-                                            <?php foreach ($field_config['options'] as $opt_value => $opt_label) : ?>
-                                                <option value="<?php echo esc_attr($opt_value); ?>" <?php selected($current_value, $opt_value); ?>>
-                                                    <?php echo esc_html($opt_label); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </div>
+                <?php if ($plugin_status === 'missing' && !empty($integration['download_url']) && current_user_can('install_plugins')) : ?>
+                    <form method="post" action="">
+                        <?php wp_nonce_field('integration_plugin_action'); ?>
+                        <input type="hidden" name="install_plugin" value="1" />
+                        <input type="hidden" name="download_url" value="<?php echo esc_url($integration['download_url']); ?>" />
                         <button type="submit" class="button button-primary button-block" style="width: 100%;">
-                            <?php _e('Speichern', 'cpsmartcrm'); ?>
+                            <?php _e('Installieren', 'cpsmartcrm'); ?>
                         </button>
-                    <?php else : ?>
-                        <button type="button" class="button button-primary button-block" style="width: 100%;" disabled>
-                            <?php _e('✓ Aktiviert', 'cpsmartcrm'); ?>
-                        </button>
-                    <?php endif; ?>
-                </form>
+                    </form>
+                <?php elseif ($plugin_status === 'inactive' && !empty($activation_url)) : ?>
+                    <a class="button button-primary button-block" style="width: 100%;" href="<?php echo esc_url($activation_url); ?>">
+                        <?php _e('Aktivieren', 'cpsmartcrm'); ?>
+                    </a>
+                <?php endif; ?>
+
+                <?php if ($plugin_status !== 'missing') : ?>
+                    <form method="post" action="">
+                        <?php wp_nonce_field('integration_settings_nonce'); ?>
+                        <input type="hidden" name="integration_id" value="<?php echo esc_attr($integration_id); ?>" />
+                        <input type="hidden" name="save_integration" value="1" />
+
+                        <?php if (!empty($integration['fields'])) : ?>
+                            <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #eee;">
+                                <?php foreach ($integration['fields'] as $field_key => $field_config) : ?>
+                                    <?php 
+                                    $current_value = $integration_options[$integration_id][$field_key] ?? '';
+
+                                    if (!empty($field_config['options']) && $field_config['options'] === 'tax_rates') {
+                                        $field_config['options'] = array();
+                                        $tax_rates = WPsCRM_get_tax_rates();
+                                        foreach ($tax_rates as $rate) {
+                                            $field_config['options'][$rate['percentage']] = $rate['label'];
+                                        }
+                                    }
+                                    ?>
+
+                                    <?php if ($field_config['type'] === 'checkbox') : ?>
+                                        <div style="margin-bottom: 12px;">
+                                            <label>
+                                                <input type="checkbox" name="<?php echo esc_attr($field_key); ?>" value="1" <?php checked($current_value, 1); ?> />
+                                                <strong><?php echo esc_html($field_config['label']); ?></strong>
+                                            </label>
+                                            <?php if (!empty($field_config['description'])) : ?>
+                                                <p style="color: #666; font-size: 12px; margin: 4px 0 0 24px;">
+                                                    <?php echo esc_html($field_config['description']); ?>
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php elseif ($field_config['type'] === 'select' && !empty($field_config['options'])) : ?>
+                                        <div style="margin-bottom: 12px;">
+                                            <label for="<?php echo esc_attr($field_key); ?>">
+                                                <strong><?php echo esc_html($field_config['label']); ?></strong>
+                                            </label>
+                                            <select id="<?php echo esc_attr($field_key); ?>" name="<?php echo esc_attr($field_key); ?>" class="widefat" style="margin-top: 4px;">
+                                                <option value=""><?php _e('Wählen', 'cpsmartcrm'); ?></option>
+                                                <?php foreach ($field_config['options'] as $opt_value => $opt_label) : ?>
+                                                    <option value="<?php echo esc_attr($opt_value); ?>" <?php selected($current_value, $opt_value); ?>>
+                                                        <?php echo esc_html($opt_label); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                            <button type="submit" class="button button-primary button-block" style="width: 100%;">
+                                <?php _e('Speichern', 'cpsmartcrm'); ?>
+                            </button>
+                        <?php else : ?>
+                            <?php if ($plugin_status === 'active') : ?>
+                                <button type="button" class="button button-primary button-block" style="width: 100%;" disabled>
+                                    <?php _e('✓ Aktiviert', 'cpsmartcrm'); ?>
+                                </button>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </form>
+                <?php endif; ?>
             <?php else : ?>
                 <button type="button" class="button button-block" style="width: 100%;" disabled>
                     <?php 

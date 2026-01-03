@@ -97,6 +97,7 @@ require_once(__DIR__ . '/inc/classes/CRMcustomer.class.php');
 require_once(__DIR__ . '/inc/classes/CRMdocument.class.php');
 require_once(__DIR__ . '/inc/classes/CRMmail.class.php');
 require_once(__DIR__ . '/inc/options.php');
+require_once(__DIR__ . '/inc/integrations/marketpress.php');
 
 
 
