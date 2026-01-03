@@ -7,17 +7,18 @@ if ( ! wp_verify_nonce( $nonce, 'delete_customer' ) || ! current_user_can('manag
 
 } else {
 
-	$table=WPsCRM_TABLE."kunde";
+	$table = WPsCRM_get_customer_table();
+	$pk = WPsCRM_get_customer_pk($table);
 	$ID=$_GET["ID"];
 
-	//$wpdb->delete( $table, array( 'ID_kunde' => $ID ) );
+	//$wpdb->delete( $table, array( $pk => $ID ) );
 	if ($ID !=1)
 		$wpdb->update(
 			$table,
 			array(
 				'eliminato' => '1'
 			),
-			array( 'ID_kunde' => $ID ),
+			array( $pk => $ID ),
 			array(
 				'%d'	// valore2
 			),

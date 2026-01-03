@@ -2125,12 +2125,86 @@ function WPsCRM_get_customer_pk($table) {
   return 'ID_kunde';
 }
 
+// Get unique values from a customer field (categoria, provenienza, interessi) for SELECT2 dropdowns
+// This loads actual database values instead of relying on Post taxonomies
+// Load customer category/interest/origin terms from WordPress taxonomies
+function WPsCRM_get_customer_field_values($field_name) {
+  // Map field names to WordPress taxonomy names
+  $taxonomy_map = array(
+    'categoria' => 'WPsCRM_customersCat',
+    'provenienza' => 'WPsCRM_customersProv',
+    'interessi' => 'WPsCRM_customersInt'
+  );
+  
+  if (!isset($taxonomy_map[$field_name])) {
+    return array();
+  }
+  
+  $taxonomy = $taxonomy_map[$field_name];
+  
+  // Get all terms from the taxonomy
+  $terms = get_terms(array(
+    'taxonomy' => $taxonomy,
+    'hide_empty' => false,
+  ));
+  
+  if (is_wp_error($terms) || empty($terms)) {
+    return array();
+  }
+  
+  return $terms;
+}
+
+// Load customer's assigned terms for a specific field from WordPress taxonomy
+function WPsCRM_get_customer_assigned_terms($customer_id, $field_name) {
+  global $wpdb;
+  
+  // Map field names to WordPress taxonomy names
+  $taxonomy_map = array(
+    'categoria' => 'WPsCRM_customersCat',
+    'provenienza' => 'WPsCRM_customersProv',
+    'interessi' => 'WPsCRM_customersInt'
+  );
+  
+  if (!isset($taxonomy_map[$field_name])) {
+    return array();
+  }
+  
+  $taxonomy = $taxonomy_map[$field_name];
+  
+  // Get term IDs directly from the database for this object
+  $query = $wpdb->prepare("
+    SELECT tr.term_taxonomy_id, t.term_id, t.name
+    FROM {$wpdb->prefix}term_relationships tr
+    JOIN {$wpdb->prefix}term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+    JOIN {$wpdb->prefix}terms t ON tt.term_id = t.term_id
+    WHERE tr.object_id = %d AND tt.taxonomy = %s
+  ", $customer_id, $taxonomy);
+  
+  $results = $wpdb->get_results($query);
+  
+  if (empty($results)) {
+    error_log("WPsCRM_get_customer_assigned_terms: No terms found for customer $customer_id, field $field_name");
+    return array();
+  }
+  
+  // Extract term IDs
+  $term_ids = wp_list_pluck($results, 'term_id');
+  error_log("WPsCRM_get_customer_assigned_terms: Found term IDs for $field_name: " . print_r($term_ids, true));
+  return $term_ids;
+}
+
 function WPsCRM_save_client() {
 
   if (check_ajax_referer('update_customer', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
     $table = WPsCRM_get_customer_table();
+    $pk = WPsCRM_get_customer_pk($table);
     parse_str($_POST['fields'], $fields);
+    
+    // Debug: Log incoming fields
+    error_log('WPsCRM_save_client fields: ' . print_r($fields, true));
+    error_log('customerCategory: ' . (isset($fields["customerCategory"]) ? $fields["customerCategory"] : 'NOT SET'));
     $ID_azienda = "1";
     $taxObj = array();
     foreach ($fields as $field => $val) {
@@ -2211,7 +2285,7 @@ function WPsCRM_save_client() {
           'fatturabile' => isset($fields["fatturabile"]) ? $fields["fatturabile"] : 0,
           'custom_fields' => $serialized_custom_fields,
           'custom_tax' => $serialized_tax,
-              ), array('ID_kunde' => $ID), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s')
+              ), array($pk => $ID), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s')
             );
     } else {
       $wpdb->insert(

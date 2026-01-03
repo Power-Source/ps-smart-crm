@@ -187,8 +187,8 @@ function WPsCRM_add_smartcrm_scripts(){
     // Externe Libraries
     wp_enqueue_media();
     wp_enqueue_script( 'autonumeric', 'https://cdn.jsdelivr.net/npm/autonumeric@4.10.5/dist/autoNumeric.min.js', array('jquery'), null, true );
-    wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
-    wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'));
+    wp_enqueue_style('select2', plugin_dir_url( __FILE__ ).'js/select2/dist/css/select2.min.css');
+    wp_enqueue_script('select2', plugin_dir_url( __FILE__ ).'js/select2/dist/js/select2.min.js', array('jquery'));
     wp_enqueue_script('parsley', 'https://cdn.jsdelivr.net/npm/parsleyjs@2.9.2/dist/parsley.min.js', array('jquery'));
     
     // PSCRM Config für JavaScript

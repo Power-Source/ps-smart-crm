@@ -261,7 +261,6 @@ jQuery(document).ready(function ($) {
 
     // KATEGORIE (Select2 als Mehrfachauswahl)
     <?php
-        $cats = WPsCRM_get_customer_field_values('categoria');
         echo "var cats = [];";
         if( ! empty($cats) ){
             echo "cats = [";
@@ -274,22 +273,14 @@ jQuery(document).ready(function ($) {
         data: cats,
         placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
         width: '100%',
-        multiple: true,
-        tags: true,
-        tokenSeparators: [',']
+        multiple: true
     });
-    <?php 
-    // Load assigned values from database column (not from taxonomy)
-    if(isset($riga) && !empty($riga["categoria"])): ?>
-        // Lade Werte aus der Datenbankspalte
-        var catDbValue = <?php echo json_encode(explode(',', $riga["categoria"])); ?>;
-        console.log('Loading categoryIDs from DB:', catDbValue);
-        $('#customerCategory').val(catDbValue).trigger('change');
+    <?php if(isset($riga) && !empty($riga["categoria" ])): ?>
+        $('#customerCategory').val(<?php echo json_encode(array_filter(explode(',', $riga["categoria"]))); ?>).trigger('change');
     <?php endif; ?>
 
     // PROVENIENZ (Select2 als Mehrfachauswahl)
     <?php
-        $provs = WPsCRM_get_customer_field_values('provenienza');
         echo "var provs = [];";
         if( ! empty($provs) ){
             echo "provs = [";
@@ -302,20 +293,14 @@ jQuery(document).ready(function ($) {
         data: provs,
         placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
         width: '100%',
-        multiple: true,
-        tags: true,
-        tokenSeparators: [',']
+        multiple: true
     });
-    <?php 
-    if(isset($riga) && !empty($riga["provenienza"])): ?>
-        var provDbValue = <?php echo json_encode(explode(',', $riga["provenienza"])); ?>;
-        console.log('Loading provenienza from DB:', provDbValue);
-        $('#customerComesfrom').val(provDbValue).trigger('change');
+    <?php if(isset($riga) && !empty($riga["provenienza"])): ?>
+        $('#customerComesfrom').val(<?php echo json_encode(array_filter(explode(',', $riga["provenienza"]))); ?>).trigger('change');
     <?php endif; ?>
 
     // INTERESSEN (Select2 als Mehrfachauswahl)
     <?php
-        $ints = WPsCRM_get_customer_field_values('interessi');
         echo "var ints = [];";
         if( ! empty($ints) ){
             echo "ints = [";
@@ -328,43 +313,11 @@ jQuery(document).ready(function ($) {
         data: ints,
         placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
         width: '100%',
-        multiple: true,
-        tags: true,
-        tokenSeparators: [',']
+        multiple: true
     });
-    <?php 
-    if(isset($riga) && !empty($riga["interessi"])): ?>
-        var intDbValue = <?php echo json_encode(explode(',', $riga["interessi"])); ?>;
-        console.log('Loading interessi from DB:', intDbValue);
-        $('#customerInterests').val(intDbValue).trigger('change');
+    <?php if(isset($riga) && !empty($riga["interessi"])): ?>
+        $('#customerInterests').val(<?php echo json_encode(array_filter(explode(',', $riga["interessi"]))); ?>).trigger('change');
     <?php endif; ?>
-
-    // SELECT2 change event handlers - speichere Werte wenn sich Selection ändert
-    $('#customerCategory').on('change', function(e) {
-        var s2Data = $(this).select2('data');
-        // Extrahiere alle IDs aus den SELECT2-Daten
-        var ids = s2Data.map(function(item) { return item.id; });
-        var idString = ids.join(',');
-        // Speichere in das value-Attribut
-        $(this).attr('value', idString);
-        console.log('customerCategory changed - IDs:', ids, 'String:', idString);
-    });
-    
-    $('#customerComesfrom').on('change', function(e) {
-        var s2Data = $(this).select2('data');
-        var ids = s2Data.map(function(item) { return item.id; });
-        var idString = ids.join(',');
-        $(this).attr('value', idString);
-        console.log('customerComesfrom changed - IDs:', ids, 'String:', idString);
-    });
-    
-    $('#customerInterests').on('change', function(e) {
-        var s2Data = $(this).select2('data');
-        var ids = s2Data.map(function(item) { return item.id; });
-        var idString = ids.join(',');
-        $(this).attr('value', idString);
-        console.log('customerInterests changed - IDs:', ids, 'String:', idString);
-    });
 
     // Parsley für Validierung
     $('#form_insert').parsley({
@@ -401,36 +354,16 @@ jQuery(document).ready(function ($) {
     $('#cod_fis').attr('data-parsley-fiscalcode', '');
 
     // Speichern-Button
-    $(document).on('click', '.saveForm', function(e) {
-        console.log('saveForm clicked!');
-        console.log('Event object:', e);
-        console.log('This element:', this);
+    $('.saveForm').on('click', function(e) {
         e.preventDefault();
-        e.stopPropagation();
         var $form = $('#form_insert');
-        console.log('Form found:', $form.length);
         if ($form.parsley().validate()) {
-            // Get SELECT2 values directly from the SELECT2 API
-            var catVals = $('#customerCategory').val() || [];
-            var intVals = $('#customerInterests').val() || [];
-            var provVals = $('#customerComesfrom').val() || [];
-            
-            console.log('SELECT2 values - cat:', catVals, 'int:', intVals, 'prov:', provVals);
-            
-            // Serialize form + manually add SELECT2 values
-            var formData = $form.serialize() + 
-                '&customerCategory=' + encodeURIComponent(Array.isArray(catVals) ? catVals.join(',') : catVals) +
-                '&customerInterests=' + encodeURIComponent(Array.isArray(intVals) ? intVals.join(',') : intVals) +
-                '&customerComesfrom=' + encodeURIComponent(Array.isArray(provVals) ? provVals.join(',') : provVals);
-            
-            console.log('FormData:', formData);
-            
             showMouseLoader();
             $.ajax({
                 url: ajaxurl,
                 data: {
                     action: 'WPsCRM_save_client',
-                    fields: formData,
+                    fields: $form.serialize(),
                     security: '<?php echo $update_nonce; ?>'
                 },
                 type: "POST",
@@ -494,7 +427,7 @@ jQuery(document).ready(function ($) {
             <span class="crmHelp crmHelp-dark" data-help="customerForm" style="position:relative;top:-3px" data-role="tooltip"></span>
 		</li>
         <?php if ($ID){?>
-		<li class="btn btn-success btn-sm _flat _showLoader saveForm">
+		<li class="btn btn-success btn-sm _flat _showLoader saveForm" onclick="save();return false;">
 			<i class="glyphicon glyphicon-floppy-disk"></i>
 			<b>
 				<?php _e('Speichern','cpsmartcrm')?>
@@ -654,7 +587,7 @@ jQuery(document).ready(function ($) {
                     <div class="col-sm-4">
 						<input id="customerCategory"  name="customerCategory" value="<?php if(isset($riga)) echo $riga["categoria"]?>" />
 						<?php
-						$cats = WPsCRM_get_customer_field_values('categoria');
+						$cats = get_terms('WPsCRM_customersCat', array('hide_empty'=>false));
 						if (empty($cats)): ?>
 							<div class="alert alert-warning">
 								<?php _e('Keine Kategorien; Erstelle Kategorien in den CRM-Einstellungen ->Seite „Kundeneinstellungen“.','cpsmartcrm') ?>
@@ -683,7 +616,7 @@ jQuery(document).ready(function ($) {
 					<div class="col-sm-4">
 						<input id="customerInterests" name="customerInterests" value="<?php if(isset($riga)) echo $riga["interessi"]?>" />
 						<?php
-						$ints = WPsCRM_get_customer_field_values('interessi');
+						$ints = get_terms('WPsCRM_customersInt', array('hide_empty'=>false));
 						if (empty($ints)): ?>
 							<div class="alert alert-warning">
 								<?php _e('Keine Interessen; Erstelle Interessen in den CRM-Einstellungen ->Seite „Kundeneinstellungen“.','cpsmartcrm') ?>
@@ -728,7 +661,7 @@ jQuery(document).ready(function ($) {
 					<div class="col-sm-4">
 						<input id="customerComesfrom" name="customerComesfrom" value="<?php if(isset($riga)) echo $riga["provenienza"]?>"  />
 						<?php
-						$provs = WPsCRM_get_customer_field_values('provenienza');
+						$provs = get_terms('WPsCRM_customersProv', array('hide_empty'=>false));
 						if (empty($provs)): ?>
 							<div class="alert alert-warning">
 								<?php _e('Keine Quellen; erstelle Quellen in den CRM-Einstellungen ->Kundeneinstellungen Seite','cpsmartcrm') ?>
@@ -818,7 +751,7 @@ jQuery(document).ready(function ($) {
 
     <ul class="select-action">
 
-        <li class="btn btn-success btn-sm _flat _showLoader saveForm">
+        <li class="btn btn-success btn-sm _flat _showLoader saveForm" onclick="save()">
             <i class="glyphicon glyphicon-floppy-disk"></i>
             <b>
                 <?php _e('Speichern','cpsmartcrm')?>
