@@ -2912,14 +2912,29 @@ add_action('wp_ajax_WPsCRM_save_crm_user_fields', 'WPsCRM_save_crm_user_fields')
 //save client contacts for grid in clients/form.php
 function WPsCRM_view_activity_modal() {
   global $wpdb;
-  $ID = $_GET['id'];
-  $report = $_REQUEST['report'];
+
+  $ID = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
+  $report = isset($_REQUEST['report']) ? $_REQUEST['report'] : null;
   $a_table = WPsCRM_TABLE . "agenda";
   $c_table = WPsCRM_TABLE."kunde";
   $s_table = WPsCRM_TABLE . "subscriptionrules";
 
+  $cliente = '';
+  $contatto = '';
+  $destinatari = '';
+  $groups = '';
+  $days = '';
+  $remindToCustomer = '';
+  $mailToRecipients = '';
+  $userDashboard = '';
+  $groupDashboard = '';
 
-  $sql = "select oggetto,tipo_agenda, annotazioni, start_date,end_date, data_agenda, fk_kunde, fk_contatti,fk_subscriptionrules, fatto, esito, priorita from $a_table where id_agenda=$ID";
+  if (!$ID) {
+    echo '<div class="panel-body">' . __('Keine Aktivität gefunden', 'cpsmartcrm') . '</div>';
+    die();
+  }
+
+  $sql = $wpdb->prepare("select oggetto,tipo_agenda, annotazioni, start_date,end_date, data_agenda, fk_kunde, fk_contatti,fk_subscriptionrules, fatto, esito, priorita from $a_table where id_agenda=%d", $ID);
   $riga = $wpdb->get_row($sql);
 
   switch ($riga->priorita) {
@@ -2942,9 +2957,9 @@ function WPsCRM_view_activity_modal() {
     $cliente = $rigac->firmenname ? $rigac->firmenname : $rigac->name . " " . $rigac->nachname;
   }
   if ($riga->fk_contatti) {
-    $sql = "select concat(name,' ', nachname) as contatto from ana_contatti where ID_contatti=" . $riga->FK_contatti;
+    $sql = "select concat(name,' ', nachname) as contatto from ana_contatti where ID_contatti=" . intval($riga->fk_contatti);
     $rigac = $wpdb->get_row($sql);
-    $contatto = $rigac->contatto;
+    $contatto = $rigac ? $rigac->contatto : '';
   }
 
   $oggetto = $riga->oggetto;
@@ -3090,8 +3105,8 @@ function WPsCRM_view_activity_modal() {
   $html .= '></td>
     </tr>
     <tr>
-	    <td>' . __('Angebote', 'cpsmartcrm') . '</td>
-	    <td colspan="2" style="padding-top:20px"><textarea rows="3" cols="50" name="esito" id="esito" ';
+      <td>' . __('Notizen', 'cpsmartcrm') . '</td>
+      <td colspan="2" style="padding-top:20px"><textarea rows="3" cols="50" name="esito" id="esito" ';
   $report == "false" ? $html .= " readonly" : $html .= "";
   $html .= '>' . stripslashes($riga->esito) . '</textarea></td>
     </tr>
@@ -3990,42 +4005,60 @@ function WPsCRM_generate_document_HTML($ID) {
 					</tr>
 				</table>
 			</page_header>';
-  if ($ID) {
-    $sql = "select * from $d_table where id=$ID";
-    $riga = $wpdb->get_row($sql, ARRAY_A);
-    switch ($tipo = $riga["tipo"]) {
-      case 1:
-        $progressivo = $riga["progressivo"];
-        $document_name = __("Angebot", 'cpsmartcrm');
-        $text_before = $document_messages['offers_before'];
-        $text_after = $document_messages['offers_after'];
-        $document_prefix = $document_numbering['offers_prefix'];
-        $document_suffix = $document_numbering['offers_suffix'];
-        $document_dear = $document_messages['offers_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php&ID=' . $ID);
-        break;
-      case 2:
-        $progressivo = $riga["progressivo"];
-        $document_name = __("Rechnung", 'cpsmartcrm');
-        $text_before = $document_messages['invoices_before'];
-        $text_after = $document_messages['invoices_after'];
-        $document_prefix = $document_numbering['invoices_prefix'];
-        $document_suffix = $document_numbering['invoices_suffix'];
-        $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=' . $ID);
-        break;
-      case 3:
-        $progressivo = $riga["id"];
-        $document_name = __("Informelle Rechnung", 'cpsmartcrm');
-        $text_before = $document_messages['invoices_before'];
-        $text_after = $document_messages['invoices_after'];
-        $document_prefix = $document_numbering['invoices_prefix'];
-        $document_suffix = $document_numbering['invoices_suffix'];
-        $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice_informal.php&ID=' . $ID);
+  if (!$ID) {
+    echo '<div class="panel-body">' . __('Keine Aktivität gefunden', 'cpsmartcrm') . '</div>';
+    die();
+  }
+  $riga = $wpdb->get_row($wpdb->prepare("SELECT * FROM $d_table WHERE id=%d", $ID), ARRAY_A);
+  if (!$riga) {
+    echo '<div class="panel-body">' . __('Keine Aktivität gefunden', 'cpsmartcrm') . '</div>';
+    die();
+  }
 
-        break;
-    }
+  $tipo = isset($riga['tipo']) ? intval($riga['tipo']) : 0;
+
+  switch ($tipo) {
+    case 1:
+      $progressivo = $riga["progressivo"];
+      $document_name = __("Angebot", 'cpsmartcrm');
+      $text_before = $document_messages['offers_before'];
+      $text_after = $document_messages['offers_after'];
+      $document_prefix = $document_numbering['offers_prefix'];
+      $document_suffix = $document_numbering['offers_suffix'];
+      $document_dear = $document_messages['offers_dear'];
+      $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php&ID=' . $ID);
+      break;
+    case 2:
+      $progressivo = $riga["progressivo"];
+      $document_name = __("Rechnung", 'cpsmartcrm');
+      $text_before = $document_messages['invoices_before'];
+      $text_after = $document_messages['invoices_after'];
+      $document_prefix = $document_numbering['invoices_prefix'];
+      $document_suffix = $document_numbering['invoices_suffix'];
+      $document_dear = $document_messages['invoices_dear'];
+      $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=' . $ID);
+      break;
+    case 3:
+      $progressivo = $riga["id"];
+      $document_name = __("Informelle Rechnung", 'cpsmartcrm');
+      $text_before = $document_messages['invoices_before'];
+      $text_after = $document_messages['invoices_after'];
+      $document_prefix = $document_numbering['invoices_prefix'];
+      $document_suffix = $document_numbering['invoices_suffix'];
+      $document_dear = $document_messages['invoices_dear'];
+      $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice_informal.php&ID=' . $ID);
+      break;
+    default:
+      $progressivo = '';
+      $document_name = '';
+      $text_before = '';
+      $text_after = '';
+      $document_prefix = '';
+      $document_suffix = '';
+      $document_dear = '';
+      $edit_url = '';
+      break;
+  }
     $riferimento = $riga["riferimento"];
     $oggetto = $tipo == 1 ? $riga["oggetto"] : "";
     if ($FK_kunde = $riga["fk_kunde"]) {
@@ -4052,7 +4085,6 @@ function WPsCRM_generate_document_HTML($ID) {
     $n_offerta = $document_prefix;
     $n_offerta .= $progressivo . "/" . date("Y", strtotime($riga["data"]));
     $n_offerta .= $document_suffix;
-  }
 
   //document sub-header
   $subheader = '';
@@ -4320,42 +4352,60 @@ function _WPsCRM_generate_document_HTML($ID) {
 				</table>
 			</page_header>';
 
-  if ($ID) {
-    $sql = "select * from $d_table where id=$ID";
-    $riga = $wpdb->get_row($sql, ARRAY_A);
-    switch ($tipo = $riga["tipo"]) {
-      case 1:
-        $progressivo = $riga["progressivo"];
-        $document_name = __("Angebot", 'cpsmartcrm');
-        $text_before = $document_messages['offers_before'];
-        $text_after = $document_messages['offers_after'];
-        $document_prefix = $document_numbering['offers_prefix'];
-        $document_suffix = $document_numbering['offers_suffix'];
-        $document_dear = $document_messages['offers_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php&ID=' . $ID);
-        break;
-      case 2:
-        $progressivo = $riga["progressivo"];
-        $document_name = __("Rechnung", 'cpsmartcrm');
-        $text_before = $document_messages['invoices_before'];
-        $text_after = $document_messages['invoices_after'];
-        $document_prefix = $document_numbering['invoices_prefix'];
-        $document_suffix = $document_numbering['invoices_suffix'];
-        $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=' . $ID);
-        break;
-      case 3:
-        $progressivo = $riga["id"];
-        $document_name = __("Informelle Rechnung", 'cpsmartcrm');
-        $text_before = $document_messages['invoices_before'];
-        $text_after = $document_messages['invoices_after'];
-        $document_prefix = $document_numbering['invoices_prefix'];
-        $document_suffix = $document_numbering['invoices_suffix'];
-        $document_dear = $document_messages['invoices_dear'];
-        $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice_informal.php&ID=' . $ID);
+  if (!$ID) {
+    echo '<div class="panel-body">' . __('Keine Aktivität gefunden', 'cpsmartcrm') . '</div>';
+    die();
+  }
+  $riga = $wpdb->get_row($wpdb->prepare("SELECT * FROM $d_table WHERE id=%d", $ID), ARRAY_A);
+  if (!$riga) {
+    echo '<div class="panel-body">' . __('Keine Aktivität gefunden', 'cpsmartcrm') . '</div>';
+    die();
+  }
 
-        break;
-    }
+  $tipo = isset($riga['tipo']) ? intval($riga['tipo']) : 0;
+
+  switch ($tipo) {
+    case 1:
+      $progressivo = $riga["progressivo"];
+      $document_name = __("Angebot", 'cpsmartcrm');
+      $text_before = $document_messages['offers_before'];
+      $text_after = $document_messages['offers_after'];
+      $document_prefix = $document_numbering['offers_prefix'];
+      $document_suffix = $document_numbering['offers_suffix'];
+      $document_dear = $document_messages['offers_dear'];
+      $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_quotation.php&ID=' . $ID);
+      break;
+    case 2:
+      $progressivo = $riga["progressivo"];
+      $document_name = __("Rechnung", 'cpsmartcrm');
+      $text_before = $document_messages['invoices_before'];
+      $text_after = $document_messages['invoices_after'];
+      $document_prefix = $document_numbering['invoices_prefix'];
+      $document_suffix = $document_numbering['invoices_suffix'];
+      $document_dear = $document_messages['invoices_dear'];
+      $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=' . $ID);
+      break;
+    case 3:
+      $progressivo = $riga["id"];
+      $document_name = __("Informelle Rechnung", 'cpsmartcrm');
+      $text_before = $document_messages['invoices_before'];
+      $text_after = $document_messages['invoices_after'];
+      $document_prefix = $document_numbering['invoices_prefix'];
+      $document_suffix = $document_numbering['invoices_suffix'];
+      $document_dear = $document_messages['invoices_dear'];
+      $edit_url = admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice_informal.php&ID=' . $ID);
+      break;
+    default:
+      $progressivo = '';
+      $document_name = '';
+      $text_before = '';
+      $text_after = '';
+      $document_prefix = '';
+      $document_suffix = '';
+      $document_dear = '';
+      $edit_url = '';
+      break;
+  }
     $riferimento = $riga["riferimento"];
     $oggetto = $tipo == 1 ? $riga["oggetto"] : "";
     if ($FK_kunde = $riga["fk_kunde"]) {
@@ -4382,7 +4432,6 @@ function _WPsCRM_generate_document_HTML($ID) {
     $n_offerta = $document_prefix;
     $n_offerta .= $progressivo . "/" . date("Y", strtotime($riga["data"]));
     $n_offerta .= $document_suffix;
-  }
   //document sub-header
   $subheader = '';
   $subheader .= '<table class="WPsCRM_customer_data" cellspacing="0" style="width: 100%; text-align: left; font-size: 11pt;">
