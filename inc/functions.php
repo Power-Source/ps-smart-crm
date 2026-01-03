@@ -435,6 +435,26 @@ function WPsCRM_get_client_contacts() {
 
 add_action('wp_ajax_WPsCRM_get_client_contacts', 'WPsCRM_get_client_contacts');
 
+function WPsCRM_get_client_schedule() {
+  global $wpdb;
+  $table = WPsCRM_TABLE . "agenda";
+  $client_id = $_REQUEST["client_id"];
+  $where = "fk_kunde=$client_id";
+  $arr = array();
+
+  $sql = "SELECT id, oggetto, start_date, end_date, tipo_agenda, priorita, fatto FROM $table WHERE $where ORDER BY start_date DESC";
+
+  foreach ($wpdb->get_results($sql) as $record) {
+    $arr[] = $record;
+  }
+
+  header("Content-type: application/json");
+  echo "{\"schedules\":" . json_encode($arr) . "}";
+  die();
+}
+
+add_action('wp_ajax_WPsCRM_get_client_schedule', 'WPsCRM_get_client_schedule');
+
 //save client contacts for grid in clients/form.php
 function WPsCRM_save_client_contact() {
   if (check_ajax_referer('update_customer', 'security', false) && current_user_can('manage_crm')) {

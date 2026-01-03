@@ -617,7 +617,7 @@ jQuery(document).ready(function ($) {
                 // TAB 2 - Kontakte Grid
                 if (i === 1 && !gridContactsInitialized) {
                     gridContactsInitialized = true;
-                    initContactsGrid();
+                    initScheduleGrid();
                 }
                 // TAB 3 - Angebote Grid
                 if (i === 2 && !gridQuotesInitialized) {
@@ -631,54 +631,64 @@ jQuery(document).ready(function ($) {
         // Lade Grid für initial aktivierten Tab
         if (initialTab === 1 && !gridContactsInitialized) {
             gridContactsInitialized = true;
-            initContactsGrid();
+            initScheduleGrid();
         } else if (initialTab === 2 && !gridQuotesInitialized) {
             gridQuotesInitialized = true;
             initQuotesGrid();
         }
         
         // Kontakte Grid initialisieren
-        function initContactsGrid() {
+        function initScheduleGrid() {
             jQuery.ajax({
                 url: ajaxurl,
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    action: 'WPsCRM_get_client_contacts',
+                    action: 'WPsCRM_get_client_schedule',
                     client_id: <?php echo $ID; ?>
                 },
                 success: function(response) {
-                    console.log('Contacts response:', response);
-                    var contacts = response.contacts || [];
+                    console.log('Schedule response:', response);
+                    var schedules = response.schedules || [];
                     var $grid = jQuery('#grid_contacts');
                     if ($grid.length) {
                         var html = '';
-                        if (contacts.length > 0) {
-                            html += '<div class="contacts-list">';
-                            contacts.forEach(function(contact){
-                                html += '<div class="contact-item p-3 mb-2" style="background-color: #f8f9fa; border-left: 4px solid #0d6efd; border-radius: 4px;">';
-                                html += '<h6 class="mb-2" style="font-weight: 600; color: #0d6efd;">' + (contact.nachname || '') + ' ' + (contact.name || '') + '</h6>';
-                                if (contact.qualifica) {
-                                    html += '<p class="mb-1" style="font-size: 0.9em; color: #666;">Qualifizierung: ' + contact.qualifica + '</p>';
-                                }
-                                if (contact.email) {
-                                    html += '<p class="mb-1"><small>Email: <a href="mailto:' + contact.email + '">' + contact.email + '</a></small></p>';
-                                }
-                                if (contact.telefono) {
-                                    html += '<p class="mb-0"><small>Telefon: <a href="tel:' + contact.telefono + '">' + contact.telefono + '</a></small></p>';
-                                }
-                                html += '</div>';
+                        if (schedules.length > 0) {
+                            html += '<table class="table table-striped table-hover">';
+                            html += '<thead><tr>';
+                            html += '<th><?php _e("Datum","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Titel","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Typ","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Priorität","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Status","cpsmartcrm"); ?></th>';
+                            html += '<th><?php _e("Aktionen","cpsmartcrm"); ?></th>';
+                            html += '</tr></thead><tbody>';
+                            schedules.forEach(function(item){
+                                var type_text = item.tipo_agenda == 1 ? '<?php _e("Todo","cpsmartcrm"); ?>' : '<?php _e("Termin","cpsmartcrm"); ?>';
+                                var status_text = item.fatto == 1 ? '<?php _e("Offen","cpsmartcrm"); ?>' : '<?php _e("Abgeschlossen","cpsmartcrm"); ?>';
+                                var status_badge = item.fatto == 1 ? 'badge badge-warning' : 'badge badge-success';
+                                html += '<tr>';
+                                html += '<td>' + (item.start_date || '') + '</td>';
+                                html += '<td>' + (item.oggetto || '') + '</td>';
+                                html += '<td>' + type_text + '</td>';
+                                html += '<td>' + (item.priorita || '') + '</td>';
+                                html += '<td><span class="' + status_badge + '">' + status_text + '</span></td>';
+                                html += '<td>';
+                                html += '<a href="#" class="btn btn-sm btn-info schedule-edit" data-id="' + item.id + '" title="<?php _e("Bearbeiten","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-pencil"></i></a> ';
+                                html += '<a href="#" class="btn btn-sm btn-danger schedule-delete" data-id="' + item.id + '" title="<?php _e("Löschen","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-trash"></i></a>';
+                                html += '</td>';
+                                html += '</tr>';
                             });
-                            html += '</div>';
+                            html += '</tbody></table>';
                         } else {
-                            html = '<div class="alert alert-info"><?php _e("Keine Kontakte gefunden","cpsmartcrm"); ?></div>';
+                            html = '<div class="alert alert-info"><?php _e("Keine Termine oder Todos vorhanden","cpsmartcrm"); ?></div>';
                         }
                         $grid.html(html);
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Grid Fehler:', error, xhr.responseText);
-                    jQuery('#grid_contacts').html('<div class="alert alert-warning"><?php _e("Fehler beim Laden der Kontakte","cpsmartcrm"); ?></div>');
+                    console.error('Schedule Grid Fehler:', error, xhr.responseText);
+                    jQuery('#grid_contacts').html('<div class="alert alert-warning"><?php _e("Fehler beim Laden der Termine","cpsmartcrm"); ?></div>');
                 }
             });
         }
