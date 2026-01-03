@@ -145,9 +145,11 @@ function saveAppuntamento() {
 	else if (opener == 'list')
 		id_cliente = $('#dialog_appuntamento').data('fkcliente');
 	
-	// Füge id_cliente zu den versteckten Feldern hinzu
-	$('#new_appuntamento').append('<input type="hidden" name="id_cliente" value="' + id_cliente + '" />');
-	$('#new_appuntamento').append('<input type="hidden" name="tipo_agenda" value="2" />');
+	// Füge id_cliente zu den versteckten Feldern hinzu (nur wenn neu)
+	if (!$('#id_agenda').val()) {
+		$('#new_appuntamento').append('<input type="hidden" name="id_cliente" value="' + id_cliente + '" />');
+		$('#new_appuntamento').append('<input type="hidden" name="tipo_agenda" value="2" />');
+	}
 	
 	$('.modal_loader').show();
 
@@ -156,10 +158,17 @@ function saveAppuntamento() {
 		data: $('#new_appuntamento').serialize(),
 		type: "POST",
 		success: function (response) {
-			PSCRM.notify("<?php _e('Termin wurde hinzugefügt','cpsmartcrm')?>", 'success');
+			var msg = $('#id_agenda').val() ? '<?php _e('Termin wurde aktualisiert','cpsmartcrm')?>' : '<?php _e('Termin wurde hinzugefügt','cpsmartcrm')?>';
+			PSCRM.notify(msg, 'success');
 			if (appuntamentoModal) { appuntamentoModal.close(); }
 			$('#new_appuntamento').find(':reset').click();
+			$('#id_agenda').val(''); // Reset ID
 			$('.modal_loader').hide();
+			
+			// Schedule Grid neu laden wenn vorhanden
+			if (typeof initScheduleGrid === 'function') {
+				initScheduleGrid();
+			}
 		},
 		error: function(xhr, status, error) {
 			console.error('Fehler beim Speichern des Termins:', error, xhr.responseText);

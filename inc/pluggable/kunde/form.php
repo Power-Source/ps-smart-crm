@@ -667,15 +667,27 @@ jQuery(document).ready(function ($) {
                                 var type_text = item.tipo_agenda == 1 ? '<?php _e("Todo","cpsmartcrm"); ?>' : '<?php _e("Termin","cpsmartcrm"); ?>';
                                 var status_text = item.fatto == 1 ? '<?php _e("Offen","cpsmartcrm"); ?>' : '<?php _e("Abgeschlossen","cpsmartcrm"); ?>';
                                 var status_badge = item.fatto == 1 ? 'badge badge-warning' : 'badge badge-success';
+                                
+                                // Konvertiere Datum von YYYY-MM-DD zu DD.MM.YYYY
+                                var displayDate = '';
+                                if (item.start_date) {
+                                    var parts = item.start_date.split('-');
+                                    if (parts.length === 3) {
+                                        displayDate = parts[2] + '.' + parts[1] + '.' + parts[0];
+                                    } else {
+                                        displayDate = item.start_date;
+                                    }
+                                }
+                                
                                 html += '<tr>';
-                                html += '<td>' + (item.start_date || '') + '</td>';
+                                html += '<td>' + displayDate + '</td>';
                                 html += '<td>' + (item.oggetto || '') + '</td>';
                                 html += '<td>' + type_text + '</td>';
                                 html += '<td>' + (item.priorita || '') + '</td>';
                                 html += '<td><span class="' + status_badge + '">' + status_text + '</span></td>';
                                 html += '<td>';
-                                html += '<a href="#" class="btn btn-sm btn-info schedule-edit" data-id="' + item.id + '" title="<?php _e("Bearbeiten","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-pencil"></i></a> ';
-                                html += '<a href="#" class="btn btn-sm btn-danger schedule-delete" data-id="' + item.id + '" title="<?php _e("Löschen","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-trash"></i></a>';
+                                html += '<a href="#" class="btn btn-sm btn-info schedule-edit" data-id="' + item.id_agenda + '" title="<?php _e("Bearbeiten","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-pencil"></i></a> ';
+                                html += '<a href="#" class="btn btn-sm btn-danger schedule-delete" data-id="' + item.id_agenda + '" title="<?php _e("Löschen","cpsmartcrm"); ?>"><i class="glyphicon glyphicon-trash"></i></a>';
                                 html += '</td>';
                                 html += '</tr>';
                             });
@@ -684,11 +696,115 @@ jQuery(document).ready(function ($) {
                             html = '<div class="alert alert-info"><?php _e("Keine Termine oder Todos vorhanden","cpsmartcrm"); ?></div>';
                         }
                         $grid.html(html);
+                        
+                        // Event-Handler für Bearbeiten-Button
+                        jQuery(document).off('click', '.schedule-edit').on('click', '.schedule-edit', function(e) {
+                            e.preventDefault();
+                            var id_agenda = jQuery(this).data('id');
+                            loadScheduleItem(id_agenda);
+                        });
+                        
+                        // Event-Handler für Löschen-Button
+                        jQuery(document).off('click', '.schedule-delete').on('click', '.schedule-delete', function(e) {
+                            e.preventDefault();
+                            var id_agenda = jQuery(this).data('id');
+                            if (confirm('<?php _e("Möchten Sie diesen Eintrag wirklich löschen?","cpsmartcrm"); ?>')) {
+                                deleteScheduleItem(id_agenda);
+                            }
+                        });
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('Schedule Grid Fehler:', error, xhr.responseText);
                     jQuery('#grid_contacts').html('<div class="alert alert-warning"><?php _e("Fehler beim Laden der Termine","cpsmartcrm"); ?></div>');
+                }
+            });
+        }
+        
+        // Lade einzelnen Agenda-Eintrag zum Bearbeiten
+        function loadScheduleItem(id_agenda) {
+            jQuery.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'WPsCRM_get_agenda_item',
+                    id_agenda: id_agenda
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        var item = response.data;
+                        
+                        // Konvertiere Datum von YYYY-MM-DD zu DD.MM.YYYY
+                        var displayStartDate = '';
+                        if (item.start_date) {
+                            var parts = item.start_date.split('-');
+                            if (parts.length === 3) {
+                                displayStartDate = parts[2] + '.' + parts[1] + '.' + parts[0];
+                            }
+                        }
+                        var displayEndDate = '';
+                        if (item.end_date) {
+                            var parts = item.end_date.split('-');
+                            if (parts.length === 3) {
+                                displayEndDate = parts[2] + '.' + parts[1] + '.' + parts[0];
+                            }
+                        }
+                        
+                        // Öffne entsprechendes Modal basierend auf tipo_agenda
+                        if (item.tipo_agenda == 1) {
+                            // Todo
+                            jQuery('#id_agenda_todo').val(item.id_agenda);
+                            jQuery('#t_oggetto').val(item.oggetto);
+                            jQuery('#t_priorita').val(item.priorita);
+                            jQuery('#t_data_scadenza').val(displayStartDate);
+                            jQuery('#t_annotazioni').val(item.annotazioni || '');
+                            // Öffne Todo Modal über globale Variable
+                            if (typeof initTodoModal === 'function') initTodoModal();
+                            if (todoModal) todoModal.open();
+                        } else {
+                            // Termin/Appuntamento
+                            jQuery('#id_agenda').val(item.id_agenda);
+                            jQuery('#a_oggetto').val(item.oggetto);
+                            jQuery('#a_priorita').val(item.priorita);
+                            jQuery('#a_data_scadenza_inizio').val(displayStartDate);
+                            jQuery('#a_data_scadenza_fine').val(displayEndDate);
+                            jQuery('#a_annotazioni').val(item.annotazioni || '');
+                            // Öffne Appuntamento Modal über globale Variable
+                            if (typeof initAppuntamentoModal === 'function') initAppuntamentoModal();
+                            if (appuntamentoModal) appuntamentoModal.open();
+                        }
+                    } else {
+                        alert('<?php _e("Fehler beim Laden des Eintrags","cpsmartcrm"); ?>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Fehler beim Laden:', error);
+                    alert('<?php _e("Fehler beim Laden des Eintrags","cpsmartcrm"); ?>');
+                }
+            });
+        }
+        
+        // Lösche Agenda-Eintrag
+        function deleteScheduleItem(id_agenda) {
+            jQuery.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'WPsCRM_delete_agenda_item',
+                    id_agenda: id_agenda,
+                    security: '<?php echo $scheduler_nonce; ?>'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('<?php _e("Eintrag gelöscht","cpsmartcrm"); ?>');
+                        initScheduleGrid(); // Grid neu laden
+                    } else {
+                        alert(response.data.message || '<?php _e("Fehler beim Löschen","cpsmartcrm"); ?>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Fehler beim Löschen:', error);
+                    alert('<?php _e("Fehler beim Löschen","cpsmartcrm"); ?>');
                 }
             });
         }

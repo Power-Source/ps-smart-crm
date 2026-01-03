@@ -138,62 +138,35 @@ function saveTodo() {
     else if (opener == 'list')
         id_cliente = $('#dialog_todo').data('fkcliente');
     
-    var tipo_agenda = '1';
-    var scadenza_inizio = $("#t_data_scadenza").val();
-    var scadenza_fine = $("#t_data_scadenza").val();
-    var annotazioni = $("#t_annotazioni").val();
-    var oggetto = $("#t_oggetto").val();
-    var priorita = $("#priorita").val();
-    var users = $("#t_selectedUsers").val();
-    var groups = $("#t_selectedGroups").val();
-    var days = $("#t_ruleStep").val();
-    var s = "[";
-    s += '{"ruleStep":"' + days + '" ,"remindToCustomer":';
-    if ($('#t_remindToCustomer').prop('checked'))
-        s += '"on"';
-    else
-        s += '""';
-    s += ',"selectedUsers":"' + users + '"';
-    s += ',"selectedGroups":"' + groups + '"';
-    s += ',"userDashboard":';
-    if ($('#t_userDashboard').prop('checked'))
-        s += '"on"';
-    else
-        s += '""';
-    s += ',"groupDashboard":';
-    if ($('#t_groupDashboard').prop('checked'))
-        s += '"on"';
-    else
-        s += '""';
-    s += ',"mailToRecipients":';
-    if ($('#t_mailToRecipients').prop('checked'))
-        s += '"on"';
-    else
-        s += '""';
-    s += '}';
-    s += ']';
-
+    var id_agenda = $("#id_agenda_todo").val() || '';
+    
+    // Füge id_cliente nur hinzu wenn neu
+    if (!id_agenda) {
+        $('#new_todo').append('<input type="hidden" name="id_cliente" value="' + id_cliente + '" />');
+    }
+    
     $('.modal_loader').show();
 
     $.ajax({
         url: ajaxurl,
-        data: {
-            'action': 'WPsCRM_save_todo',
-            id_cliente: id_cliente,
-            tipo_agenda: tipo_agenda,
-            scadenza_inizio: scadenza_inizio,
-            scadenza_fine: scadenza_fine,
-            annotazioni: annotazioni,
-            oggetto: oggetto,
-            priorita: priorita,
-            'steps': encodeURIComponent(s),
-            'security':'<?php echo esc_attr($scheduler_nonce); ?>'
-        },
+        data: $('#new_todo').serialize(),
         type: "POST",
         success: function (response) {
-            PSCRM.notify("<?php _e('TODO wurde hinzugefügt','cpsmartcrm')?>", 'success');
+            var msg = id_agenda ? '<?php _e('TODO wurde aktualisiert','cpsmartcrm')?>' : '<?php _e('TODO wurde hinzugefügt','cpsmartcrm')?>';
+            PSCRM.notify(msg, 'success');
             if (todoModal) { todoModal.close(); }
             $('#new_todo').find(':reset').click();
+            $('#id_agenda_todo').val(''); // Reset ID
+            $('.modal_loader').hide();
+            
+            // Schedule Grid neu laden wenn vorhanden
+            if (typeof initScheduleGrid === 'function') {
+                initScheduleGrid();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Fehler beim Speichern des Todos:', error, xhr.responseText);
+            PSCRM.notify("<?php _e('Fehler beim Speichern','cpsmartcrm')?>", 'error');
             $('.modal_loader').hide();
         }
     });

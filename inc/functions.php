@@ -438,15 +438,18 @@ add_action('wp_ajax_WPsCRM_get_client_contacts', 'WPsCRM_get_client_contacts');
 function WPsCRM_get_client_schedule() {
   global $wpdb;
   $table = WPsCRM_TABLE . "agenda";
-  $client_id = $_REQUEST["client_id"];
-  $where = "fk_kunde=$client_id";
+  $client_id = intval($_REQUEST["client_id"]);
   $arr = array();
 
-  $sql = "SELECT id, oggetto, start_date, end_date, tipo_agenda, priorita, fatto FROM $table WHERE $where ORDER BY start_date DESC";
+  $sql = $wpdb->prepare("SELECT id_agenda, oggetto, start_date, end_date, tipo_agenda, priorita, fatto FROM $table WHERE fk_kunde=%d ORDER BY start_date DESC", $client_id);
+  
+  error_log("WPsCRM_get_client_schedule: client_id=$client_id, sql=$sql");
 
   foreach ($wpdb->get_results($sql) as $record) {
     $arr[] = $record;
   }
+  
+  error_log("WPsCRM_get_client_schedule: found " . count($arr) . " records");
 
   header("Content-type: application/json");
   echo "{\"schedules\":" . json_encode($arr) . "}";
@@ -454,6 +457,43 @@ function WPsCRM_get_client_schedule() {
 }
 
 add_action('wp_ajax_WPsCRM_get_client_schedule', 'WPsCRM_get_client_schedule');
+
+function WPsCRM_get_agenda_item() {
+  global $wpdb;
+  $table = WPsCRM_TABLE . "agenda";
+  $id_agenda = intval($_REQUEST["id_agenda"]);
+  
+  $sql = $wpdb->prepare("SELECT * FROM $table WHERE id_agenda=%d", $id_agenda);
+  $record = $wpdb->get_row($sql);
+  
+  if ($record) {
+    wp_send_json_success($record);
+  } else {
+    wp_send_json_error(array('message' => 'Agenda-Eintrag nicht gefunden'));
+  }
+}
+
+add_action('wp_ajax_WPsCRM_get_agenda_item', 'WPsCRM_get_agenda_item');
+
+function WPsCRM_delete_agenda_item() {
+  global $wpdb;
+  if (check_ajax_referer('update_scheduler', 'security', false) && current_user_can('manage_crm')) {
+    $table = WPsCRM_TABLE . "agenda";
+    $id_agenda = intval($_REQUEST["id_agenda"]);
+    
+    $result = $wpdb->delete($table, array('id_agenda' => $id_agenda), array('%d'));
+    
+    if ($result !== false) {
+      wp_send_json_success(array('message' => 'Eintrag gelöscht'));
+    } else {
+      wp_send_json_error(array('message' => 'Fehler beim Löschen'));
+    }
+  } else {
+    wp_send_json_error(array('message' => 'Security Issue'));
+  }
+}
+
+add_action('wp_ajax_WPsCRM_delete_agenda_item', 'WPsCRM_delete_agenda_item');
 
 //save client contacts for grid in clients/form.php
 function WPsCRM_save_client_contact() {
@@ -1432,52 +1472,75 @@ function WPsCRM_save_todo() {
     $user_id = $current_user->ID;
     $a_table = WPsCRM_TABLE . "agenda";
     $s_table = WPsCRM_TABLE . "subscriptionrules";
-    $steps = urldecode($_POST['steps']);
+    $steps = isset($_POST['steps']) ? urldecode($_POST['steps']) : '[]';
 
-    $oggetto = $_POST['oggetto'];
-    $priorita = $_POST['priorita'];
-    $id_cliente = $_POST['id_cliente'];
-    $start_date = $_POST['scadenza_inizio'];
-    $end_date = $_POST['scadenza_fine'];
-    $timestamp_date = date("Y-m-d", strtotime(substr($_REQUEST['scadenza_timestamp'], 0, strpos($_REQUEST['scadenza_timestamp'], "("))));
+    $id_agenda = isset($_POST['id_agenda']) ? intval($_POST['id_agenda']) : 0;
+    $oggetto = isset($_POST['t_oggetto']) ? $_POST['t_oggetto'] : '';
+    $priorita = isset($_POST['t_priorita']) ? $_POST['t_priorita'] : '';
+    $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
+    $start_date = isset($_POST['t_data_scadenza']) ? $_POST['t_data_scadenza'] : '';
+    $end_date = $start_date; // Todo hat nur ein Datum
     $einstiegsdatum = date("Y-m-d H:i");
-    $annotazioni = $_POST['annotazioni'];
-    $tipo_agenda = $_POST['tipo_agenda'];
-    $instantNotification = $_POST['instantNotification'];
-    if ($tipo_agenda == 1)
+    $annotazioni = isset($_POST['t_annotazioni']) ? $_POST['t_annotazioni'] : '';
+    $tipo_agenda = 1; // Todo = 1
+    $instantNotification = isset($_POST['instantNotification']) ? $_POST['instantNotification'] : 0;
+    
+    error_log("WPsCRM_save_todo: id_agenda=$id_agenda, id_cliente=$id_cliente, oggetto=$oggetto, start_date=$start_date");
+    
+    // Update bestehender Eintrag
+    if ($id_agenda > 0) {
+      $update_result = $wpdb->update(
+        $a_table,
+        array(
+          'oggetto' => $oggetto,
+          'annotazioni' => $annotazioni,
+          'start_date' => WPsCRM_sanitize_date_format($start_date),
+          'end_date' => WPsCRM_sanitize_date_format($end_date),
+          'priorita' => $priorita
+        ),
+        array('id_agenda' => $id_agenda),
+        array('%s', '%s', '%s', '%s', '%d'),
+        array('%d')
+      );
+      
+      error_log("WPsCRM_save_todo: update_result=$update_result");
+      wp_send_json_success(array('message' => 'Todo aktualisiert', 'id' => $id_agenda));
+    }
+    // Neuer Eintrag
+    else {
       $n = "Todo";
-    else
-      $n = "Appuntamento";
-    $wpdb->insert(
-            $s_table, array(
-        'steps' => $steps,
-        'name' => $n,
-        's_specific' => 1,
-        's_type' => $tipo_agenda
-            ), array('%s', '%s', '%d', '%d')
-    );
-    $id_sr = $wpdb->insert_id;
-    $wpdb->insert(
-            $a_table, array(
-        'oggetto' => $oggetto,
-        'fk_kunde' => $id_cliente,
-        'annotazioni' => $annotazioni,
-        'start_date' => WPsCRM_sanitize_date_format($start_date),
-        'end_date' => WPsCRM_sanitize_date_format($end_date),
-        'einstiegsdatum' => $einstiegsdatum,
-        'fk_subscriptionrules' => $id_sr,
-        'tipo_agenda' => $tipo_agenda,
-        'priorita' => $priorita,
-        'fatto' => 1,
-        'fk_utenti_ins' => $user_id
-            ), array('%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d')
-    );
+      $wpdb->insert(
+              $s_table, array(
+          'steps' => $steps,
+          'name' => $n,
+          's_specific' => 1,
+          's_type' => $tipo_agenda
+              ), array('%s', '%s', '%d', '%d')
+      );
+      $id_sr = $wpdb->insert_id;
+      $wpdb->insert(
+              $a_table, array(
+          'oggetto' => $oggetto,
+          'fk_kunde' => $id_cliente,
+          'annotazioni' => $annotazioni,
+          'start_date' => WPsCRM_sanitize_date_format($start_date),
+          'end_date' => WPsCRM_sanitize_date_format($end_date),
+          'einstiegsdatum' => $einstiegsdatum,
+          'fk_subscriptionrules' => $id_sr,
+          'tipo_agenda' => $tipo_agenda,
+          'priorita' => $priorita,
+          'fatto' => 1,
+          'fk_utenti_ins' => $user_id
+              ), array('%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d')
+      );
 
-    $fk_scheduler = $wpdb->insert_id;
-    $mail = new CRM_mail(array("ID_agenda" => $fk_scheduler, "sendNow" => $instantNotification));
-  } else
-    die('security Issue');
-  die();
+      $fk_scheduler = $wpdb->insert_id;
+      $mail = new CRM_mail(array("ID_agenda" => $fk_scheduler, "sendNow" => $instantNotification));
+      wp_send_json_success(array('message' => 'Todo gespeichert', 'id' => $fk_scheduler));
+    }
+  } else {
+    wp_send_json_error(array('message' => 'Security Issue'));
+  }
 }
 
 add_action('wp_ajax_WPsCRM_save_todo', 'WPsCRM_save_todo');
@@ -1490,47 +1553,74 @@ function WPsCRM_save_appuntamento() {
     $user_id = $current_user->ID;
     $a_table = WPsCRM_TABLE . "agenda";
     $s_table = WPsCRM_TABLE . "subscriptionrules";
-    $steps = urldecode($_POST['steps']);
+    $steps = isset($_POST['steps']) ? urldecode($_POST['steps']) : '[]';
 
-    $oggetto = $_POST['oggetto'];
-    $priorita = $_POST['priorita'];
-    $id_cliente = $_POST['id_cliente'];
-    $start_date = $_POST['a_data_scadenza_inizio'];
-    $end_date = $_POST['a_data_scadenza_fine'];
+    $id_agenda = isset($_POST['id_agenda']) ? intval($_POST['id_agenda']) : 0;
+    $oggetto = isset($_POST['a_oggetto']) ? $_POST['a_oggetto'] : '';
+    $priorita = isset($_POST['a_priorita']) ? $_POST['a_priorita'] : '';
+    $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
+    $start_date = isset($_POST['a_data_scadenza_inizio']) ? $_POST['a_data_scadenza_inizio'] : '';
+    $end_date = isset($_POST['a_data_scadenza_fine']) ? $_POST['a_data_scadenza_fine'] : '';
     $einstiegsdatum = date("Y-m-d H:i");
-    $annotazioni = $_POST['a_annotazioni'];
+    $annotazioni = isset($_POST['a_annotazioni']) ? $_POST['a_annotazioni'] : '';
     $tipo_agenda = 2; // Appuntamento = 2
     $instantNotification = isset($_POST['instantNotification']) ? $_POST['instantNotification'] : 0;
     
-    $n = "Appuntamento";
-    $wpdb->insert(
-            $s_table, array(
-        'steps' => $steps,
-        'name' => $n,
-        's_specific' => 1,
-        's_type' => $tipo_agenda
-            ), array('%s', '%s', '%d', '%d')
-    );
-    $id_sr = $wpdb->insert_id;
-    $wpdb->insert(
-            $a_table, array(
-        'oggetto' => $oggetto,
-        'fk_kunde' => $id_cliente,
-        'annotazioni' => $annotazioni,
-        'start_date' => WPsCRM_sanitize_date_format($start_date),
-        'end_date' => WPsCRM_sanitize_date_format($end_date),
-        'einstiegsdatum' => $einstiegsdatum,
-        'fk_subscriptionrules' => $id_sr,
-        'tipo_agenda' => $tipo_agenda,
-        'priorita' => $priorita,
-        'fatto' => 1,
-        'fk_utenti_ins' => $user_id
-            ), array('%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d')
-    );
+    error_log("WPsCRM_save_appuntamento: id_agenda=$id_agenda, id_cliente=$id_cliente, oggetto=$oggetto, start_date=$start_date");
+    
+    // Update bestehender Eintrag
+    if ($id_agenda > 0) {
+      $update_result = $wpdb->update(
+        $a_table,
+        array(
+          'oggetto' => $oggetto,
+          'annotazioni' => $annotazioni,
+          'start_date' => WPsCRM_sanitize_date_format($start_date),
+          'end_date' => WPsCRM_sanitize_date_format($end_date),
+          'priorita' => $priorita
+        ),
+        array('id_agenda' => $id_agenda),
+        array('%s', '%s', '%s', '%s', '%d'),
+        array('%d')
+      );
+      
+      error_log("WPsCRM_save_appuntamento: update_result=$update_result");
+      wp_send_json_success(array('message' => 'Termin aktualisiert', 'id' => $id_agenda));
+    }
+    // Neuer Eintrag
+    else {
+      $n = "Appuntamento";
+      $wpdb->insert(
+              $s_table, array(
+          'steps' => $steps,
+          'name' => $n,
+          's_specific' => 1,
+          's_type' => $tipo_agenda
+              ), array('%s', '%s', '%d', '%d')
+      );
+      $id_sr = $wpdb->insert_id;
+      $insert_result = $wpdb->insert(
+              $a_table, array(
+          'oggetto' => $oggetto,
+          'fk_kunde' => $id_cliente,
+          'annotazioni' => $annotazioni,
+          'start_date' => WPsCRM_sanitize_date_format($start_date),
+          'end_date' => WPsCRM_sanitize_date_format($end_date),
+          'einstiegsdatum' => $einstiegsdatum,
+          'fk_subscriptionrules' => $id_sr,
+          'tipo_agenda' => $tipo_agenda,
+          'priorita' => $priorita,
+          'fatto' => 1,
+          'fk_utenti_ins' => $user_id
+              ), array('%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d')
+      );
 
-    $fk_scheduler = $wpdb->insert_id;
-    $mail = new CRM_mail(array("ID_agenda" => $fk_scheduler, "sendNow" => $instantNotification));
-    wp_send_json_success(array('message' => 'Termin gespeichert', 'id' => $fk_scheduler));
+      error_log("WPsCRM_save_appuntamento: insert_result=$insert_result, wpdb->insert_id=" . $wpdb->insert_id);
+      
+      $fk_scheduler = $wpdb->insert_id;
+      $mail = new CRM_mail(array("ID_agenda" => $fk_scheduler, "sendNow" => $instantNotification));
+      wp_send_json_success(array('message' => 'Termin gespeichert', 'id' => $fk_scheduler));
+    }
   } else {
     wp_send_json_error(array('message' => 'Security Issue'));
   }

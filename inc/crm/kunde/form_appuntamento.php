@@ -113,6 +113,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         </div>
         
     </div>
+    <input type="hidden" id="id_agenda" name="id_agenda" value="" />
     <input type="hidden" id="a_selectedUsers" name="a_selectedUsers"  class="ruleActions"value=""/>
     <input type="hidden" id="a_selectedGroups" name="a_selectedGroups"  class="ruleActions"value=""/>
     <input type="hidden" name="action" value="WPsCRM_save_appuntamento" />
