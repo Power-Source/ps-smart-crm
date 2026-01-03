@@ -10,11 +10,13 @@ let appuntamentoModal = null;
 const initAppuntamentoModal = function() {
 	if (PSCRM_INLINE_MODE) return; // kein Modal in Inline-Modus
 	if (appuntamentoModal) return;
-	
-	appuntamentoModal = new PSCRM.Modal('dialog_appuntamento', {
+	const contentEl = document.getElementById('dialog_appuntamento');
+	appuntamentoModal = new PSCRM.Modal({
 		title: "<?php _e('Termin für Kunden hinzufügen:','cpsmartcrm') ?>",
 		width: '86%',
 		height: '80%',
+		content: contentEl,
+		destroyOnClose: false,
 		buttons: {
 			cancel: {
 				text: "<?php _e('Abbrechen', 'cpsmartcrm') ?>",
@@ -37,6 +39,10 @@ const initAppuntamentoModal = function() {
 
 if (!PSCRM_INLINE_MODE) {
     $(document).on('click', '.btn_appuntamento, .btn-appointment', function() {
+		var id = $(this).data('id');
+		var name = $(this).data('name');
+		$('#dialog_appuntamento').attr('data-fkcliente', id);
+		$('.nome_cliente').html(name || '');
 		initAppuntamentoModal();
 		appuntamentoModal.open();
     });

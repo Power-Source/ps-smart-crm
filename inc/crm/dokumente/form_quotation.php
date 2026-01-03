@@ -286,8 +286,9 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
               </h4>
               <?php
               $accontOptions = get_option("CRM_acc_settings");
+              $acc_mode = is_array($accontOptions) && isset($accontOptions['accountability']) ? $accontOptions['accountability'] : 0;
 
-              switch ($accontOptions['accountability']) {
+              switch ($acc_mode) {
                 case 0:
                   include ('accountabilities/accountability_0.php');
                   break;

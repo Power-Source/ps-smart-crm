@@ -2,17 +2,52 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 function WPsCRM_display_customer_form() {
-	$delete_nonce = wp_create_nonce( "delete_customer" );
-	$update_nonce= wp_create_nonce( "update_customer" );
-	$scheduler_nonce = wp_create_nonce( "update_scheduler" );
-	$ID = isset($_REQUEST["ID"])?$_REQUEST["ID"]:0;
-	$table = WPsCRM_TABLE."kunde";
-	$ID_azienda = "1";
-	$email="";
-	$where = "FK_aziende=$ID_azienda";
-	$current_user = wp_get_current_user();
-	$agent_disabled="";
-	$style_disabled="";
+    global $wpdb;
+    $delete_nonce = wp_create_nonce( "delete_customer" );
+    $update_nonce= wp_create_nonce( "update_customer" );
+    $scheduler_nonce = wp_create_nonce( "update_scheduler" );
+    $ID = isset($_REQUEST["ID"])?$_REQUEST["ID"]:0;
+    // fallback: some installs created table as 'clienti'
+    $table = WPsCRM_get_customer_table();
+    $pk = WPsCRM_get_customer_pk($table);
+    $ID_azienda = "1";
+    $email="";
+    $where = "FK_aziende=$ID_azienda";
+    $current_user = wp_get_current_user();
+    $agent_disabled="";
+    $style_disabled="";
+    $custom_tax = "";
+    $riga = array(
+        "agente" => "",
+        "ragione_sociale" => "",
+        "nome" => "",
+        "cognome" => "",
+        "email" => "",
+        "custom_tax" => "",
+        "annotazioni" => "",
+        "categoria" => "",
+        "provenienza" => "",
+        "interessi" => "",
+        "fatturabile" => "",
+        "tipo_cliente" => "",
+        "nazione" => "",
+        "cod_fis" => "",
+        "p_iva" => "",
+        "indirizzo" => "",
+        "cap" => "",
+        "localita" => "",
+        "provincia" => "",
+        "telefono1" => "",
+        "fax" => "",
+        "telefono2" => "",
+        "luogo_nascita" => "",
+        "data_nascita" => "",
+        "sitoweb" => "",
+        "note" => "",
+        "skype" => "",
+    );
+    $cliente = "";
+    $pk = 'ID_kunde';
 	is_multisite() ? $filter=get_blog_option(get_current_blog_id(), 'active_plugins' ) : $filter=get_option('active_plugins' );
 	if ( in_array( 'wp-smart-crm-agents/wp-smart-crm-agents.php', apply_filters( 'active_plugins', $filter) ) ) {
 		$agent_obj=new AGsCRM_agent();
@@ -30,14 +65,17 @@ function WPsCRM_display_customer_form() {
 	}
 if ( $ID )
 {
-	$sql = "select * from $table where ID_kunde=$ID";
-	//echo $sql;
-    $riga = $wpdb->get_row($sql, ARRAY_A);
-    $agente = $riga["agente"];
-	$cliente = $riga["ragione_sociale"] ? $riga["ragione_sociale"] : $riga["nome"]." ".$riga["cognome"];
-	$cliente = stripslashes( $cliente );
-	$email = $riga['email'];
-	$custom_tax = maybe_unserialize( $riga['custom_tax'] );
+    $sql = "select * from $table where $pk=$ID";
+    //echo $sql;
+    $riga_db = $wpdb ? $wpdb->get_row($sql, ARRAY_A) : null;
+    if ($riga_db) {
+        $riga = $riga_db;
+    }
+    $agente = isset($riga["agente"]) ? $riga["agente"] : "";
+    $cliente = !empty($riga["ragione_sociale"]) ? $riga["ragione_sociale"] : trim((isset($riga["nome"]) ? $riga["nome"] : "")." ".(isset($riga["cognome"]) ? $riga["cognome"] : ""));
+    $cliente = stripslashes( $cliente );
+    $email = isset($riga['email']) ? $riga['email'] : "";
+    $custom_tax = maybe_unserialize( isset($riga['custom_tax']) ? $riga['custom_tax'] : "" );
 }
 
 if ( ! empty ( $custom_tax ) )
@@ -236,7 +274,7 @@ jQuery(document).ready(function ($) {
         width: '100%',
         multiple: true
     });
-    <?php if(isset($riga) && $riga["categoria"]): ?>
+    <?php if(isset($riga) && !empty($riga["categoria" ])): ?>
         $('#customerCategory').val([<?php echo $riga["categoria"]?>]).trigger('change');
     <?php endif; ?>
 
@@ -256,7 +294,7 @@ jQuery(document).ready(function ($) {
         width: '100%',
         multiple: true
     });
-    <?php if(isset($riga) && $riga["provenienza"]): ?>
+    <?php if(isset($riga) && !empty($riga["provenienza"])): ?>
         $('#customerComesfrom').val([<?php echo $riga["provenienza"]?>]).trigger('change');
     <?php endif; ?>
 
@@ -276,7 +314,7 @@ jQuery(document).ready(function ($) {
         width: '100%',
         multiple: true
     });
-    <?php if(isset($riga) && $riga["interessi"]): ?>
+    <?php if(isset($riga) && !empty($riga["interessi"])): ?>
         $('#customerInterests').val([<?php echo $riga["interessi"]?>]).trigger('change');
     <?php endif; ?>
 
@@ -570,9 +608,18 @@ jQuery(document).ready(function ($) {
 								width: '100%',
 								multiple: true
 							});
-							<?php if(isset($riga) && $riga["categoria"]): ?>
-								$('#customerCategory').val([<?php echo $riga["categoria"]?>]).trigger('change');
-							<?php endif; ?>
+                            // ensure value is stored as comma-separated string for submit
+                            (function(){
+                                var $el = jQuery('#customerCategory');
+                                var preset = $el.val();
+                                if (preset) {
+                                    $el.val(preset.toString().split(',')).trigger('change');
+                                }
+                                $el.on('change', function(){
+                                    var v = $el.val() || [];
+                                    $el.val(v.join(','));
+                                });
+                            })();
 						</script>
 					</div>
                 </div>
@@ -607,9 +654,17 @@ jQuery(document).ready(function ($) {
 								width: '100%',
 								multiple: true
 							});
-							<?php if(isset($riga) && $riga["interessi"]): ?>
-								$('#customerInterests').val([<?php echo $riga["interessi"]?>]).trigger('change');
-							<?php endif; ?>
+                            (function(){
+                                var $el = jQuery('#customerInterests');
+                                var preset = $el.val();
+                                if (preset) {
+                                    $el.val(preset.toString().split(',')).trigger('change');
+                                }
+                                $el.on('change', function(){
+                                    var v = $el.val() || [];
+                                    $el.val(v.join(','));
+                                });
+                            })();
 						</script>
 					</div>
 				</div>
@@ -644,9 +699,17 @@ jQuery(document).ready(function ($) {
 								width: '100%',
 								multiple: true
 							});
-							<?php if(isset($riga) && $riga["provenienza"]): ?>
-								$('#customerComesfrom').val([<?php echo $riga["provenienza"]?>]).trigger('change');
-							<?php endif; ?>
+                            (function(){
+                                var $el = jQuery('#customerComesfrom');
+                                var preset = $el.val();
+                                if (preset) {
+                                    $el.val(preset.toString().split(',')).trigger('change');
+                                }
+                                $el.on('change', function(){
+                                    var v = $el.val() || [];
+                                    $el.val(v.join(','));
+                                });
+                            })();
 						</script>
 					</div>
 				</div>
@@ -680,7 +743,7 @@ jQuery(document).ready(function ($) {
                     <div>
 
                         <section id="cd-timeline" class="cd-container">
-                            <?php WPsCRM_timeline_annotation($riga["annotazioni"])?>
+                            <?php $annotations = isset($riga["annotazioni"]) ? $riga["annotazioni"] : ""; WPsCRM_timeline_annotation($annotations)?>
 
                         </section>
                     </div>
@@ -981,10 +1044,10 @@ jQuery(document).ready(function ($) {
 				width: '100%',
 				multiple: true
 			});
-			// Vorbelegung Kategorie
-			<?php if(isset($riga) && $riga["categoria"]): ?>
-				$('#customerCategory').val([<?php echo $riga["categoria"]?>]).trigger('change');
-			<?php endif; ?>
+            // Vorbelegung Kategorie
+            <?php if(isset($riga) && !empty($riga["categoria"])): ?>
+                $('#customerCategory').val([<?php echo $riga["categoria"]?>]).trigger('change');
+            <?php endif; ?>
 
 			// PROVENIENZ (Select2 als Mehrfachauswahl)
 			<?php
@@ -1002,10 +1065,10 @@ jQuery(document).ready(function ($) {
 				width: '100%',
 				multiple: true
 			});
-			// Vorbelegung Provenienz
-			<?php if(isset($riga) && $riga["provenienza"]): ?>
-				$('#customerComesfrom').val([<?php echo $riga["provenienza"]?>]).trigger('change');
-			<?php endif; ?>
+            // Vorbelegung Provenienz
+            <?php if(isset($riga) && !empty($riga["provenienza"])): ?>
+                $('#customerComesfrom').val([<?php echo $riga["provenienza"]?>]).trigger('change');
+            <?php endif; ?>
 
 			// INTERESSEN (Select2 als Mehrfachauswahl)
 			<?php
@@ -1023,10 +1086,10 @@ jQuery(document).ready(function ($) {
 				width: '100%',
 				multiple: true
 			});
-			// Vorbelegung Interessen
-			<?php if(isset($riga) && $riga["interessi"]): ?>
-				$('#customerInterests').val([<?php echo $riga["interessi"]?>]).trigger('change');
-			<?php endif; ?>
+            // Vorbelegung Interessen
+            <?php if(isset($riga) && !empty($riga["interessi"])): ?>
+                $('#customerInterests').val([<?php echo $riga["interessi"]?>]).trigger('change');
+            <?php endif; ?>
 
 			// Timeline-Sortierung
 			setTimeout(function () {

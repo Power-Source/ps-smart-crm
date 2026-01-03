@@ -10,11 +10,13 @@ let attivitaModal = null;
 const initAttivitaModal = function() {
 	if (PSCRM_INLINE_MODE) return; // kein Modal im Inline-Modus
 	if (attivitaModal) return;
-	
-	attivitaModal = new PSCRM.Modal('dialog_attivita', {
+	const contentEl = document.getElementById('dialog_attivita');
+	attivitaModal = new PSCRM.Modal({
 		title: "<?php _e('Aktivität für Kunden hinzufügen:','cpsmartcrm') ?>",
 		width: '86%',
 		height: '80%',
+		content: contentEl,
+		destroyOnClose: false,
 		buttons: {
 			cancel: {
 				text: "<?php _e('Abbrechen', 'cpsmartcrm') ?>",
@@ -39,6 +41,10 @@ const initAttivitaModal = function() {
 
 if (!PSCRM_INLINE_MODE) {
     $(document).on('click', '.btn-activity, .btn-attivita', function() {
+		var id = $(this).data('id');
+		var name = $(this).data('name');
+		$('#dialog_attivita').attr('data-fkcliente', id);
+		$('.nome_cliente').html(name || '');
 		initAttivitaModal();
 		attivitaModal.open();
     });

@@ -46,6 +46,9 @@ function WPsCRM_display_customers_list() {
 		<?php do_action('WPsCRM_add_tabs_to_customers_list'); ?>
 	</ul>
 	<div>
+        <div style="margin:10px 0; display:flex; gap:8px; align-items:center;">
+            <input type="search" id="customerSearch" class="form-control" style="max-width:280px;" placeholder="<?php _e('Suche Kunden...','cpsmartcrm')?>">
+        </div>
 		<div class="customerGrid" id="grid"></div>
 	</div>
 	<?php do_action('WPsCRM_add_divs_to_customers_list'); ?>
@@ -102,6 +105,14 @@ function WPsCRM_display_customers_list() {
             
             // Customer Grid erstellen
             const customerGrid = PSCRM.createCustomerGrid('#grid', gridOptions);
+
+            // Suche anbinden (DataTables Search)
+            const $search = $('#customerSearch');
+            if ($search.length && customerGrid && customerGrid.grid && customerGrid.grid.instance) {
+                $search.on('input', function(){
+                    customerGrid.grid.instance.search($(this).val()).draw();
+                });
+            }
             
             // ===== Include Modal Handler Scripts =====
             <?php 
@@ -114,7 +125,9 @@ function WPsCRM_display_customers_list() {
                 echo $allScripts;
             ?>
             
-        }
+			} catch (e) {
+				console.error('Customer grid initialisation failed', e);
+			}
     });
 })(jQuery);
 </script>

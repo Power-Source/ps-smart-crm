@@ -146,15 +146,16 @@ $document->alignHeader = function($index) {
 function WPsCRM_get_clients_array($exclude_self = null) {
   global $wpdb;
   $arr = array();
-  $table = WPsCRM_TABLE."kunde";
+  $table = WPsCRM_get_customer_table();
+  $pk = WPsCRM_get_customer_pk($table);
   $ID_azienda = 1;
   $client = $exclude_self;
 
   $where = "eliminato=0";
   if ($exclude_self == null)
-    $where .= " AND ID_kunde <> 1";
+    $where .= " AND $pk <> 1";
 
-  $sql = "select distinct ID_kunde, ragione_sociale, nome, cognome, indirizzo, telefono1, $table.email from $table where $where";
+  $sql = "select distinct $pk as ID_kunde, ragione_sociale, nome, cognome, indirizzo, telefono1, $table.email from $table where $where";
 
 
   foreach ($wpdb->get_results($sql) as $record) {
@@ -171,7 +172,15 @@ function WPsCRM_get_clients2() {
     do_action('AGsCRM_get_clients_hook');
   } else {
     global $wpdb;
-    $table = WPsCRM_TABLE."kunde";
+    $table = WPsCRM_get_customer_table();
+    $pk = WPsCRM_get_customer_pk($table);
+    // safety: if neither primary nor fallback tables exist, return empty to avoid DB errors
+    $table_check = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
+    if ($table_check !== $table) {
+      header('Content-Type: application/json');
+      echo json_encode(array());
+      die;
+    }
     $f_table = WPsCRM_TABLE . "fields";
     $ID_azienda = 1;
     $arr = array();
@@ -179,7 +188,7 @@ function WPsCRM_get_clients2() {
     //$where="$table.FK_aziende=$ID_azienda and eliminato=0";
     $where = "eliminato=0";
     if (!$client)
-      $where .= " AND ID_kunde <> 1";
+      $where .= " AND $pk <> 1";
     $current_user = wp_get_current_user();
     $user_id = $current_user->ID;
     if (WPsCRM_is_agent() && !WPsCRM_agent_can())
@@ -188,7 +197,7 @@ function WPsCRM_get_clients2() {
       $ragione_sociale = $_REQUEST["ragione_sociale"];
       $where .= " and ragione_sociale like '%$ragione_sociale%'";
     }
-    $sql = "SELECT * from $table WHERE $where order by ragione_sociale";
+    $sql = "SELECT *, $pk as ID_kunde_alias from $table WHERE $where order by ragione_sociale";
     $index = 0;
     foreach ($wpdb->get_results($sql) as $record) {
       $cats = array();
@@ -209,7 +218,10 @@ function WPsCRM_get_clients2() {
         $_ints = explode(',', $record->interessi);
         if (count($_ints) > 0) {
           foreach ($_ints as $_cat) {
-            $ints[] = get_term_by('id', (int) $_cat, 'WPsCRM_customersInt')->name;
+            $term_int = get_term_by('id', (int) $_cat, 'WPsCRM_customersInt');
+            if ($term_int !== false) {
+              $ints[] = $term_int->name;
+            }
           }
         }
       }
@@ -217,15 +229,20 @@ function WPsCRM_get_clients2() {
         $_provs = explode(',', $record->provenienza);
         if (count($_provs) > 0) {
           foreach ($_provs as $_cat) {
-            $provs[] = get_term_by('id', (int) $_cat, 'WPsCRM_customersProv')->name;
+            $term_prov = get_term_by('id', (int) $_cat, 'WPsCRM_customersProv');
+            if ($term_prov !== false) {
+              $provs[] = $term_prov->name;
+            }
           }
         }
       }
 
       $cliente = $record->ragione_sociale ? $record->ragione_sociale : $record->nome . " " . $record->cognome;
       $arr_custom_fields = maybe_unserialize($record->custom_fields);
-      $arr[$index] = array(
-          "ID_kunde" => $record->ID_kunde,
+        $id_val = isset($record->ID_kunde_alias) ? $record->ID_kunde_alias : (isset($record->ID_kunde) ? $record->ID_kunde : $record->$pk);
+        $arr[$index] = array(
+          "ID_kunde" => $id_val,
+          "ID_clienti" => $id_val,
           "ragione_sociale" => stripslashes($cliente),
           "p_iva" => $record->p_iva,
           "cod_fis" => $record->cod_fis,
@@ -337,7 +354,8 @@ function WPsCRM_get_clients3() {
     $cliente = $record->ragione_sociale ? $record->ragione_sociale : $record->nome . " " . $record->cognome;
     $arr_custom_fields = maybe_unserialize($record->custom_fields);
     $arr[$index] = array(
-        "ID_kunde" => $record->ID_kunde,
+      "ID_kunde" => $record->ID_kunde,
+      "ID_clienti" => $record->ID_kunde,
         "ragione_sociale" => stripslashes($cliente),
         "p_iva" => $record->p_iva,
         "cod_fis" => $record->cod_fis,
@@ -1959,6 +1977,16 @@ function WPsCRM_parse_annotation($string_to_parse, $field_separator = "~", $row_
 }
 
 function WPsCRM_timeline_annotation($string_to_parse, $print = true, $field_separator = "~", $row_separator = "|") {
+  if (!is_string($string_to_parse) || $string_to_parse === null) {
+    $string_to_parse = "";
+  }
+  if ($string_to_parse === "") {
+    if ($print) {
+      return;
+    }
+    return array();
+  }
+
   $timeline = explode($row_separator, $string_to_parse);
   //usort($timeline, "WPsCRM_compare_date");
   //var_dump($timeline);
@@ -2071,11 +2099,37 @@ function WPsCRM_insert_notification($subscriptionrules, $document_id, $document_
 }
 
 //save client
+// Resolve customer table name (fallback for legacy installs where table was created as 'clienti')
+function WPsCRM_get_customer_table() {
+  global $wpdb;
+  $primary = WPsCRM_TABLE . "kunde";
+  $fallback = WPsCRM_TABLE . "clienti";
+  $has_primary = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $primary));
+  if ($has_primary === $primary) return $primary;
+  $has_fallback = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $fallback));
+  if ($has_fallback === $fallback) return $fallback;
+  // default to primary even if missing, caller will handle DB error
+  return $primary;
+}
+
+// Resolve primary key field for the customer table (covers older installs with different key names)
+function WPsCRM_get_customer_pk($table) {
+  global $wpdb;
+  $candidates = array('ID_kunde', 'ID_cliente', 'ID_clienti', 'id_cliente');
+  foreach ($candidates as $pk) {
+    $col = $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM $table LIKE %s", $pk));
+    if ($col === $pk) {
+      return $pk;
+    }
+  }
+  return 'ID_kunde';
+}
+
 function WPsCRM_save_client() {
 
   if (check_ajax_referer('update_customer', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
-    $table = WPsCRM_TABLE."kunde";
+    $table = WPsCRM_get_customer_table();
     parse_str($_POST['fields'], $fields);
     $ID_azienda = "1";
     $taxObj = array();
@@ -2091,13 +2145,13 @@ function WPsCRM_save_client() {
 
     //$data_inserimento=date("Y-m-d");
     $data_modifica = date("Y-m-d");
-    $data_nascita = WPsCRM_inverti_data($fields["data_nascita"]);
+    $data_nascita = isset($fields["data_nascita"]) ? WPsCRM_inverti_data($fields["data_nascita"]) : null;
     //$cur_year=date("Y");
     $current_user = wp_get_current_user();
     if (WPsCRM_is_agent() && !WPsCRM_agent_can())
       $selectAgent = $current_user->ID;
     else
-      $selectAgent = $fields["selectAgent"];
+      $selectAgent = isset($fields["selectAgent"]) ? $fields["selectAgent"] : 0;
 
     is_multisite() ? $filter = get_blog_option(get_current_blog_id(), 'active_plugins') : $filter = get_option('active_plugins');
     if (in_array('wp-smart-crm-advanced/wp-smart-crm-advanced.php', apply_filters('active_plugins', $filter))) {
@@ -2127,12 +2181,70 @@ function WPsCRM_save_client() {
     } else
       $serialized_custom_fields = "";
     if ($ID = $fields["ID"]) {
-      $wpdb->update(
-              $table, array('FK_aziende' => $ID_azienda, 'nome' => $fields["nome"], 'cognome' => $fields["cognome"], 'categoria' => $fields["customerCategory"], 'ragione_sociale' => $fields["ragione_sociale"], 'indirizzo' => $fields["indirizzo"], 'cap' => $fields["cap"], 'localita' => $fields["localita"], 'provincia' => $fields["provincia"], 'nazione' => $fields["nazione"], 'telefono1' => $fields["telefono1"], 'telefono2' => $fields["telefono2"], 'fax' => $fields["fax"], 'email' => $fields["email"], 'sitoweb' => $fields["sitoweb"], 'skype' => $fields["skype"], 'p_iva' => $fields["p_iva"], 'cod_fis' => $fields["cod_fis"], 'data_modifica' => $data_modifica, 'provenienza' => $fields["customerComesfrom"], 'agente' => $selectAgent, 'data_nascita' => $data_nascita, 'luogo_nascita' => $fields["luogo_nascita"], 'tipo_cliente' => $fields["tipo_cliente"], 'interessi' => $fields["customerInterests"], 'fatturabile' => $fields["fatturabile"], 'custom_fields' => $serialized_custom_fields, 'custom_tax' => $serialized_tax), array('ID_kunde' => $ID), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s')
-      );
+            $wpdb->update(
+              $table, array(
+          'FK_aziende' => $ID_azienda,
+          'nome' => $fields["nome"],
+          'cognome' => $fields["cognome"],
+          'categoria' => isset($fields["customerCategory"]) ? $fields["customerCategory"] : '',
+          'ragione_sociale' => $fields["ragione_sociale"],
+          'indirizzo' => $fields["indirizzo"],
+          'cap' => $fields["cap"],
+          'localita' => $fields["localita"],
+          'provincia' => $fields["provincia"],
+          'nazione' => $fields["nazione"],
+          'telefono1' => $fields["telefono1"],
+          'telefono2' => $fields["telefono2"],
+          'fax' => $fields["fax"],
+          'email' => $fields["email"],
+          'sitoweb' => $fields["sitoweb"],
+          'skype' => $fields["skype"],
+          'p_iva' => $fields["p_iva"],
+          'cod_fis' => $fields["cod_fis"],
+          'data_modifica' => $data_modifica,
+          'provenienza' => isset($fields["customerComesfrom"]) ? $fields["customerComesfrom"] : '',
+          'agente' => $selectAgent,
+          'data_nascita' => $data_nascita,
+          'luogo_nascita' => isset($fields["luogo_nascita"]) ? $fields["luogo_nascita"] : '',
+          'tipo_cliente' => isset($fields["tipo_cliente"]) ? $fields["tipo_cliente"] : 0,
+          'interessi' => isset($fields["customerInterests"]) ? $fields["customerInterests"] : '',
+          'fatturabile' => isset($fields["fatturabile"]) ? $fields["fatturabile"] : 0,
+          'custom_fields' => $serialized_custom_fields,
+          'custom_tax' => $serialized_tax,
+              ), array('ID_kunde' => $ID), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s')
+            );
     } else {
       $wpdb->insert(
-              $table, array('FK_aziende' => $ID_azienda, 'nome' => $fields["nome"], 'cognome' => $fields["cognome"], 'categoria' => $fields["customerCategory"], 'ragione_sociale' => $fields["ragione_sociale"], 'indirizzo' => $fields["indirizzo"], 'cap' => $fields["cap"], 'localita' => $fields["localita"], 'provincia' => $fields["provincia"], 'nazione' => $fields["nazione"], 'telefono1' => $fields["telefono1"], 'telefono2' => $fields["telefono2"], 'fax' => $fields["fax"], 'email' => $fields["email"], 'sitoweb' => $fields["sitoweb"], 'skype' => $fields["skype"], 'p_iva' => $fields["p_iva"], 'cod_fis' => $fields["cod_fis"], 'data_modifica' => $data_modifica, 'data_inserimento' => $fields["data_inserimento"], 'provenienza' => $fields["customerComesfrom"], 'agente' => $selectAgent, 'data_nascita' => $data_nascita, 'luogo_nascita' => $fields["luogo_nascita"], 'tipo_cliente' => $fields["tipo_cliente"], 'interessi' => $fields["customerInterests"], 'fatturabile' => $fields["fatturabile"], 'custom_fields' => $serialized_custom_fields), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s')
+              $table, array(
+          'FK_aziende' => $ID_azienda,
+          'nome' => $fields["nome"],
+          'cognome' => $fields["cognome"],
+          'categoria' => isset($fields["customerCategory"]) ? $fields["customerCategory"] : '',
+          'ragione_sociale' => $fields["ragione_sociale"],
+          'indirizzo' => $fields["indirizzo"],
+          'cap' => $fields["cap"],
+          'localita' => $fields["localita"],
+          'provincia' => $fields["provincia"],
+          'nazione' => $fields["nazione"],
+          'telefono1' => $fields["telefono1"],
+          'telefono2' => $fields["telefono2"],
+          'fax' => $fields["fax"],
+          'email' => $fields["email"],
+          'sitoweb' => $fields["sitoweb"],
+          'skype' => $fields["skype"],
+          'p_iva' => $fields["p_iva"],
+          'cod_fis' => $fields["cod_fis"],
+          'data_modifica' => $data_modifica,
+          'data_inserimento' => isset($fields["data_inserimento"]) ? $fields["data_inserimento"] : date("Y-m-d"),
+          'provenienza' => isset($fields["customerComesfrom"]) ? $fields["customerComesfrom"] : '',
+          'agente' => $selectAgent,
+          'data_nascita' => $data_nascita,
+          'luogo_nascita' => isset($fields["luogo_nascita"]) ? $fields["luogo_nascita"] : '',
+          'tipo_cliente' => isset($fields["tipo_cliente"]) ? $fields["tipo_cliente"] : 0,
+          'interessi' => isset($fields["customerInterests"]) ? $fields["customerInterests"] : '',
+          'fatturabile' => isset($fields["fatturabile"]) ? $fields["fatturabile"] : 0,
+          'custom_fields' => $serialized_custom_fields,
+              ), array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%d', '%s')
       );
     }
     $ID_ret = $ID ? $ID : $wpdb->insert_id;
@@ -2152,7 +2264,8 @@ add_action('wp_ajax_WPsCRM_syncro_newsletter', 'WPsCRM_syncro_newsletter', 1);
 
 function WPsCRM_syncro_newsletter($fields) {
   global $wpdb;
-  if ($fields["newsletter_flag"] == 1) {
+  $newsletter_flag = isset($fields["newsletter_flag"]) ? $fields["newsletter_flag"] : 0;
+  if ($newsletter_flag == 1) {
     for ($i = 1; $i <= 20; $i++) {
       $nomelista = "list_" . $i;
       if ($fields[$nomelista] == 1)

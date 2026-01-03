@@ -11,11 +11,13 @@ let todoModal = null;
 const initTodoModal = function() {
     if (PSCRM_INLINE_MODE) return; // In inline mode kein Modal
     if (todoModal) return;
-    
-    todoModal = new PSCRM.Modal('dialog_todo', {
+    const contentEl = document.getElementById('dialog_todo');
+    todoModal = new PSCRM.Modal({
         title: "<?php _e('Aufgaben für den Kunden hinzufügen:','cpsmartcrm') ?>",
         width: '86%',
         height: 600,
+        content: contentEl,
+        destroyOnClose: false,
         buttons: {
             cancel: {
                 text: "<?php _e('Abbrechen', 'cpsmartcrm') ?>",
@@ -37,7 +39,11 @@ const initTodoModal = function() {
 };
 
 if (!PSCRM_INLINE_MODE) {
-    $('.btn_todo').on('click', function () {
+    $(document).on('click', '.btn_todo', function () {
+        var id = $(this).data('id') || $('#dialog_todo').data('fkcliente');
+        var name = $(this).data('name');
+        if (id) $('#dialog_todo').attr('data-fkcliente', id);
+        if (name) $('.nome_cliente').html(name);
         initTodoModal();
         todoModal.open();
     });

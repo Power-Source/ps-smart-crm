@@ -123,7 +123,7 @@
 
             // Command Spalte
             columns.push({
-                field: 'actions',
+                field: null, // dataTables uses full row; avoids missing 'actions' property warning
                 title: 'Aktionen',
                 width: '300px',
                 sortable: false,
