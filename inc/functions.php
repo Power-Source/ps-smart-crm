@@ -3699,13 +3699,17 @@ function WPsCRM_set_payment_status() {
   if (check_ajax_referer('update_document', 'security', false) && current_user_can('manage_crm')) {
     global $wpdb;
     $table = WPsCRM_TABLE."dokumente";
+    $is_paid = (int) $_REQUEST['value'];
+    // Keep booking flag aligned with payment status for invoices
     $wpdb->update(
             $table, array(
-        'pagato' => (int) $_REQUEST['value']
+        'pagato' => $is_paid,
+        'registrato' => $is_paid
             ), array(
         'id' => (int) $_REQUEST['ID']
             ), array(
-        '%d', // valore1
+        '%d',
+        '%d',
         '%d'
             )
     );
