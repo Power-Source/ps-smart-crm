@@ -87,13 +87,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 </div>
             </div>
             <div class="row" style="padding:16px">
-                <span class="btn btn-success _flat" id="t_saveStep"><?php _e( 'Speichern', 'cpsmartcrm'); ?></span>
-                <span class="btn btn-warning _flat _reset" id="t_configreset"><?php _e( 'Zurücksetzen', 'cpsmartcrm'); ?></span>
+                <button type="button" class="btn btn-success _flat" id="t_saveStep" title="<?php _e( 'Speichern', 'cpsmartcrm'); ?>"><?php _e( 'Speichern', 'cpsmartcrm'); ?></button>
+                <button type="button" class="btn btn-warning _flat _reset" id="t_configreset" title="<?php _e( 'Zurücksetzen', 'cpsmartcrm'); ?>"><?php _e( 'Zurücksetzen', 'cpsmartcrm'); ?></button>
             </div>
         </div>       
     </div>
     <input type="hidden" id="t_selectedUsers" name="t_selectedUsers" class="ruleActions" value="" />
     <input type="hidden" id="t_selectedGroups" name="t_selectedGroups" class="ruleActions" value="" />
+    <input type="hidden" name="action" value="WPsCRM_save_todo" />
+    <input type="hidden" name="security" value="<?php echo esc_attr(isset($scheduler_nonce) ? $scheduler_nonce : wp_create_nonce('update_scheduler')); ?>" />
     <input type="submit" id="submit_t_form" style="display:none" />
     <input type="reset" id="reset_t_form" style="display:none" />
 </form>

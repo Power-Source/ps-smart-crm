@@ -16,26 +16,7 @@ const initAttivitaModal = function() {
 		width: '86%',
 		height: '80%',
 		content: contentEl,
-		destroyOnClose: false,
-		buttons: {
-			cancel: {
-				text: "<?php _e('Abbrechen', 'cpsmartcrm') ?>",
-				click: function() {
-					attivitaModal.close();
-				}
-			},
-			save: {
-				text: "<?php _e('Speichern', 'cpsmartcrm') ?>",
-				click: function() {
-					if ($('#new_attivita').parsley && $('#new_attivita').parsley().validate()) {
-						saveAttivita();
-					} else {
-						saveAttivita();
-					}
-				},
-				primary: true
-			}
-		}
+		destroyOnClose: false
 	});
 };
 

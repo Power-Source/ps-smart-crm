@@ -16,24 +16,7 @@ const initAppuntamentoModal = function() {
 		width: '86%',
 		height: '80%',
 		content: contentEl,
-		destroyOnClose: false,
-		buttons: {
-			cancel: {
-				text: "<?php _e('Abbrechen', 'cpsmartcrm') ?>",
-				click: function() {
-					appuntamentoModal.close();
-				}
-			},
-			save: {
-				text: "<?php _e('Speichern', 'cpsmartcrm') ?>",
-				click: function() {
-					if ($('#new_appuntamento').parsley().validate()) {
-						saveAppuntamento();
-					}
-				},
-				primary: true
-			}
-		}
+		destroyOnClose: false
 	});
 };
 
@@ -153,8 +136,8 @@ $('#new_appuntamento').parsley({
 });
 
 function saveAppuntamento() {
-	var opener = $('#dialog_appuntamento').data('from') || 'kunde';
 	var id_cliente = '';
+	var opener = $('#dialog_appuntamento').data('from') || 'kunde';
 	if(opener == "kunde")
 		id_cliente = '<?php if (isset($ID)) echo $ID?>';
 	else if (opener == 'dokumente')
@@ -162,58 +145,15 @@ function saveAppuntamento() {
 	else if (opener == 'list')
 		id_cliente = $('#dialog_appuntamento').data('fkcliente');
 	
-	var tipo_agenda = '2';
-	var scadenza_inizio = $("#a_data_scadenza_inizio").val();
-	var scadenza_fine = $("#a_data_scadenza_fine").val();
-	var annotazioni = $("#a_annotazioni").val();
-	var oggetto = $("#a_oggetto").val();
-	var priorita = $("#priorita").val();
-	var users = $("#a_selectedUsers").val();
-	var groups = $("#a_selectedGroups").val();
-	var days = $("#a_ruleStep").val();
+	// Füge id_cliente zu den versteckten Feldern hinzu
+	$('#new_appuntamento').append('<input type="hidden" name="id_cliente" value="' + id_cliente + '" />');
+	$('#new_appuntamento').append('<input type="hidden" name="tipo_agenda" value="2" />');
 	
-	var s = "[";
-	s += '{"ruleStep":"' + days + '" ,"remindToCustomer":';
-	if ($('#a_remindToCustomer').prop('checked'))
-		s += '"on"';
-	else
-		s += '""';
-	s += ',"selectedUsers":"' + users + '"';
-	s += ',"selectedGroups":"' + groups + '"';
-	s += ',"userDashboard":';
-	if ($('#a_userDashboard').prop('checked'))
-		s += '"on"';
-	else
-		s += '""';
-	s += ',"groupDashboard":';
-	if ($('#a_groupDashboard').prop('checked'))
-		s += '"on"';
-	else
-		s += '""';
-	s += ',"mailToRecipients":';
-	if ($('#a_mailToRecipients').prop('checked'))
-		s += '"on"';
-	else
-		s += '""';
-	s += '}';
-	s += ']';
-
 	$('.modal_loader').show();
 
 	$.ajax({
 		url: ajaxurl,
-		data: {
-			'action': 'WPsCRM_save_appuntamento',
-			id_cliente: id_cliente,
-			tipo_agenda: tipo_agenda,
-			scadenza_inizio: scadenza_inizio,
-			scadenza_fine: scadenza_fine,
-			annotazioni: annotazioni,
-			oggetto: oggetto,
-			priorita: priorita,
-			'steps': encodeURIComponent(s),
-			'security':'<?php echo esc_attr($scheduler_nonce); ?>'
-		},
+		data: $('#new_appuntamento').serialize(),
 		type: "POST",
 		success: function (response) {
 			PSCRM.notify("<?php _e('Termin wurde hinzugefügt','cpsmartcrm')?>", 'success');
@@ -222,7 +162,7 @@ function saveAppuntamento() {
 			$('.modal_loader').hide();
 		},
 		error: function(xhr, status, error) {
-			console.error('Fehler beim Speichern des Termins:', error);
+			console.error('Fehler beim Speichern des Termins:', error, xhr.responseText);
 			PSCRM.notify("<?php _e('Fehler beim Speichern','cpsmartcrm')?>", 'error');
 			$('.modal_loader').hide();
 		}
@@ -231,7 +171,14 @@ function saveAppuntamento() {
 
 $("#a_saveStep").on('click', function (e) {
     e.preventDefault();
-    if ($('#new_appuntamento').parsley().validate()) {
+    var form = $('#new_appuntamento');
+    // Check if parsley exists
+    if (form.parsley && form.parsley()) {
+        if (form.parsley().validate()) {
+            saveAppuntamento();
+        }
+    } else {
+        // No parsley validation, save anyway
         saveAppuntamento();
     }
 });

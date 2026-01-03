@@ -17,24 +17,7 @@ const initTodoModal = function() {
         width: '86%',
         height: 600,
         content: contentEl,
-        destroyOnClose: false,
-        buttons: {
-            cancel: {
-                text: "<?php _e('Abbrechen', 'cpsmartcrm') ?>",
-                click: function() {
-                    todoModal.close();
-                }
-            },
-            save: {
-                text: "<?php _e('Speichern', 'cpsmartcrm') ?>",
-                click: function() {
-                    if ($('#new_todo').parsley().validate()) {
-                        saveTodo();
-                    }
-                },
-                primary: true
-            }
-        }
+        destroyOnClose: false
     });
 };
 

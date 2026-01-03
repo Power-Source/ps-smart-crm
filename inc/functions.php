@@ -1462,6 +1462,62 @@ function WPsCRM_save_todo() {
 
 add_action('wp_ajax_WPsCRM_save_todo', 'WPsCRM_save_todo');
 
+function WPsCRM_save_appuntamento() {
+  global $wpdb;
+  if (check_ajax_referer('update_scheduler', 'security', false) && current_user_can('manage_crm')) {
+    $wpdb->show_errors();
+    $current_user = wp_get_current_user();
+    $user_id = $current_user->ID;
+    $a_table = WPsCRM_TABLE . "agenda";
+    $s_table = WPsCRM_TABLE . "subscriptionrules";
+    $steps = urldecode($_POST['steps']);
+
+    $oggetto = $_POST['oggetto'];
+    $priorita = $_POST['priorita'];
+    $id_cliente = $_POST['id_cliente'];
+    $start_date = $_POST['a_data_scadenza_inizio'];
+    $end_date = $_POST['a_data_scadenza_fine'];
+    $einstiegsdatum = date("Y-m-d H:i");
+    $annotazioni = $_POST['a_annotazioni'];
+    $tipo_agenda = 2; // Appuntamento = 2
+    $instantNotification = isset($_POST['instantNotification']) ? $_POST['instantNotification'] : 0;
+    
+    $n = "Appuntamento";
+    $wpdb->insert(
+            $s_table, array(
+        'steps' => $steps,
+        'name' => $n,
+        's_specific' => 1,
+        's_type' => $tipo_agenda
+            ), array('%s', '%s', '%d', '%d')
+    );
+    $id_sr = $wpdb->insert_id;
+    $wpdb->insert(
+            $a_table, array(
+        'oggetto' => $oggetto,
+        'fk_kunde' => $id_cliente,
+        'annotazioni' => $annotazioni,
+        'start_date' => WPsCRM_sanitize_date_format($start_date),
+        'end_date' => WPsCRM_sanitize_date_format($end_date),
+        'einstiegsdatum' => $einstiegsdatum,
+        'fk_subscriptionrules' => $id_sr,
+        'tipo_agenda' => $tipo_agenda,
+        'priorita' => $priorita,
+        'fatto' => 1,
+        'fk_utenti_ins' => $user_id
+            ), array('%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d')
+    );
+
+    $fk_scheduler = $wpdb->insert_id;
+    $mail = new CRM_mail(array("ID_agenda" => $fk_scheduler, "sendNow" => $instantNotification));
+    wp_send_json_success(array('message' => 'Termin gespeichert', 'id' => $fk_scheduler));
+  } else {
+    wp_send_json_error(array('message' => 'Security Issue'));
+  }
+}
+
+add_action('wp_ajax_WPsCRM_save_appuntamento', 'WPsCRM_save_appuntamento');
+
 function WPsCRM_save_annotation() {
   global $wpdb;
   $c_table = WPsCRM_TABLE."kunde";
