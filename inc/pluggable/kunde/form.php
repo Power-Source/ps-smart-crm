@@ -270,22 +270,26 @@ jQuery(document).ready(function ($) {
             echo "];";
         }
     ?>
-    jQuery('#customerCategory').select2({
-        data: cats,
-        placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-        width: '100%',
-        multiple: true,
-        tags: true,
-        tokenSeparators: [',']
-    });
-    <?php 
-    // Load assigned values from database column (not from taxonomy)
-    if(isset($riga) && !empty($riga["categoria"])): ?>
-        // Lade Werte aus der Datenbankspalte
-        var catDbValue = <?php echo json_encode(explode(',', $riga["categoria"])); ?>;
-        console.log('Loading categoryIDs from DB:', catDbValue);
-        $('#customerCategory').val(catDbValue).trigger('change');
-    <?php endif; ?>
+    function initSelectCategory() {
+        if (typeof jQuery.fn.select2 === 'undefined') {
+            setTimeout(initSelectCategory, 100);
+            return;
+        }
+        jQuery('#customerCategory').select2({
+            data: cats,
+            placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
+            width: '100%',
+            multiple: true,
+            tags: true,
+            tokenSeparators: [',']
+        });
+        <?php 
+        if(isset($riga) && !empty($riga["categoria"])): ?>
+            var catDbValue = <?php echo json_encode(explode(',', $riga["categoria"])); ?>;
+            console.log('Loading categoryIDs from DB:', catDbValue);
+            jQuery('#customerCategory').val(catDbValue).trigger('change');
+        <?php endif; ?>
+    }
 
     // PROVENIENZ (Select2 als Mehrfachauswahl)
     <?php
@@ -298,20 +302,26 @@ jQuery(document).ready(function ($) {
             echo "];";
         }
     ?>
-    jQuery('#customerComesfrom').select2({
-        data: provs,
-        placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-        width: '100%',
-        multiple: true,
-        tags: true,
-        tokenSeparators: [',']
-    });
-    <?php 
-    if(isset($riga) && !empty($riga["provenienza"])): ?>
-        var provDbValue = <?php echo json_encode(explode(',', $riga["provenienza"])); ?>;
-        console.log('Loading provenienza from DB:', provDbValue);
-        $('#customerComesfrom').val(provDbValue).trigger('change');
-    <?php endif; ?>
+    function initSelectProvenienz() {
+        if (typeof jQuery.fn.select2 === 'undefined') {
+            setTimeout(initSelectProvenienz, 100);
+            return;
+        }
+        jQuery('#customerComesfrom').select2({
+            data: provs,
+            placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
+            width: '100%',
+            multiple: true,
+            tags: true,
+            tokenSeparators: [',']
+        });
+        <?php 
+        if(isset($riga) && !empty($riga["provenienza"])): ?>
+            var provDbValue = <?php echo json_encode(explode(',', $riga["provenienza"])); ?>;
+            console.log('Loading provenienza from DB:', provDbValue);
+            jQuery('#customerComesfrom').val(provDbValue).trigger('change');
+        <?php endif; ?>
+    }
 
     // INTERESSEN (Select2 als Mehrfachauswahl)
     <?php
@@ -324,20 +334,31 @@ jQuery(document).ready(function ($) {
             echo "];";
         }
     ?>
-    jQuery('#customerInterests').select2({
-        data: ints,
-        placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-        width: '100%',
-        multiple: true,
-        tags: true,
-        tokenSeparators: [',']
-    });
-    <?php 
-    if(isset($riga) && !empty($riga["interessi"])): ?>
-        var intDbValue = <?php echo json_encode(explode(',', $riga["interessi"])); ?>;
-        console.log('Loading interessi from DB:', intDbValue);
-        $('#customerInterests').val(intDbValue).trigger('change');
-    <?php endif; ?>
+    function initSelectInterests() {
+        if (typeof jQuery.fn.select2 === 'undefined') {
+            setTimeout(initSelectInterests, 100);
+            return;
+        }
+        jQuery('#customerInterests').select2({
+            data: ints,
+            placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
+            width: '100%',
+            multiple: true,
+            tags: true,
+            tokenSeparators: [',']
+        });
+        <?php 
+        if(isset($riga) && !empty($riga["interessi"])): ?>
+            var intDbValue = <?php echo json_encode(explode(',', $riga["interessi"])); ?>;
+            console.log('Loading interessi from DB:', intDbValue);
+            jQuery('#customerInterests').val(intDbValue).trigger('change');
+        <?php endif; ?>
+    }
+
+    // Initialize all SELECT2 fields when page loads
+    initSelectCategory();
+    initSelectProvenienz();
+    initSelectInterests();
 
     // SELECT2 change event handlers - speichere Werte wenn sich Selection ändert
     $('#customerCategory').on('change', function(e) {
@@ -689,34 +710,6 @@ jQuery(document).ready(function ($) {
 								<?php _e('Keine Interessen; Erstelle Interessen in den CRM-Einstellungen ->Seite „Kundeneinstellungen“.','cpsmartcrm') ?>
 							</div>
 						<?php endif; ?>
-						<script>
-							<?php
-							echo "var ints = [];";
-							if( ! empty($ints) ){
-								echo "ints = [";
-								foreach($ints as $int)
-									echo '{id:"'.$int->term_id.'",text:"'.$int->name.'"},';
-								echo "];";
-							}
-							?>
-							jQuery('#customerInterests').select2({
-								data: ints,
-								placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-								width: '100%',
-								multiple: true
-							});
-                            (function(){
-                                var $el = jQuery('#customerInterests');
-                                var preset = $el.val();
-                                if (preset) {
-                                    $el.val(preset.toString().split(',')).trigger('change');
-                                }
-                                $el.on('change', function(){
-                                    var v = $el.val() || [];
-                                    $el.val(v.join(','));
-                                });
-                            })();
-						</script>
 					</div>
 				</div>
 				<div class="row form-group">
@@ -734,34 +727,6 @@ jQuery(document).ready(function ($) {
 								<?php _e('Keine Quellen; erstelle Quellen in den CRM-Einstellungen ->Kundeneinstellungen Seite','cpsmartcrm') ?>
 							</div>
 						<?php endif; ?>
-						<script>
-							<?php
-							echo "var provs = [];";
-							if( ! empty($provs) ){
-								echo "provs = [";
-								foreach($provs as $prov)
-									echo '{id:"'.$prov->term_id.'",text:"'.$prov->name.'"},';
-								echo "];";
-							}
-							?>
-							jQuery('#customerComesfrom').select2({
-								data: provs,
-								placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-								width: '100%',
-								multiple: true
-							});
-                            (function(){
-                                var $el = jQuery('#customerComesfrom');
-                                var preset = $el.val();
-                                if (preset) {
-                                    $el.val(preset.toString().split(',')).trigger('change');
-                                }
-                                $el.on('change', function(){
-                                    var v = $el.val() || [];
-                                    $el.val(v.join(','));
-                                });
-                            })();
-						</script>
 					</div>
 				</div>
 				<div class="row form-group">
@@ -890,277 +855,6 @@ jQuery(document).ready(function ($) {
 <div id="createPdf"></div>
 <div id="createInvoice"></div>
 <div id="createQuote"></div>
-<script>
-
-    var media_uploader = null;
-
-    function open_media_uploader_multiple_images() {
-        media_uploader = wp.media({
-            frame: "post",
-            state: "insert",
-            multiple: true
-        });
-
-        media_uploader.on("insert", function () {
-
-            var length = media_uploader.state().get("selection").length;
-            var images = media_uploader.state().get("selection").models
-            console.log(images);
-
-            for (var iii = 0; iii < length; iii++) {
-                var image_url = images[iii].changed.url;
-                console.log(image_url);
-                jQuery('.thumbContainer').append('<img src="' + image_url.replace(".jpg", "-150x150.jpg") + '">')
-                var image_caption = images[iii].changed.caption;
-                var image_title = images[iii].changed.title;
-            }
-        });
-
-        media_uploader.open();
-    }
-
-jQuery(document).ready(function ($) {
-    $('._showLoader').on('click', function (e) {
-        $('#mouse_loader').offset({ left: e.pageX, top: e.pageY });
-    });
-
-    // --- NEU: Bootstrap Modals für Rechnung und Angebot öffnen ---
-    $('.btn_invoice').on('click', function () {
-        $('#invoiceFrame').attr('src', "<?php echo admin_url('admin.php?page=smart-crm&p=dokumente%2Fform_invoice.php&cliente=').$ID?>" + "&layout=iframe");
-        $('#invoiceModal').modal('show');
-    });
-    $('.btn_quote').on('click', function () {
-        $('#quoteFrame').attr('src', "<?php echo admin_url('admin.php?page=smart-crm&p=dokumente%2Fform_quotation.php&cliente=').$ID?>" + "&layout=iframe");
-        $('#quoteModal').modal('show');
-    });
-
-    <?php do_action('WPsCRM_menu_tooltip') ?>
-
-    <?php if($ID){ ?>
-    $('#cd-timeline').on('click','.glyphicon-remove', function () {
-        var complete=false;
-        var $this=$(this).closest('.cd-timeline-block');
-        var index=$this.data('index');
-        $.ajax({
-            url: ajaxurl,
-            data: {'action': 'WPsCRM_delete_annotation',
-                'id_cliente': '<?php echo $ID ?>',
-                'index':index,
-                'security':'<?php echo $delete_nonce; ?>'},
-            type: "POST",
-            success: function (response) {
-                console.log(response);
-                noty({
-                    text: "<?php _e('Anmerkung wurde gelöscht','cpsmartcrm')?>",
-                    layout: 'center',
-                    type: 'success',
-                    template: '<div class="noty_message"><span class="noty_text"></span></div>',
-                    timeout: 1000
-                });
-                complete=true;
-                $("*[data-index=" + index + "]").fadeOut(200);
-            }
-        })
-    })
-    <?php } ?>
-
-    var timelineBlocks = $('.cd-timeline-block'),
-    offset = 0.8;
-
-    hideBlocks(timelineBlocks, offset);
-
-    $(window).on('scroll', function () {
-        (!window.requestAnimationFrame)
-            ? setTimeout(function () { showBlocks(timelineBlocks, offset); }, 100)
-            : window.requestAnimationFrame(function () { showBlocks(timelineBlocks, offset); });
-    });
-
-    function hideBlocks(blocks, offset) {
-        blocks.each(function () {
-            ($(this).offset().top > $(window).scrollTop() + $(window).height() * offset) && $(this).find('.cd-timeline-img, .cd-timeline-content').addClass('is-hidden');
-        });
-    }
-
-    function showBlocks(blocks, offset) {
-        blocks.each(function () {
-            ($(this).offset().top <= $(window).scrollTop() + $(window).height() * offset && $(this).find('.cd-timeline-img').hasClass('is-hidden')) && $(this).find('.cd-timeline-img, .cd-timeline-content').removeClass('is-hidden').addClass('bounce-in');
-        });
-    }
-
-    // update activity aus Modal
-    $(document).on('click', '#save_activity_from_modal', function () {
-        var id = $(this).data('id');
-        $('.modal_loader').show();
-        $.ajax({
-            url: ajaxurl,
-            method:'POST',
-            data: {
-                'action': 'WPsCRM_scheduler_update',
-                'ID': id,
-                'fatto': $('input[type="radio"][name="fatto"]:checked').val(),
-                'esito': $('#esito').val(),
-                'security':'<?php echo $scheduler_nonce; ?>'
-            },
-            success: function (response) {
-                // DataTables-Reload statt KendoGrid!
-                $('#grid').DataTable().ajax.reload();
-                setTimeout(function () {
-                    $('.modal_loader').fadeOut('fast');
-                }, 300);
-                setTimeout(function () {
-                    $('._modal').fadeOut('fast');
-                }, 500);
-            },
-            error: function (errorThrown) {
-                console.log(errorThrown);
-            }
-        })
-    });
-
-    // --- NEU: jQuery UI Datepicker statt Kendo ---
-    $("#data_inserimento").datepicker({
-        dateFormat: "dd.mm.yy",
-        defaultDate: new Date()
-    });
-    $("#data_nascita").datepicker({
-        dateFormat: "dd.mm.yy"
-    });
-
-
-		jQuery(document).ready(function($){
-
-			// AGENT (Select2)
-			if ($("#selectAgent").length) {
-				$.ajax({
-					url: ajaxurl,
-					data: {
-						'action': 'WPsCRM_get_CRM_users_customer'
-					},
-					success: function (result) {
-						var data = [];
-						if (Array.isArray(result)) {
-							data = result.map(function(user) {
-								return { id: user.ID, text: user.display_name };
-							});
-						}
-						$("#selectAgent").select2({
-							data: data,
-							placeholder: "<?php _e('Select Agent...','cpsmartcrm') ?>",
-							width: '54%'
-						});
-						var agente = '<?php if(isset($agente)) echo $agente?>';
-						if (agente > 0) {
-							$("#selectAgent").val(agente).trigger('change');
-						}
-					},
-					error: function (errorThrown) {
-						console.log(errorThrown);
-					}
-				});
-			}
-
-			// LAND (Select2)
-			$('#nazione').select2({
-				placeholder: "<?php _e('Land auswählen','cpsmartcrm') ?>...",
-				width: '100%'
-			});
-			// Felder aktivieren/deaktivieren je nach Land
-			var country = $('#nazione').val();
-			if (country != "0") {
-				$('._toCheck').attr({ 'readonly': false, 'title': '' });
-			} else {
-				$('._toCheck').attr({ 'readonly': 'readonly', 'title': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...', 'alt': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...' });
-			}
-			$('#nazione').on('change', function () {
-				if ($(this).val() != "0") {
-					$('._toCheck').attr({ 'readonly': false, 'title': '' });
-				} else {
-					$('._toCheck').attr({ 'readonly': 'readonly', 'title': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...', 'alt': '<?php _e('Wähle zuerst das Land aus','cpsmartcrm') ?>...' });
-				}
-			});
-
-			// KATEGORIE (Select2 als Mehrfachauswahl)
-			<?php
-				echo "var cats = [];";
-				if( ! empty($cats) ){
-					echo "cats = [";
-					foreach($cats as $cat)
-						echo '{id:"'.$cat->term_id.'",text:"'.$cat->name.'"},';
-					echo "];";
-				}
-			?>
-			jQuery('#customerCategory').select2({
-				data: cats,
-				placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-				width: '100%',
-				multiple: true
-			});
-            // Vorbelegung Kategorie
-            <?php if(isset($riga) && !empty($riga["categoria"])): ?>
-                $('#customerCategory').val([<?php echo $riga["categoria"]?>]).trigger('change');
-            <?php endif; ?>
-
-			// PROVENIENZ (Select2 als Mehrfachauswahl)
-			<?php
-				echo "var provs = [];";
-				if( ! empty($provs) ){
-					echo "provs = [";
-					foreach($provs as $prov)
-						echo '{id:"'.$prov->term_id.'",text:"'.$prov->name.'"},';
-					echo "];";
-				}
-			?>
-			jQuery('#customerComesfrom').select2({
-				data: provs,
-				placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-				width: '100%',
-				multiple: true
-			});
-            // Vorbelegung Provenienz
-            <?php if(isset($riga) && !empty($riga["provenienza"])): ?>
-                $('#customerComesfrom').val([<?php echo $riga["provenienza"]?>]).trigger('change');
-            <?php endif; ?>
-
-			// INTERESSEN (Select2 als Mehrfachauswahl)
-			<?php
-				echo "var ints = [];";
-				if( ! empty($ints) ){
-					echo "ints = [";
-					foreach($ints as $int)
-						echo '{id:"'.$int->term_id.'",text:"'.$int->name.'"},';
-					echo "];";
-				}
-			?>
-			jQuery('#customerInterests').select2({
-				data: ints,
-				placeholder: "<?php _e('Wählen','cpsmartcrm')?>",
-				width: '100%',
-				multiple: true
-			});
-            // Vorbelegung Interessen
-            <?php if(isset($riga) && !empty($riga["interessi"])): ?>
-                $('#customerInterests').val([<?php echo $riga["interessi"]?>]).trigger('change');
-            <?php endif; ?>
-
-			// Timeline-Sortierung
-			setTimeout(function () {
-				var divList = $(".cd-timeline-block");
-				divList.sort(function (a, b) {
-					var date1 = $(a).data("date");
-					date1 = date1.split('-');
-					date1 = new Date(date1[0], date1[1] - 1, date1[2]);
-					var date2 = $(b).data("date");
-					date2 = date2.split('-');
-					date2 = new Date(date2[0], date2[1] - 1, date2[2]);
-					return date1 < date2;
-				}).appendTo('#_timeline');
-				$('#_timeline').fadeIn('fast')
-			}, 50);
-
-		});
-	});
-
-</script>
 <style>
     input[type=checkbox] {
         float: initial;
