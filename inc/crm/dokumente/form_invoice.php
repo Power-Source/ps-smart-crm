@@ -209,7 +209,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                                 $_pay_label = $pay_label[0] . " (" . $pay_label[1] . " " . __('dd', 'cpsmartcrm') . ")";
                               else
                                 $_pay_label = $pay_label[0];
-                              if (strstr($pay, $payment) && $payment != "0")
+                              if (@strstr($pay, $payment) && @$payment != "0")
                                 $selected = " selected";
                               else
                                 $selected = "";
@@ -352,7 +352,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
 
             <?php 
             $accontOptions = get_option("CRM_acc_settings");
-            switch ($accontOptions['accountability']){
+            switch (@$accontOptions['accountability']){
                 case 0:
                     include ('accountabilities/accountability_0.php');
                     break;
