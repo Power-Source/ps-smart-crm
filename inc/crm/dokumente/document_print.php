@@ -223,7 +223,6 @@ $serverName=site_url();
 <div class="box wide hidden-on-narrow">
 
 	<div class="box-col row">
-        <span class="crmHelp crmHelp-dark" data-help="document-print"></span>
 		<div class="col-md-3" style="margin:0">
 			<h4 >
 				<?php _e('Hole PDF','cpsmartcrm')?>

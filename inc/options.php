@@ -157,7 +157,7 @@ class CRM_Options_Settings{
 	function register_general_settings() {
 		$this->plugin_settings_tabs[$this->general_settings_key] =  __('Allgemein' , 'cpsmartcrm');
 		register_setting( $this->general_settings_key, $this->general_settings_key );
-		add_settings_section( 'section_general', __('Allgemeine CRM-Einstellungen' , 'cpsmartcrm').'<span class="crmHelp crmHelp-dark _options" data-help="general-options"></span>', array( &$this, 'section_general_desc' ), $this->general_settings_key );
+		add_settings_section( 'section_general', __('Allgemeine CRM-Einstellungen' , 'cpsmartcrm'), array( &$this, 'section_general_desc' ), $this->general_settings_key );
 		add_settings_field( 'redirect', __( 'Weiterleitung zu CRM', 'cpsmartcrm'), array( &$this, 'smartcrm_redirect' ), $this->general_settings_key, 'section_general' );
 		add_settings_field( 'minimize', __( 'CMS-Menü minimieren', 'cpsmartcrm'), array( &$this, 'smartcrm_minimize_WP_menu' ), $this->general_settings_key, 'section_general' );
 		//add_settings_field('services', __( 'Activate Services Module', 'cpsmartcrm'), array( &$this, 'smartcrm_checkbox_services'),$this->general_settings_key,'section_general' );
@@ -179,7 +179,7 @@ class CRM_Options_Settings{
 		$this->plugin_settings_tabs[$this->clients_settings_key] = __('Kunden' , 'cpsmartcrm') ;
 		register_setting( $this->clients_settings_key, $this->clients_settings_key );
 		add_settings_section( 'section_clients', __( 'Kundeneinstellungen', 'cpsmartcrm') , array( &$this, 'section_clients_desc' ), $this->clients_settings_key );
-		add_settings_field('clientsCategories',__( 'Kundenkategorien', 'cpsmartcrm').'<span class="crmHelp crmHelp-dark" data-help="customer-categories" style="margin:0"></span>', array( &$this, 'smartcrm_add_client_category'), $this->clients_settings_key, 'section_clients' );
+		add_settings_field('clientsCategories',__( 'Kundenkategorien', 'cpsmartcrm'), array( &$this, 'smartcrm_add_client_category'), $this->clients_settings_key, 'section_clients' );
 		//add_settings_field('clientsTax',__( 'Show taxonomies in grid', 'cpsmartcrm'), array( &$this, 'smartcrm_tax_columns'), $this->clients_settings_key, 'section_clients' );
 		do_action('WPsCRM_register_additional_clients_options');
 	}
@@ -262,7 +262,7 @@ class CRM_Options_Settings{
 		$options=get_option($this->business_settings_key);
         ?>
         <div id="pages" class="col-md-12">
-            <div id="pages-title"><h4 class="page-header" style="text-align:center"><span class="crmHelp crmHelp-dark" data-help="business-data" data-role="tooltip"></span><?php _e('Geschäftliche Hauptdaten', 'wp-smart-crm-invoices-pro') ?><small style="font-size:small"> - <?php _e('Mit diesen Informationen wird bei der Plugin-Aktivierung Kontakt Nr. 1 (zur Selbsterledigung) erstellt und in Dokumenten (Rechnungen, Kostenvoranschläge usw.) verwendet.', 'wp-smart-crm-invoices-pro') ?></small></h4></div>
+            <div id="pages-title"><h4 class="page-header" style="text-align:center"><?php _e('Geschäftliche Hauptdaten', 'wp-smart-crm-invoices-pro') ?><small style="font-size:small"> - <?php _e('Mit diesen Informationen wird bei der Plugin-Aktivierung Kontakt Nr. 1 (zur Selbsterledigung) erstellt und in Dokumenten (Rechnungen, Kostenvoranschläge usw.) verwendet.', 'wp-smart-crm-invoices-pro') ?></small></h4></div>
             <div id="sortable-handlers">
 		<div class="item xml_mandatory">
 			<label><?php _e('Firmenname', 'wp-smart-crm-invoices-pro') ?> ( <span style="color:red"> * </span> )</label><br />
@@ -969,7 +969,7 @@ class CRM_Options_Settings{
 			<div class="row">
 				<div id="global_vat">
 					<div class="widget col-md-5 pull-left">
-						<h3><span class="crmHelp crmHelp-dark" data-help="default-vat"></span>
+						<h3>
 							<?php _e('Standardmäßige Mehrwertsteuer und Währung','cpsmartcrm')?>
 						</h3>
 						<div>
@@ -1001,7 +1001,7 @@ class CRM_Options_Settings{
 				</div>
 				<div id="payment_notification">
 					<div class="widget col-md-5 pull-right">
-						<h3><span class="crmHelp crmHelp-dark" data-help="payment-notification"></span>
+						<h3>
 							<?php _e('Tage nach Zahlungsbenachrichtigung','cpsmartcrm')?>
 						</h3>
 						<div>
@@ -1014,7 +1014,7 @@ class CRM_Options_Settings{
 			<div class="row">
 				<div id="_header_invoices_numbering">
 					<div class="widget col-md-5 pull-left">
-						<h3><span class="crmHelp crmHelp-dark" data-help="document-numbering"></span>
+						<h3>
 							<?php _e('Nummerierungseinstellungen für Rechnungen','cpsmartcrm')?>
 						</h3>
 						<div>
@@ -1031,7 +1031,7 @@ class CRM_Options_Settings{
 				</div>
 				<div id="_header_offers_numbering">
 					<div class="widget col-md-5 pull-right">
-						<h3><span class="crmHelp crmHelp-dark" data-help="document-numbering"></span>
+						<h3>
 							<?php _e('Einstellungen für die Nummerierung von Angebote','cpsmartcrm')?>
 						</h3>
 						<div>
@@ -1053,7 +1053,7 @@ class CRM_Options_Settings{
 		<div>
 			<div id="_header_align">
 				<div class="dash-head hidden-on-narrow">
-					<h4 style="text-align: center;" class="page-header"><span class="crmHelp crmHelp-dark" data-help="header-align"></span><?php _e('Ziehe Elemente (von links nach rechts), um sie in Dokumenten auszurichten ','cpsmartcrm')?> </h4>
+					<h4 style="text-align: center;" class="page-header"><?php _e('Ziehe Elemente (von links nach rechts), um sie in Dokumenten auszurichten ','cpsmartcrm')?> </h4>
 				</div>
 				<div class="panel-wrap hidden-on-narrow row">
 					<div id="sortable-horizontal">
@@ -1136,7 +1136,7 @@ class CRM_Options_Settings{
 			<div id="_payments">
 				<div class="dash-head hidden-on-narrow">
 					<h4 style="text-align: center;margin:30px auto" class="page-header" >
-						<?php _e('Definitionen der Zahlungsmethoden','cpsmartcrm')?><span class="crmHelp crmHelp-dark" data-help="options-payments-definitions"></span>
+						<?php _e('Definitionen der Zahlungsmethoden','cpsmartcrm')?>
 					</h4>
 				</div>
 				<div class="panel-wrap hidden-on-narrow row">
@@ -1177,7 +1177,7 @@ class CRM_Options_Settings{
 		<div>
 			<div id="_header_invoices_messages">
 				<div class="dash-head hidden-on-narrow">
-					<h4 style="text-align: center;margin:30px auto" class="page-header" ><span class="crmHelp crmHelp-dark" data-help="document-messages"></span><?php _e('INVOICES MESSAGES SETTINGS','cpsmartcrm')?> </h4>
+					<h4 style="text-align: center;margin:30px auto" class="page-header" ><?php _e('INVOICES MESSAGES SETTINGS','cpsmartcrm')?> </h4>
 				</div>
 				<div class="panel-wrap hidden-on-narrow row">
 					<div class="col-md-12 _messages">
@@ -1198,7 +1198,7 @@ class CRM_Options_Settings{
 			</div>
 			<div id="_header_offers_messages">
 				<div class="dash-head hidden-on-narrow">
-					<h4 style="text-align: center;margin:30px auto" class="page-header"><span class="crmHelp crmHelp-dark" data-help="document-messages"></span><?php _e('ZITATE NACHRICHTEN EINSTELLUNGEN','cpsmartcrm')?> </h4>
+					<h4 style="text-align: center;margin:30px auto" class="page-header"><?php _e('ZITATE NACHRICHTEN EINSTELLUNGEN','cpsmartcrm')?> </h4>
 				</div>
 				<div class="panel-wrap hidden-on-narrow row _messages">
 					<div class="col-md-12">

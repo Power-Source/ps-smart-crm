@@ -238,7 +238,6 @@ else
                 <label class="control-label" style="margin-left:20px"><?php _e('Benachrichtigen','cpsmartcrm')?>? </label>
                 <div class="col-sm-1">
                     <input type="checkbox" name="notify_payment" id="notify_payment" value="1" <?php if (isset($riga)) echo $riga["notifica_pagamento"] ? "checked" : ""?>>
-					<span class="crmHelp crmHelp-dark" data-help="payment-notification"></span>
                 </div>
             </div>
             <section id="notifications" style="display:none!important">
