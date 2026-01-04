@@ -21,6 +21,10 @@ $acc_options = get_option('CRM_accounting_settings', array());
 $income_categories_raw = (isset($acc_options['income_categories']) && is_array($acc_options['income_categories'])) ? $acc_options['income_categories'] : array();
 $expense_categories_raw = (isset($acc_options['expense_categories']) && is_array($acc_options['expense_categories'])) ? $acc_options['expense_categories'] : array();
 
+// Prüfe ob Kleinunternehmer-Regelung aktiv ist
+$doc_options = get_option('CRM_documents_settings', array());
+$default_vat = isset($doc_options['default_vat']) ? (int)$doc_options['default_vat'] : 19;
+
 // Bereinige und dedupliziere Kategorien
 $income_categories = array();
 foreach ($income_categories_raw as $cat) {
@@ -307,7 +311,7 @@ if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
         
         <!-- SCHRITT 1: BELEGINFORMATIONEN -->
         <div class="belege-form-section basic">
-            <h4 class="belege-section-title">📋 <?php _e('Schritt 1: Beleginformationen', 'cpsmartcrm'); ?></h4>
+            <h4 class="belege-section-title"><?php _e('Schritt 1: Beleginformationen', 'cpsmartcrm'); ?></h4>
             
             <!-- Datei-Upload -->
             <div class="belege-form-group" style="margin-bottom: 20px;">
@@ -414,9 +418,9 @@ if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
                     <div class="belege-form-group">
                         <label for="trans_tax_rate"><?php _e('USt.-Satz', 'cpsmartcrm'); ?></label>
                         <select id="trans_tax_rate" name="trans_tax_rate">
-                            <option value="0">0 % (<?php _e('befreit', 'cpsmartcrm'); ?>)</option>
-                            <option value="7">7 % (<?php _e('Ermäßigt', 'cpsmartcrm'); ?>)</option>
-                            <option value="19" selected>19 % (<?php _e('Regulär', 'cpsmartcrm'); ?>)</option>
+                            <option value="0" <?php selected($default_vat, 0); ?>>0 % (<?php _e('befreit', 'cpsmartcrm'); ?>)</option>
+                            <option value="7" <?php selected($default_vat, 7); ?>>7 % (<?php _e('Ermäßigt', 'cpsmartcrm'); ?>)</option>
+                            <option value="19" <?php selected($default_vat, 19); ?>>19 % (<?php _e('Regulär', 'cpsmartcrm'); ?>)</option>
                         </select>
                     </div>
                 </div>
@@ -627,7 +631,7 @@ if (!empty($belege)) {
                    style="padding: 4px 8px; background: #f0f0f0; color: #0073aa; text-decoration: none; border-radius: 3px; font-size: 12px; margin-right: 5px; display: inline-block;">
                     ⬇️ <?php _e('Download', 'cpsmartcrm'); ?>
                 </a>
-                <a href="?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=delete&beleg_id=<?php echo $beleg->id; ?>&<?php echo wp_create_nonce('delete_beleg_' . $beleg->id); ?>" 
+                <a href="<?php echo wp_nonce_url('?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=delete&beleg_id=' . $beleg->id, 'delete_beleg_' . $beleg->id); ?>" 
                    onclick="return confirm('<?php _e('Beleg wirklich löschen?', 'cpsmartcrm'); ?>')" 
                    style="padding: 4px 8px; background: #f8d7da; color: #dc3545; text-decoration: none; border-radius: 3px; font-size: 12px; display: inline-block;">
                     🗑️ <?php _e('Löschen', 'cpsmartcrm'); ?>
@@ -672,4 +676,3 @@ if (!empty($belege)) {
 <?php
 }
 ?>
-</div>

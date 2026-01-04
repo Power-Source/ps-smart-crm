@@ -350,27 +350,24 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
 
             </h4>
 
-            <?php
+            <?php 
             $accontOptions = get_option("CRM_acc_settings");
-
-            if (is_array($accontOptions) && isset($accontOptions['accountability'])) {
-                switch ($accontOptions['accountability']) {
-                    case 0:
-                        include ('accountabilities/accountability_0.php');
-                        break;
-                    case "1":
-                        include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_1.php');
-                        break;
-                    case "2":
-                        include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_2.php');
-                        break;
-                    case "3":
-                        include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_3.php');
-                        break;
-                    case "4":
-                        include (ACCsCRM_DIR . '/inc/crm/dokumente/accountabilities/accountability_4.php');
-                        break;
-                }
+            switch ($accontOptions['accountability']){
+                case 0:
+                    include ('accountabilities/accountability_0.php');
+                    break;
+                case "1":
+                    include (ACCsCRM_DIR.'/inc/crm/dokumente/accountabilities/accountability_1.php');
+                    break;
+                case "2":
+                    include (ACCsCRM_DIR.'/inc/crm/dokumente/accountabilities/accountability_2.php');
+                    break;
+                case "3":
+                    include (ACCsCRM_DIR.'/inc/crm/dokumente/accountabilities/accountability_3.php');
+                    break;
+                case "4":
+                    include (ACCsCRM_DIR.'/inc/crm/dokumente/accountabilities/accountability_4.php');
+                    break;
             }
             ?>
 
@@ -451,304 +448,344 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
   </div>
   
   <script type="text/javascript">
-  <?php
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_todo.php" );
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_appuntamento.php" );
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_attivita.php" );
-  include (WPsCRM_DIR . "/inc/crm/kunde/script_mail.php" );
-  ?>
-  </script>
+jQuery(document).ready(function($) {
+<?php
+	include (WPsCRM_DIR . "/inc/crm/kunde/script_todo.php" );
+	include (WPsCRM_DIR . "/inc/crm/kunde/script_appuntamento.php" );
+	include (WPsCRM_DIR . "/inc/crm/kunde/script_attivita.php" );
+	include (WPsCRM_DIR . "/inc/crm/kunde/script_mail.php" );
+?>
+});
+</script>
   
-  <style>
-      .customer_data_partial{padding-top:6px;padding-bottom:6px}
-      .edit_active{border:1px dashed red;background:#ccc}
-  </style>
-    <!-- Overlay für das Modal -->
-    <div id="reverseOverlay" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9998;"></div>
+<style>
+	.customer_data_partial{padding-top:6px;padding-bottom:6px}
+	.edit_active{border:1px dashed red;background:#ccc}
+</style>
+<!-- Overlay für das Modal -->
+<div id="reverseOverlay" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9998;"></div>
 
-    <!-- ReverseCalculator als zentriertes Modal -->
-    <div id="reverseCalculator" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:9999; background:#fff; border:1px solid #ccc; padding:30px; box-shadow:0 0 20px #0008; min-width:300px;">
-        <button id="closeReverseCalc" style="position:absolute; top:10px; right:10px; font-size:1.5em; background:none; border:none;">&times;</button>
-        <div class="col-md-11">
-            <label><?php _e('Gib den Gesamtbetrag für die umgekehrte Berechnung ein:', 'cpsmartcrm') ?></label>
-            <input class="form-control" type="number" id="reverseAmount" />
-        </div>
-        <div class="col-md-11">
-            <label><?php _e('Eingaberückerstattung für Rückrechnung:', 'cpsmartcrm') ?></label>
-            <input class="form-control" type="number" id="reverseRefund" />
-        </div>
-        <div class="col-md-11"><br />
-            <input class="btn _flat btn-success" type="button" id="calculate" value="<?php _e('Berechnung:', 'cpsmartcrm') ?>" />
-        </div>
+<!-- ReverseCalculator als zentriertes Modal -->
+<div id="reverseCalculator" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:9999; background:#fff; border:1px solid #ccc; padding:30px; box-shadow:0 0 20px #0008; min-width:300px;">
+    <button id="closeReverseCalc" style="position:absolute; top:10px; right:10px; font-size:1.5em; background:none; border:none;">&times;</button>
+    <div class="col-md-11">
+        <label><?php _e('Gib den Gesamtbetrag für die umgekehrte Berechnung ein:','cpsmartcrm') ?></label>
+        <input class="form-control" type="number" id="reverseAmount" />
     </div>
-    <script type="text/javascript">
-    jQuery(document).ready(function ($) {
-        // ReverseCalculator-Popup initial ausblenden
-        $('#reverseCalculator, #reverseOverlay').hide();
+    <div class="col-md-11">
+        <label><?php _e('Eingaberückerstattung für Rückrechnung:','cpsmartcrm') ?></label>
+        <input class="form-control" type="number" id="reverseRefund" />
+    </div>
+    <div class="col-md-11"><br />
+        <input class="btn _flat btn-success" type="button" id="calculate" value="<?php _e('Berechnung:','cpsmartcrm') ?>" />
+    </div>
+</div>
 
-        // Öffnen (Button braucht die Klasse .reverseCalulator)
-        $('.reverseCalulator').on('click', function (e) {
-            e.preventDefault();
-            $('#reverseOverlay').fadeIn(100);
-            $('#reverseCalculator').fadeIn(200);
-        });
+<script type="text/javascript">
+jQuery(document).ready(function ($) {
+    // ReverseCalculator-Popup initial ausblenden
+    $('#reverseCalculator, #reverseOverlay').hide();
 
-        // Schließen
-        $('#closeReverseCalc, #reverseOverlay').on('click', function () {
+    // Öffnen (Button braucht die Klasse .reverseCalulator)
+    $('.reverseCalulator').on('click', function (e) {
+        e.preventDefault();
+        $('#reverseOverlay').fadeIn(100);
+        $('#reverseCalculator').fadeIn(200);
+    });
+
+    // Schließen
+    $('#closeReverseCalc, #reverseOverlay').on('click', function () {
+        $('#reverseCalculator').fadeOut(200);
+        $('#reverseOverlay').fadeOut(100);
+    });
+
+    // ESC schließt das Popup
+    $(document).on('keydown', function(e) {
+        if (e.key === "Escape") {
             $('#reverseCalculator').fadeOut(200);
             $('#reverseOverlay').fadeOut(100);
-        });
-
-        // ESC schließt das Popup
-        $(document).on('keydown', function(e) {
-            if (e.key === "Escape") {
-                $('#reverseCalculator').fadeOut(200);
-                $('#reverseOverlay').fadeOut(100);
-            }
-        });
-
-        sessionStorage.removeItem('tmp_amount');
-
-        // --- Fehlermeldungen zentral ---
-        var validationMessages = {
-            hasNoty: "<?php _e('Du solltest einen Benutzer oder eine Gruppe von Benutzern auswählen, die Du benachrichtigen möchtest', 'cpsmartcrm') ?>",
-            hasClient: "<?php _e('Du solltest einen Kunden auswählen', 'cpsmartcrm') ?>",
-            hasRows: "<?php _e('Du solltest dieser Rechnung mindestens eine Zeile hinzufügen', 'cpsmartcrm') ?>",
-            hasDescription: "<?php _e('Beschreibung ist obligatorisch', 'cpsmartcrm') ?>"
-        };
-
-        // Kunden-Auswahl (Select2)
-        $("#fk_kunde").select2({
-            width: '100%', // <-- Breite auf 100% setzen
-            placeholder: "<?php _e('Wähle Kunde aus', 'cpsmartcrm') ?>...",
-            minimumInputLength: 3,
-            ajax: {
-                url: ajaxurl,
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        action: 'WPsCRM_get_clients2',
-                        q: params.term
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: $.map(data.clients, function (obj) {
-                            return {
-                                id: obj.ID_kunde,
-                                text: obj.firmenname ? obj.firmenname : (obj.name + " " + obj.nachname)
-                            };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
-
-        <?php if (isset($fk_kunde)) { ?>
-        $("#fk_kunde").append(new Option("<?php echo addslashes($cliente); ?>", "<?php echo $fk_kunde; ?>", true, true)).trigger('change');
-        <?php } ?>
-
-        $("#fk_kunde").on('select2:select', function (e) {
-            var id_kunde = $(this).val();
-            if (id_kunde) {
-                $.ajax({
-                    url: ajaxurl,
-                    data: {
-                        'action': 'WPsCRM_get_client_info',
-                        'id_kunde': id_kunde
-                    },
-                    success: function (result) {
-                        var parseData = result.info[0];
-                        $("#adresse").val(parseData.adresse);
-                        $("#cap").val(parseData.cap);
-                        $("#standort").val(parseData.standort);
-                        $("#provinz").val(parseData.provinz);
-                        $("#cod_fis").val(parseData.cod_fis);
-                        $("#p_iva").val(parseData.p_iva);
-                        $("#tipo_cliente").val(parseData.tipo_cliente);
-                    }
-                });
-            }
-        });
-
-        // Benutzer-Auswahl (Select2 Multiple)
-        $("#remindToUser").select2({
-            placeholder: "<?php _e('Benutzer wählen', 'cpsmartcrm') ?>...",
-            multiple: true,
-            ajax: {
-                url: ajaxurl,
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        action: 'WPsCRM_get_CRM_users',
-                        q: params.term
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: $.map(data, function (obj) {
-                            return {
-                                id: obj.ID,
-                                text: obj.display_name
-                            };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
-        <?php if (isset($users) && $users) { ?>
-        var presetUsers = "<?php echo $users; ?>".split(",");
-        $.each(presetUsers, function(i, val) {
-            $("#remindToUser").append(new Option(val, val, true, true));
-        });
-        $("#remindToUser").trigger('change');
-        <?php } ?>
-        $("#remindToUser").on('change', function () {
-            $('#selectedUsers').val($(this).val() ? $(this).val().join(",") : "");
-        });
-
-        // Rollen-Auswahl (Select2 Multiple)
-        $("#remindToGroup").select2({
-            placeholder: "<?php _e('Wähle Rolle aus', 'cpsmartcrm') ?>...",
-            multiple: true,
-            ajax: {
-                url: ajaxurl,
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        action: 'WPsCRM_get_registered_roles',
-                        q: params.term
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: $.map(data.roles, function (obj) {
-                            return {
-                                id: obj.role,
-                                text: obj.name
-                            };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
-        <?php if (isset($groups) && $groups) { ?>
-        var presetGroups = "<?php echo $groups; ?>".split(",");
-        $.each(presetGroups, function(i, val) {
-            $("#remindToGroup").append(new Option(val, val, true, true));
-        });
-        $("#remindToGroup").trigger('change');
-        <?php } ?>
-        $("#remindToGroup").on('change', function () {
-            $('#selectedGroups').val($(this).val() ? $(this).val().join(",") : "");
-        });
-
-        // Validator (ohne Kendo)
-        function validateForm() {
-            var valid = true;
-            var msg = "";
-
-            // Kunden-Auswahl prüfen
-            if (!$("#fk_kunde").val()) {
-                jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
-                msg = validationMessages.hasClient;
-                valid = false;
-            }
-            // Benachrichtigung prüfen
-            if ($('input[name="notify_payment"]:checked').length) {
-                var users = $("#remindToUser").val();
-                var groups = $("#remindToGroup").val();
-                if ((!users || users.length === 0) && (!groups || groups.length === 0)) {
-                    jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
-                    msg = validationMessages.hasNoty;
-                    valid = false;
-                }
-            }
-            // Mindestens eine Rechnungszeile?
-            if ($('.riga').length == 0) {
-                jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
-                msg = validationMessages.hasRows;
-                valid = false;
-            }
-            // Beschreibung Pflichtfeld?
-            var descValid = true;
-            $('.descriptive_row').each(function(){
-                if ($(this).val() == "") {
-                    descValid = false;
-                }
-            });
-            if (!descValid) {
-                jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
-                msg = validationMessages.hasDescription;
-                valid = false;
-            }
-
-            if (!valid && msg) {
-                noty({
-                    text: msg,
-                    layout: 'center',
-                    type: 'error',
-                    timeout: 2000
-                });
-            }
-
-            return valid;
         }
+    });
 
-        // Formular absenden
-        $('#_submit').on('click', function (e) {
-            if (!validateForm()) {
-                e.preventDefault();
-                return false;
-            }
-            showMouseLoader();
-            var form = jQuery('form');
-            jQuery.ajax({
+    sessionStorage.removeItem('tmp_amount');
+
+    // --- Fehlermeldungen zentral ---
+    var validationMessages = {
+        hasNoty: "<?php _e('Du solltest einen Benutzer oder eine Gruppe von Benutzern auswählen, die Du benachrichtigen möchtest', 'cpsmartcrm') ?>",
+        hasClient: "<?php _e('Du solltest einen Kunden auswählen', 'cpsmartcrm') ?>",
+        hasRows: "<?php _e('Du solltest dieser Rechnung mindestens eine Zeile hinzufügen', 'cpsmartcrm') ?>",
+        hasDescription: "<?php _e('Beschreibung ist obligatorisch', 'cpsmartcrm') ?>"
+    };
+
+    // Kunden-Auswahl (Select2)
+    $("#fk_kunde").select2({
+        width: '100%', // <-- Breite auf 100% setzen
+        placeholder: "<?php _e('Wähle Kunde aus', 'cpsmartcrm') ?>...",
+        minimumInputLength: 3,
+        ajax: {
+            url: ajaxurl,
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    action: 'WPsCRM_get_clients2',
+                    q: params.term
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: $.map(data.clients, function (obj) {
+                        return {
+                            id: obj.ID_kunde,
+                            text: obj.firmenname ? obj.firmenname : (obj.name + " " + obj.nachname)
+                        };
+                    })
+                };
+            },
+            cache: true
+        }
+    });
+
+    <?php if (isset($fk_kunde)) { ?>
+    $("#fk_kunde").append(new Option("<?php echo addslashes($cliente); ?>", "<?php echo $fk_kunde; ?>", true, true)).trigger('change');
+    <?php } ?>
+
+    $("#fk_kunde").on('select2:select', function (e) {
+        var id_kunde = $(this).val();
+        if (id_kunde) {
+            $.ajax({
                 url: ajaxurl,
                 data: {
-                    action: 'WPsCRM_save_document',
-                    fields: form.serialize(),
-                    security: '<?php echo $update_nonce; ?>'
+                    'action': 'WPsCRM_get_client_info',
+                    'id_kunde': id_kunde
                 },
-                type: "POST",
-                success: function (response) {
-                    hideMouseLoader();
-                    if (response.indexOf('OK') != -1) {
-                        var tmp = response.split("~");
-                        var id_cli = tmp[1];
-                        noty({
-                            text: "<?php _e('Dokument wurde gespeichert', 'cpsmartcrm') ?>",
-                            layout: 'center',
-                            type: 'success',
-                            timeout: 1000
-                        });
-                        $("#ID").val(id_cli);
-                        setTimeout(function () {
-                            location.href = "<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=') ?>" + id_cli;
-                        }, 1000)
-                    } else {
-                        noty({
-                            text: "<?php _e('Etwas war falsch', 'cpsmartcrm') ?>" + ": " + response,
-                            layout: 'center',
-                            type: 'error',
-                            closeWith: ['button']
-                        });
-                    }
+                success: function (result) {
+                    var parseData = result.info[0];
+                    $("#adresse").val(parseData.adresse);
+                    $("#cap").val(parseData.cap);
+                    $("#standort").val(parseData.standort);
+                    $("#provinz").val(parseData.provinz);
+                    $("#cod_fis").val(parseData.cod_fis);
+                    $("#p_iva").val(parseData.p_iva);
+                    $("#tipo_cliente").val(parseData.tipo_cliente);
                 }
             });
-        });
+        }
+    });
 
-        // Benachrichtigungsbereich anzeigen/verstecken
-        $('#notify_payment').on('click', function () {
-            $('#notifications').is(':visible') ? $('#notifications').fadeOut(200) : $('#notifications').fadeIn(200)
+    // Benutzer-Auswahl (Select2 Multiple)
+    $("#remindToUser").select2({
+        placeholder: "<?php _e('Benutzer wählen', 'cpsmartcrm') ?>...",
+        multiple: true,
+        ajax: {
+            url: ajaxurl,
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    action: 'WPsCRM_get_CRM_users',
+                    q: params.term
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: $.map(data, function (obj) {
+                        return {
+                            id: obj.ID,
+                            text: obj.display_name
+                        };
+                    })
+                };
+            },
+            cache: true
+        }
+    });
+    $("#remindToUser").on('change', function () {
+        $('#selectedUsers').val($(this).val() ? $(this).val().join(",") : "");
+    });
+
+    // Rollen-Auswahl (Select2 Multiple)
+    $("#remindToGroup").select2({
+        placeholder: "<?php _e('Wähle Rolle aus', 'cpsmartcrm') ?>...",
+        multiple: true,
+        ajax: {
+            url: ajaxurl,
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    action: 'WPsCRM_get_registered_roles',
+                    q: params.term
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: $.map(data.roles, function (obj) {
+                        return {
+                            id: obj.role,
+                            text: obj.name
+                        };
+                    })
+                };
+            },
+            cache: true
+        }
+    });
+    $("#remindToGroup").on('change', function () {
+        $('#selectedGroups').val($(this).val() ? $(this).val().join(",") : "");
+    });
+
+    // Validator (ohne Kendo)
+    function validateForm() {
+        var valid = true;
+        var msg = "";
+
+        // Kunden-Auswahl prüfen
+        if (!$("#fk_kunde").val()) {
+            jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
+            msg = validationMessages.hasClient;
+            valid = false;
+        }
+        // Benachrichtigung prüfen
+        if ($('input[name="notify_payment"]:checked').length) {
+            var users = $("#remindToUser").val();
+            var groups = $("#remindToGroup").val();
+            if ((!users || users.length === 0) && (!groups || groups.length === 0)) {
+                jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
+                msg = validationMessages.hasNoty;
+                valid = false;
+            }
+        }
+        // Mindestens eine Rechnungszeile?
+        if ($('.riga').length == 0) {
+            jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
+            msg = validationMessages.hasRows;
+            valid = false;
+        }
+        // Beschreibung Pflichtfeld?
+        var descValid = true;
+        $('.descriptive_row').each(function(){
+            if ($(this).val() == "") {
+                descValid = false;
+            }
+        });
+        if (!descValid) {
+            jQuery.playSound("<?php echo WPsCRM_URL ?>inc/audio/double-alert-2");
+            msg = validationMessages.hasDescription;
+            valid = false;
+        }
+
+        if (!valid && msg) {
+            noty({
+                text: msg,
+                layout: 'center',
+                type: 'error',
+                timeout: 2000
+            });
+        }
+
+        return valid;
+    }
+
+    // Formular absenden
+    $('#_submit').on('click', function (e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+        showMouseLoader();
+        var form = jQuery('form');
+        jQuery.ajax({
+            url: ajaxurl,
+            data: {
+                action: 'WPsCRM_save_document',
+                fields: form.serialize(),
+                security: '<?php echo $update_nonce; ?>'
+            },
+            type: "POST",
+            success: function (response) {
+                hideMouseLoader();
+                if (response.indexOf('OK') != -1) {
+                    var tmp = response.split("~");
+                    var id_cli = tmp[1];
+                    noty({
+                        text: "<?php _e('Dokument wurde gespeichert', 'cpsmartcrm') ?>",
+                        layout: 'center',
+                        type: 'success',
+                        timeout: 1000
+                    });
+                    $("#ID").val(id_cli);
+                    setTimeout(function () {
+                        location.href = "<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/form_invoice.php&ID=') ?>" + id_cli;
+                    }, 1000)
+                } else {
+                    noty({
+                        text: "<?php _e('Etwas war falsch', 'cpsmartcrm') ?>" + ": " + response,
+                        layout: 'center',
+                        type: 'error',
+                        closeWith: ['button']
+                    });
+                }
+            }
         });
     });
+
+    // Benachrichtigungsbereich anzeigen/verstecken
+    $('#notify_payment').on('click', function () {
+        $('#notifications').is(':visible') ? $('#notifications').fadeOut(200) : $('#notifications').fadeIn(200)
+    });
+
+    // Flatpickr Datepicker für Ausgabedatum
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr('#data', {
+            dateFormat: 'd-m-Y',
+            onChange: function(selectedDates, dateStr, instance) {
+                calculateExpiration();
+            }
+        });
+        
+        // Flatpickr Datepicker für Zahlungsexp. Datum
+        flatpickr('#data_scadenza', {
+            dateFormat: 'd-m-Y'
+        });
+    }
+
+    // Auto-Berechnung Zahlungsexp basierend auf Zahlungsart und #data
+    function calculateExpiration() {
+        var payment = $('#modalita_pagamento').val();
+        if (!payment || payment === '0') return;
+        
+        var parts = payment.split('~');
+        if (!parts[1]) return;
+        
+        var dataField = document.getElementById('data');
+        if (!dataField || !dataField.value) return;
+        
+        var dateStr = dataField.value; // Format: dd-mm-yyyy
+        var dateParts = dateStr.split('-');
+        if (dateParts.length !== 3) return;
+        
+        var baseDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]); // JS: month is 0-indexed
+        var days = parseInt(parts[1], 10);
+        if (isNaN(days)) return;
+        
+        var expiryDate = new Date(baseDate);
+        expiryDate.setDate(expiryDate.getDate() + days);
+        
+        // Format zurück zu dd-mm-yyyy
+        var expDay = String(expiryDate.getDate()).padStart(2, '0');
+        var expMonth = String(expiryDate.getMonth() + 1).padStart(2, '0');
+        var expYear = expiryDate.getFullYear();
+        
+        document.getElementById('data_scadenza').value = expDay + '-' + expMonth + '-' + expYear;
+    }
+
+    // Trigger berechnung wenn Zahlungsart sich ändert
+    $('#modalita_pagamento').on('change', calculateExpiration);
+    
+    // Trigger auch wenn #data sich ändert (Flatpickr onChange)
+    // bereits über onChange oben registriert
+});
 </script>
 <?php } ?>
 

@@ -30,9 +30,9 @@ $customer_filter = (int) ($_GET['customer'] ?? 0);
 $year_start = $year . '-01-01';
 $year_end = $year . '-12-31';
 
-// Build WHERE clause
-$where_parts = array("tipo = %d", "pagato = 1"); // Only paid invoices
-$where_values = array($invoice_type);
+// Build WHERE clause for invoices
+$where_parts = array("tipo = %d", "pagato = %d"); // Only paid invoices
+$where_values = array($invoice_type, 1);
 
 if (!empty($month)) {
     $where_parts[] = "DATE_FORMAT(data, '%Y-%m') = %s";
@@ -50,20 +50,80 @@ if ($customer_filter > 0) {
 
 $where_clause = implode(' AND ', $where_parts);
 
-// Get yearly summary
-$yearly_summary = $wpdb->get_row(
+// Get yearly summary - kombiniere Rechnungen + manuelle Einnahmen/Ausgaben
+// Rechnungen
+$invoice_summary = $wpdb->get_row(
     $wpdb->prepare(
         "SELECT 
             COUNT(*) as invoice_count,
             COALESCE(SUM(totale_imponibile), 0) as total_net,
             COALESCE(SUM(totale_imposta), 0) as total_tax,
             COALESCE(SUM(totale), 0) as total,
-            AVG(totale) as avg_invoice_value
+            COALESCE(AVG(totale), 0) as avg_invoice_value
          FROM {$d_table}
-         WHERE tipo = %d AND pagato = 1 AND data >= %s AND data <= %s",
-        $invoice_type, $year_start, $year_end
+         WHERE {$where_clause}",
+        ...$where_values
     )
 );
+
+// Manuelle Einnahmen
+$income_where = "data >= %s AND data <= %s";
+$income_where_values = array($year_start, $year_end);
+if (!empty($month)) {
+    $income_where = "DATE_FORMAT(data, '%Y-%m') = %s";
+    $income_where_values = array($year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT));
+}
+
+$income_summary = $wpdb->get_row(
+    $wpdb->prepare(
+        "SELECT 
+            COUNT(*) as count,
+            COALESCE(SUM(imponibile), 0) as total,
+            COALESCE(SUM(imposta), 0) as tax
+         FROM {$i_table}
+         WHERE {$income_where}",
+        ...$income_where_values
+    )
+);
+
+// Manuelle Ausgaben
+$expense_summary = $wpdb->get_row(
+    $wpdb->prepare(
+        "SELECT 
+            COUNT(*) as count,
+            COALESCE(SUM(imponibile), 0) as total,
+            COALESCE(SUM(imposta), 0) as tax
+         FROM {$e_table}
+         WHERE {$income_where}",
+        ...$income_where_values
+    )
+);
+
+// Kombiniere alles zu einer Summary
+$total_transactions = ($invoice_summary->invoice_count ?? 0) + ($income_summary->count ?? 0) + ($expense_summary->count ?? 0);
+$total_income_net = ($invoice_summary->total_net ?? 0) + ($income_summary->total ?? 0);
+$total_expense_net = ($expense_summary->total ?? 0);
+$total_income_tax = ($invoice_summary->total_tax ?? 0) + ($income_summary->tax ?? 0);
+$total_expense_tax = ($expense_summary->tax ?? 0);
+
+$yearly_summary = (object) array(
+    'invoice_count' => $total_transactions,
+    'total_net' => $total_income_net - $total_expense_net,
+    'total_tax' => $total_income_tax - $total_expense_tax,  // Einnahmen-USt minus Ausgaben-USt
+    'total' => ($total_income_net + $total_income_tax) - ($total_expense_net + $total_expense_tax),
+    'avg_invoice_value' => $total_transactions > 0 ? (($total_income_net - $total_expense_net) / $total_transactions) : 0
+);
+
+// Ensure we have defaults if query returns nothing
+if (!$yearly_summary) {
+    $yearly_summary = (object) array(
+        'invoice_count' => 0,
+        'total_net' => 0,
+        'total_tax' => 0,
+        'total' => 0,
+        'avg_invoice_value' => 0
+    );
+}
 
 // Monthly data for chart
 $monthly_data = $wpdb->get_results(
@@ -183,10 +243,21 @@ $tax_breakdown = $wpdb->get_results(
     )
 );
 
-// Available years for filter
-$available_years = $wpdb->get_col(
-    "SELECT DISTINCT YEAR(data) as year FROM {$d_table} WHERE tipo = $invoice_type ORDER BY year DESC"
-);
+// Available years for filter - sammeln aus ALLEN Tabellen (Rechnungen, Einnahmen, Ausgaben)
+$years_from_invoices = $wpdb->get_col("SELECT DISTINCT YEAR(data) as year FROM {$d_table} WHERE tipo = {$invoice_type} ORDER BY year DESC");
+$years_from_income = $wpdb->get_col("SELECT DISTINCT YEAR(data) as year FROM {$i_table} ORDER BY year DESC");
+$years_from_expenses = $wpdb->get_col("SELECT DISTINCT YEAR(data) as year FROM {$e_table} ORDER BY year DESC");
+
+// Zusammenfassen und deduplizieren
+$all_years = array_unique(array_merge(
+    (array)$years_from_invoices,
+    (array)$years_from_income,
+    (array)$years_from_expenses
+));
+rsort($all_years); // Nach absteigend sortieren
+
+// Fallback: wenn gar keine Jahre, zumindest aktuelles Jahr anzeigen
+$available_years = !empty($all_years) ? $all_years : array(date('Y'));
 
 // Available customers for filter
 $available_customers = $wpdb->get_results(
@@ -197,9 +268,25 @@ $available_customers = $wpdb->get_results(
      ORDER BY name ASC"
 );
 
+// DEBUG: Zeige an ob Daten existieren
+$test_invoices = $wpdb->get_var("SELECT COUNT(*) FROM {$d_table} WHERE tipo = 2");
+$test_income = $wpdb->get_var("SELECT COUNT(*) FROM {$i_table}");
+$test_expenses = $wpdb->get_var("SELECT COUNT(*) FROM {$e_table}");
+$has_any_data = ($test_invoices > 0 || $test_income > 0 || $test_expenses > 0);
+
 ?>
 
+
 <h2><?php _e('Statistik & Reports', 'cpsmartcrm'); ?></h2>
+
+<?php if (!$has_any_data): ?>
+    <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+        <strong style="color: #856404;">⚠️ <?php _e('Keine Buchhaltungsdaten', 'cpsmartcrm'); ?></strong><br>
+        <p style="margin: 8px 0 0 0; color: #856404; font-size: 13px;">
+            <?php _e('Es wurden noch keine Rechnungen, Einnahmen oder Ausgaben erfasst. Gehen Sie zum Tab "Belege" um Transaktionen zu erstellen.', 'cpsmartcrm'); ?>
+        </p>
+    </div>
+<?php endif; ?>
 
 <form method="get" action="" style="background: #f8f8f8; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
     <input type="hidden" name="page" value="smart-crm" />
