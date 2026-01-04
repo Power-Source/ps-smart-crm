@@ -354,6 +354,10 @@ function WPsCRM_mp_backfill_paid_orders()
         return;
     }
 
+    if (function_exists('wp_doing_ajax') && wp_doing_ajax()) {
+        return; // Avoid running during admin-ajax to prevent MP order admin hooks from firing without context
+    }
+
     $args = array(
         'post_type' => 'mp_order',
         'post_status' => 'order_paid',
@@ -372,6 +376,7 @@ function WPsCRM_mp_backfill_paid_orders()
         ),
         'orderby' => 'date',
         'order' => 'DESC',
+        'suppress_filters' => true, // Skip other plugins' pre_get_posts filters that expect admin screen context
     );
 
     $query = new WP_Query($args);
