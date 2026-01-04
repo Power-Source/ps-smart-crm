@@ -240,6 +240,37 @@ function WPsCRM_crm_install() {
   KEY `kategoria` (`kategoria`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
 
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."belege` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `belegnummer` varchar(50) NOT NULL,
+  `beleg_typ` varchar(50) NOT NULL COMMENT 'Rechnung, Quittung, Beleg, Zahlungsnachweis, etc.',
+  `beleg_datum` date NOT NULL,
+  `filename` varchar(255) NOT NULL,
+  `file_path` varchar(500) NOT NULL,
+  `file_mime` varchar(50) NOT NULL,
+  `file_size` int(10) unsigned NOT NULL,
+  `fk_documenti` int(10) unsigned DEFAULT NULL COMMENT 'Verkn\u00fcpfung zu Rechnung',
+  `fk_incomes` int(10) unsigned DEFAULT NULL COMMENT 'Verkn\u00fcpfung zu manuellem Einkommen',
+  `fk_expenses` int(10) unsigned DEFAULT NULL COMMENT 'Verkn\u00fcpfung zu Ausgabe',
+  `fk_kunde` int(10) unsigned DEFAULT NULL COMMENT 'Verkn\u00fcpfung zu Kunde',
+  `beschreibung` text,
+  `kategorie` varchar(100) NOT NULL COMMENT 'Betriebskosten, Material, Dienste, etc.',
+  `notizen` text,
+  `tags` varchar(255),
+  `upload_datum` datetime NOT NULL,
+  `uploaded_by` int(10) unsigned NOT NULL COMMENT 'Benutzer-ID',
+  `deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `belegnummer` (`belegnummer`),
+  KEY `beleg_datum` (`beleg_datum`),
+  KEY `fk_documenti` (`fk_documenti`),
+  KEY `fk_incomes` (`fk_incomes`),
+  KEY `fk_expenses` (`fk_expenses`),
+  KEY `fk_kunde` (`fk_kunde`),
+  KEY `kategorie` (`kategorie`),
+  KEY `deleted` (`deleted`)
+) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
+
     //print_r ($sql);//exit;
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	$namefile="error_setup_".date("YmdHi").".txt";

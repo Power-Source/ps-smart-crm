@@ -29,6 +29,12 @@ $available_tabs = array(
         'file' => 'tabs/accounting.php',
         'capability' => 'manage_crm',
     ),
+    'belege' => array(
+        'label' => __('Belege', 'cpsmartcrm'),
+        'icon' => 'glyphicon glyphicon-folder-open',
+        'file' => 'tabs/belege.php',
+        'capability' => 'manage_crm',
+    ),
     'bookings' => array(
         'label' => __('Buchungen', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-list',

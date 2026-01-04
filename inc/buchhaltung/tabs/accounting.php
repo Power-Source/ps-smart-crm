@@ -913,6 +913,7 @@ document.getElementById('month_picker').addEventListener('change', function() {
                         <th style="width: 100px; text-align: right;"><?php _e('USt./Vorst.', 'cpsmartcrm'); ?></th>
                         <?php endif; ?>
                         <th style="width: 140px; text-align: right;"><?php _e('Betrag', 'cpsmartcrm'); ?></th>
+                        <th style="width: 80px; text-align: center;"><?php _e('Belege', 'cpsmartcrm'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -924,6 +925,14 @@ document.getElementById('month_picker').addEventListener('change', function() {
                         $running_balance += $is_income ? $amount : -$amount;
                         
                         $row_class = $is_income ? 'crm-transaction-row-income' : 'crm-transaction-row-expense';
+                        
+                        // Get attached belege for this transaction
+                        $belege = array();
+                        if (isset($trans['transaction_id'])) {
+                            $type = isset($trans['invoice_id']) ? 'invoice' : (isset($trans['income_id']) ? 'income' : 'expense');
+                            $trans_id = isset($trans['invoice_id']) ? $trans['invoice_id'] : (isset($trans['income_id']) ? $trans['income_id'] : $trans['expense_id']);
+                            $belege = WPsCRM_get_beleg_by_transaction($type, $trans_id);
+                        }
                     ?>
                     <tr class="<?php echo esc_attr($row_class); ?>">
                         <td><?php echo esc_html(date_i18n('d.m.Y', strtotime($trans['date']))); ?></td>
@@ -948,6 +957,15 @@ document.getElementById('month_picker').addEventListener('change', function() {
                             <strong style="color: <?php echo $is_income ? '#2e7d32' : '#c62828'; ?>;">
                                 <?php echo $is_income ? '+' : '−'; ?> <?php echo esc_html(WPsCRM_format_currency($trans['total'])); ?>
                             </strong>
+                        </td>
+                        <td style="text-align: center;">
+                            <?php if (!empty($belege)) : ?>
+                                <span style="background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: 600;">
+                                    📎 <?php echo count($belege); ?>
+                                </span>
+                            <?php else : ?>
+                                <span style="color: #999; font-size: 12px;">−</span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
