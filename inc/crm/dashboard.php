@@ -268,7 +268,7 @@ $page="dashboard";
 </ul>
 </div>
 <div class="col-md-12" style="background:#fafafa;padding:15px">
-    <h4 class="page-header"><?php _e('Ihre aktuellen Benachrichtigungen','cpsmartcrm')?><span class="crmHelp" data-help="home-notifications"></span> 
+    <h4 class="page-header"><?php _e('Ihre aktuellen Benachrichtigungen','cpsmartcrm')?>
 		<div id="week_menu" style="float: right;margin-right: 50px;margin-top: -6px;">
 			<ul class="nav nav-pills">
 				<li role="presentation" <?php echo  (strstr($menu,"day") || !isset($_GET['view']) ) ? "class=\"active\"" :null  ?>><a href="<?php echo admin_url()?>?page=smart-crm&view=day"><?php _e('Tagesansicht','cpsmartcrm')?></a></li>

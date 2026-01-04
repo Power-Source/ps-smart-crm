@@ -130,7 +130,7 @@ else
         </ul>
         <div class="tab-content" style="display:block;">
             <h4 class="page-header" style="margin: 10px 0 20px;">
-                <?php _e('GUTSCHRIFTSDATEN','cpsmartcrm')?><span class="crmHelp" data-help="document-data"></span>
+                <?php _e('GUTSCHRIFTSDATEN','cpsmartcrm')?>
                 <?php if ($ID) {?>
                 <span style="float:right;font-size:.8em;text-decoration:underline;cursor:pointer" class="_edit_header"><i class="glyphicon glyphicon-pencil"></i> <?php _e('Bearbeiten','cpsmartcrm')?></span>
                 <?php } ?>
@@ -227,7 +227,7 @@ else
             </section>
 
             <h4 class="page-header">
-                <?php _e('KUNDENDATEN','cpsmartcrm')?><span class="crmHelp" data-help="customer-data"></span>
+                <?php _e('KUNDENDATEN','cpsmartcrm')?>
                 <?php
 			if ($fk_kunde)
 			{
@@ -326,7 +326,7 @@ else
 
                 </div>
             </div>
-            <h4 class="page-header"><?php _e('Produkte zur Gutschrift hinzufügen','cpsmartcrm')?><span class="crmHelp" data-help="invoice-products"></span>
+            <h4 class="page-header"><?php _e('Produkte zur Gutschrift hinzufügen','cpsmartcrm')?>
 
 				<?php do_action("WPsCRM_show_WOO_products");?>
 				
@@ -397,7 +397,7 @@ else
 <div id="dialog-view" style="display:none;margin: 0 auto; text-align: center; z-index: 1000; width: 100%; height: 100%; background: url('<?php echo str_replace("inc/crm/dokumente/","",plugin_dir_url( __FILE__ ))?>css/img/bg_w_tr.png');position: absolute;left: 0;top:0;"  class="_modal" data-from="dokumente">
     <div class="col-md-6 panel panel-primary _flat modal_inner" style="border:1px solid #666;text-align:left;background:#fff;padding-bottom:20px;margin: 46px auto;float: none;padding:0;position:relative">
     <div class="panel-heading" style="padding: 3px 10px;">
-        <h3 style="text-align:center;margin-top: 8px;"><?php _e('Standardtage ändern','cpsmartcrm')?><span class="crmHelp" data-help="deafult-invoice-payment-noty"></span></h3>
+        <h3 style="text-align:center;margin-top: 8px;"><?php _e('Standardtage ändern','cpsmartcrm')?></h3>
     </div>
     <div class="panel-body" style="padding:50px">
         <label><?php  _e('Standardwert ändern','cpsmartcrm')?></label><input class="ruleActions" name="new_default_noty" id="new_default_noty" type="number" value="<?php echo $documentOptions['invoice_noty_days']?>">

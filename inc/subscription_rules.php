@@ -36,7 +36,7 @@ $num=$wpdb->num_rows;
     <h1 class="WPsCRM_plugin_title" style="text-align:center">PS Smart CRM <?php if(! isset($_GET['p'])){ ?><?php } ?></h1>
     <?php include($inc_dir."/crm/c_menu.php")?>
     
-    <div class="page-header" style="background-color:lightgrey;margin: 10px 0 20px;border-bottom:none"><span class="crmHelp" data-help="subscription-rules" style="margin-top:8px"></span>
+    <div class="page-header" style="background-color:lightgrey;margin: 10px 0 20px;border-bottom:none">
         <h1><?php _e( 'PS Smart CRM-Abonnementregeln', 'cpsmartcrm'); ?><small id="addRule" class="btn _flat" style="margin-left:100px;background-color:#393939;color:#fafafa"><?php _e( 'Regel hinzufügen', 'cpsmartcrm'); ?></small></h1>
     </div>
     <div class="panel panel-default col-md-12" style="border:none">

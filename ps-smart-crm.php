@@ -446,12 +446,12 @@ add_action('admin_menu', 'WPsCRM_documentation_link',99);
 function WPsCRM_documentation_link(){
 	if(class_exists('sitepress')){
 		if(ICL_LANGUAGE_CODE =="de")
-			$link='https://cp-psource.github.io/ps-smart-crm/dokumentation.html';
+			$link='https://power-source.github.io/ps-smart-crm/';
 		else
-			$link='https://cp-psource.github.io/ps-smart-crm/dokumentation.html';
+			$link='https://power-source.github.io/ps-smart-crm/';
 		}
 		else{
-			$link='https://cp-psource.github.io/ps-smart-crm/dokumentation.html';
+			$link='https://power-source.github.io/ps-smart-crm/';
 		}
 	add_submenu_page(
 	'smart-crm',

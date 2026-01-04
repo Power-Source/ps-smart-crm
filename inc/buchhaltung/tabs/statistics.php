@@ -30,7 +30,7 @@ $customer_filter = (int) ($_GET['customer'] ?? 0);
 $year_start = $year . '-01-01';
 $year_end = $year . '-12-31';
 
-// Build WHERE clause for invoices
+// Build WHERE clause
 $where_parts = array("tipo = %d", "pagato = 1"); // Only paid invoices
 $where_values = array($invoice_type);
 
@@ -50,8 +50,8 @@ if ($customer_filter > 0) {
 
 $where_clause = implode(' AND ', $where_parts);
 
-// Get summary from invoices
-$invoice_summary = $wpdb->get_row(
+// Get yearly summary
+$yearly_summary = $wpdb->get_row(
     $wpdb->prepare(
         "SELECT 
             COUNT(*) as invoice_count,
@@ -60,47 +60,9 @@ $invoice_summary = $wpdb->get_row(
             COALESCE(SUM(totale), 0) as total,
             AVG(totale) as avg_invoice_value
          FROM {$d_table}
-         WHERE " . $where_clause,
-        ...$where_values
+         WHERE tipo = %d AND pagato = 1 AND data >= %s AND data <= %s",
+        $invoice_type, $year_start, $year_end
     )
-);
-
-// Get summary from incomes (MarketPress + Manual)
-$income_where = array();
-$income_values = array();
-
-if (!empty($month)) {
-    $income_where[] = "DATE_FORMAT(data, '%Y-%m') = %s";
-    $income_values[] = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
-} else {
-    $income_where[] = "data >= %s AND data <= %s";
-    $income_values[] = $year_start;
-    $income_values[] = $year_end;
-}
-
-$income_where_clause = implode(' AND ', $income_where);
-
-$income_summary = $wpdb->get_row(
-    $wpdb->prepare(
-        "SELECT 
-            COUNT(*) as income_count,
-            COALESCE(SUM(imponibile), 0) as total_net,
-            COALESCE(SUM(imposta), 0) as total_tax,
-            COALESCE(SUM(totale), 0) as total,
-            AVG(totale) as avg_income_value
-         FROM {$i_table}
-         WHERE " . $income_where_clause,
-        ...$income_values
-    )
-);
-
-// Combine both summaries
-$yearly_summary = (object) array(
-    'invoice_count' => (int)($invoice_summary->invoice_count ?? 0) + (int)($income_summary->income_count ?? 0),
-    'total_net' => (float)($invoice_summary->total_net ?? 0) + (float)($income_summary->total_net ?? 0),
-    'total_tax' => (float)($invoice_summary->total_tax ?? 0) + (float)($income_summary->total_tax ?? 0),
-    'total' => (float)($invoice_summary->total ?? 0) + (float)($income_summary->total ?? 0),
-    'avg_invoice_value' => ((float)($invoice_summary->total ?? 0) + (float)($income_summary->total ?? 0)) / max((int)($invoice_summary->invoice_count ?? 0) + (int)($income_summary->income_count ?? 0), 1)
 );
 
 // Monthly data for chart
@@ -225,9 +187,6 @@ $tax_breakdown = $wpdb->get_results(
 $available_years = $wpdb->get_col(
     "SELECT DISTINCT YEAR(data) as year FROM {$d_table} WHERE tipo = $invoice_type ORDER BY year DESC"
 );
-if (empty($available_years)) {
-    $available_years = array(date('Y'), date('Y') - 1);
-}
 
 // Available customers for filter
 $available_customers = $wpdb->get_results(

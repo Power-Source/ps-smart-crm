@@ -130,7 +130,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
           <!--PRIMO TAB -->
           <div>
 
-              <h4 class="page-header" style="margin: 10px 0 20px;"><?php _e('DOKUMENTENDATEN', 'cpsmartcrm') ?><span class="crmHelp" data-help="document-data"></span>
+              <h4 class="page-header" style="margin: 10px 0 20px;"><?php _e('DOKUMENTENDATEN', 'cpsmartcrm') ?></span>
                   <span style="float:right;margin-top: -7px;">
                       <label class="col-sm-2 control-label"><?php _e('Nummer', 'cpsmartcrm') ?></label><span class="col-sm-2"><input id="progressivo" name="progressivo" class="form-control" data-placement="bottom" title="<?php _e('Nummer', 'cpsmartcrm') ?>" value="<?php if (isset($riga)) echo $riga["progressivo"] ?>" readonly disabled/>
                       </span></span></h4>
@@ -161,7 +161,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                   <label class="col-sm-2 control-label"><?php _e('Anmerkungen', 'cpsmartcrm') ?></label><br />
                   <div class="col-sm-8"><textarea id="annotazioni" style="width:100%" name="annotazioni" rows="5"><?php if (isset($riga)) echo stripslashes($riga["annotazioni"]) ?></textarea></div>
               </div>
-              <h4 class="page-header"><?php _e('KUNDENDATEN', 'cpsmartcrm') ?><span class="crmHelp" data-help="customer-data"></span>
+              <h4 class="page-header"><?php _e('KUNDENDATEN', 'cpsmartcrm') ?>
                   <?php
                   if (isset($fk_kunde)) {
                     echo "<a href=\"" . admin_url('admin.php?page=smart-crm&p=kunde/form.php&ID=' . $fk_kunde) . "\" target=\"_blank\"><span class=\"header_customer\" >" . $cliente . "</span></a>";
@@ -258,7 +258,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                   <div class="_postbox">
                       <!--<button type="button" class="handlediv button-link" aria-expanded="true"><span class="toggle-indicator" aria-hidden="true"></span></button>-->
 
-                    <h4 class="page-header"><?php _e('ANGEBOT TEXT', 'cpsmartcrm') ?> <span class="crmHelp" data-help="quotation-text"></span></h4>
+                    <h4 class="page-header"><?php _e('ANGEBOT TEXT', 'cpsmartcrm') ?></h4>
                     <div class="_inside">
                         <?php
                         $content = isset($riga["testo_libero"]) ? $riga["testo_libero"] : "";
@@ -280,7 +280,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
               
               <div>-->
 
-              <h4 class="page-header"><?php _e('Füge Produkte zum Angebot hinzu', 'cpsmartcrm') ?><span class="crmHelp" data-help="quotation-products"></span>
+              <h4 class="page-header"><?php _e('Füge Produkte zum Angebot hinzu', 'cpsmartcrm') ?>
                   <?php do_action("WPsCRM_show_WOO_products"); ?>
               </h4>
               <?php
