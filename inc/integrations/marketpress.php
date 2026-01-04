@@ -52,7 +52,13 @@ add_filter('WPsCRM_accounting_integrations', function ($integrations) {
         'download_url' => 'https://github.com/Power-Source/marketpress/releases/latest/download/marketpress.zip',
         'icon' => 'glyphicon glyphicon-shopping-cart',
         'status' => 'available',
-        'fields' => array(),
+        'fields' => array(
+            'sync_enabled' => array(
+                'type' => 'checkbox',
+                'label' => __('Automatische Synchronisation aktivieren', 'cpsmartcrm'),
+                'description' => __('Bezahlte Bestellungen werden automatisch in Echtzeit als Einnahmen erfasst', 'cpsmartcrm'),
+            ),
+        ),
     );
 
     return $integrations;
@@ -128,6 +134,12 @@ function WPsCRM_mp_log($message)
  */
 function WPsCRM_mp_sync_paid_order($order)
 {
+    // Check if integration is enabled
+    $integration_options = get_option('CRM_accounting_integrations', array());
+    if (empty($integration_options['marketpress']['sync_enabled'])) {
+        return; // Integration disabled
+    }
+
     if (!class_exists('MP_Order') || !class_exists('MP_Cart')) {
         return;
     }
@@ -346,6 +358,12 @@ add_action('admin_init', 'WPsCRM_mp_cleanup_duplicates', 9); // Run before backf
  */
 function WPsCRM_mp_backfill_paid_orders()
 {
+    // Check if integration is enabled
+    $integration_options = get_option('CRM_accounting_integrations', array());
+    if (empty($integration_options['marketpress']['sync_enabled'])) {
+        return; // Integration disabled
+    }
+
     if (!class_exists('MP_Order')) {
         return;
     }

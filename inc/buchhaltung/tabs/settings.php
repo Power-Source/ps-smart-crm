@@ -12,6 +12,65 @@ if (!current_user_can('manage_crm')) {
 $acc_options = get_option('CRM_accounting_settings', array());
 $bus_options = get_option('CRM_business_settings', array());
 
+// Check if MarketPress is active
+$marketpress_active = class_exists('MP_Order') && class_exists('MP_Cart');
+$marketpress_integration_enabled = false;
+$sync_message = '';
+$sync_error = '';
+
+if ($marketpress_active) {
+    $integration_options = get_option('CRM_accounting_integrations', array());
+    $marketpress_integration_enabled = !empty($integration_options['marketpress']['sync_enabled']);
+}
+
+// Handle manual MarketPress sync
+if (isset($_POST['sync_marketpress_orders']) && check_admin_referer('sync_marketpress_nonce')) {
+    if ($marketpress_active && $marketpress_integration_enabled) {
+        global $wpdb;
+        
+        $args = array(
+            'post_type' => 'mp_order',
+            'post_status' => 'order_paid',
+            'posts_per_page' => -1, // Alle bezahlten Bestellungen
+            'meta_query' => array(
+                'relation' => 'OR',
+                array(
+                    'key' => '_wpscrm_income_ids',
+                    'compare' => 'NOT EXISTS',
+                ),
+                array(
+                    'key' => '_wpscrm_income_ids',
+                    'value' => '',
+                    'compare' => '=',
+                ),
+            ),
+            'orderby' => 'date',
+            'order' => 'ASC',
+        );
+
+        $query = new WP_Query($args);
+        $synced_count = 0;
+        
+        if ($query->have_posts()) {
+            foreach ($query->posts as $post) {
+                $order = new MP_Order($post->ID);
+                $order_total = (float) $order->get_meta('mp_order_total', 0);
+                
+                if ($order_total > 0) {
+                    WPsCRM_mp_sync_paid_order($order);
+                    $synced_count++;
+                }
+            }
+            
+            $sync_message = sprintf(__('%d Bestellungen wurden erfolgreich synchronisiert.', 'cpsmartcrm'), $synced_count);
+        } else {
+            $sync_message = __('Keine fehlenden Bestellungen gefunden.', 'cpsmartcrm');
+        }
+    } else {
+        $sync_error = __('MarketPress Integration ist nicht aktiviert.', 'cpsmartcrm');
+    }
+}
+
 // Check if form submitted
 if (isset($_POST['save_accounting_settings']) && check_admin_referer('accounting_settings_nonce')) {
     $tax_rates = array();
@@ -48,7 +107,6 @@ if (isset($_POST['save_accounting_settings']) && check_admin_referer('accounting
     }
 
     $acc_options['tax_rates'] = $tax_rates;
-    $acc_options['booking_date_auto'] = (int) ($_POST['booking_date_auto'] ?? 0);
     $acc_options['booking_number_prefix'] = sanitize_text_field($_POST['booking_number_prefix'] ?? 'B');
     $acc_options['booking_number_start'] = (int) ($_POST['booking_number_start'] ?? 1000);
     $acc_options['currency'] = sanitize_text_field($_POST['currency'] ?? 'EUR');
@@ -81,6 +139,19 @@ $is_kleinunternehmer = isset($bus_options['crm_kleinunternehmer']) && $bus_optio
 ?>
 
 <h2><?php _e('Buchhaltungs-Einstellungen', 'cpsmartcrm'); ?></h2>
+
+<!-- Sync Messages -->
+<?php if (!empty($sync_message)) : ?>
+    <div class="notice notice-success is-dismissible">
+        <p><?php echo esc_html($sync_message); ?></p>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($sync_error)) : ?>
+    <div class="notice notice-error is-dismissible">
+        <p><?php echo esc_html($sync_error); ?></p>
+    </div>
+<?php endif; ?>
 
 <div class="card" style="max-width: 1100px; padding: 20px;">
     <h3><?php _e('Grundkonfiguration', 'cpsmartcrm'); ?></h3>
@@ -147,13 +218,6 @@ $is_kleinunternehmer = isset($bus_options['crm_kleinunternehmer']) && $bus_optio
         <hr style="margin: 20px 0;" />
 
         <h3><?php _e('Buchungsoptionen', 'cpsmartcrm'); ?></h3>
-
-        <div style="margin: 16px 0;">
-            <label>
-                <input type="checkbox" name="booking_date_auto" value="1" <?php checked($acc_options['booking_date_auto'] ?? 0, 1); ?> />
-                <?php _e('Automatisch als gebucht markieren, wenn Rechnung bezahlt wird', 'cpsmartcrm'); ?>
-            </label>
-        </div>
 
         <div style="margin: 16px 0;">
             <label for="booking_number_prefix"><?php _e('Buchungsnummer-Präfix:', 'cpsmartcrm'); ?></label>
@@ -290,3 +354,27 @@ jQuery(function($) {
     });
 });
 </script>
+
+<!-- MarketPress Sync Section -->
+<?php if ($marketpress_active && $marketpress_integration_enabled) : ?>
+<div class="card" style="max-width: 1100px; padding: 20px; margin-top: 20px; background: #f0f8ff; border-left: 4px solid #0073aa;">
+    <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <span class="dashicons dashicons-update"></span>
+        <?php _e('MarketPress Synchronisation', 'cpsmartcrm'); ?>
+    </h3>
+    <p style="color: #666;">
+        <?php _e('Prüfen Sie alle bezahlten MarketPress-Bestellungen und fügen Sie fehlende automatisch in die Buchhaltung ein.', 'cpsmartcrm'); ?>
+    </p>
+    <form method="post" action="" onsubmit="return confirm('<?php esc_attr_e('Möchten Sie wirklich alle fehlenden bezahlten Bestellungen synchronisieren?', 'cpsmartcrm'); ?>');">
+        <?php wp_nonce_field('sync_marketpress_nonce'); ?>
+        <input type="hidden" name="sync_marketpress_orders" value="1" />
+        <button type="submit" class="button button-primary">
+            <span class="dashicons dashicons-download" style="vertical-align: middle; margin-top: 4px;"></span>
+            <?php _e('Jetzt synchronisieren', 'cpsmartcrm'); ?>
+        </button>
+        <p style="font-size: 12px; color: #666; margin-top: 8px;">
+            <?php _e('Hinweis: Bereits erfasste Bestellungen werden übersprungen (keine Duplikate).', 'cpsmartcrm'); ?>
+        </p>
+    </form>
+</div>
+<?php endif; ?>

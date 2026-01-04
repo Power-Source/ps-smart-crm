@@ -53,7 +53,13 @@ add_filter('WPsCRM_accounting_integrations', function ($integrations) {
         'download_url' => 'https://github.com/Power-Source/ps-bloghosting/releases/latest/download/ps-bloghosting.zip',
         'icon' => 'glyphicon glyphicon-globe',
         'status' => 'available',
-        'fields' => array(),
+        'fields' => array(
+            'sync_enabled' => array(
+                'type' => 'checkbox',
+                'label' => __('Automatische Synchronisation aktivieren', 'cpsmartcrm'),
+                'description' => __('Bezahlte Blog-Hosting Abonnements werden automatisch in Echtzeit als Einnahmen erfasst', 'cpsmartcrm'),
+            ),
+        ),
     );
 
     return $integrations;
@@ -86,6 +92,12 @@ function WPsCRM_bh_log($message)
  */
 function WPsCRM_bh_sync_transaction($transaction)
 {
+    // Check if integration is enabled
+    $integration_options = get_option('CRM_accounting_integrations', array());
+    if (empty($integration_options['ps-bloghosting']['sync_enabled'])) {
+        return; // Integration disabled
+    }
+
     if (!class_exists('ProSites')) {
         return;
     }
