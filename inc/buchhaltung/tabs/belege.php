@@ -457,9 +457,9 @@ function toggleTransactionFields() {
                 <select id="fk_kunde" name="fk_kunde">
                     <option value=""><?php _e('-- Keine Zuordnung --', 'cpsmartcrm'); ?></option>
                     <?php
-                    $kunden = $wpdb->get_results("SELECT id, Nome, Cognome FROM " . WPsCRM_TABLE . "kunde ORDER BY Nome LIMIT 100");
+                    $kunden = $wpdb->get_results("SELECT ID_kunde, name, nachname FROM " . WPsCRM_TABLE . "kunde WHERE eliminato = 0 ORDER BY name LIMIT 100");
                     foreach ($kunden as $kunde) {
-                        echo '<option value="' . $kunde->id . '">' . esc_html($kunde->Nome . ' ' . $kunde->Cognome) . '</option>';
+                        echo '<option value="' . $kunde->ID_kunde . '">' . esc_html($kunde->name . ' ' . $kunde->nachname) . '</option>';
                     }
                     ?>
                 </select>
@@ -633,9 +633,9 @@ function toggleTransactionFields() {
                 <select id="fk_kunde" name="fk_kunde">
                     <option value=""><?php _e('-- Keine Zuordnung --', 'cpsmartcrm'); ?></option>
                     <?php
-                    $kunden = $wpdb->get_results("SELECT id, Nome, Cognome FROM " . WPsCRM_TABLE . "kunde ORDER BY Nome LIMIT 100");
+                    $kunden = $wpdb->get_results("SELECT ID_kunde, name, nachname FROM " . WPsCRM_TABLE . "kunde WHERE eliminato = 0 ORDER BY name LIMIT 100");
                     foreach ($kunden as $kunde) {
-                        echo '<option value="' . $kunde->id . '">' . esc_html($kunde->Nome . ' ' . $kunde->Cognome) . '</option>';
+                        echo '<option value="' . $kunde->ID_kunde . '">' . esc_html($kunde->name . ' ' . $kunde->nachname) . '</option>';
                     }
                     ?>
                 </select>
