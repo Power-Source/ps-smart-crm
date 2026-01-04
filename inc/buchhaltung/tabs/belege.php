@@ -16,6 +16,28 @@ $d_table = WPsCRM_TABLE . 'documenti';
 $i_table = WPsCRM_TABLE . 'incomes';
 $e_table = WPsCRM_TABLE . 'expenses';
 
+// Lade Kategorien aus Einstellungen
+$acc_options = get_option('CRM_accounting_settings', array());
+$income_categories_raw = (isset($acc_options['income_categories']) && is_array($acc_options['income_categories'])) ? $acc_options['income_categories'] : array();
+$expense_categories_raw = (isset($acc_options['expense_categories']) && is_array($acc_options['expense_categories'])) ? $acc_options['expense_categories'] : array();
+
+// Bereinige und dedupliziere Kategorien
+$income_categories = array();
+foreach ($income_categories_raw as $cat) {
+    if (!empty($cat)) {
+        $income_categories[] = sanitize_text_field($cat);
+    }
+}
+$income_categories = array_values(array_unique($income_categories));
+
+$expense_categories = array();
+foreach ($expense_categories_raw as $cat) {
+    if (!empty($cat)) {
+        $expense_categories[] = sanitize_text_field($cat);
+    }
+}
+$expense_categories = array_values(array_unique($expense_categories));
+
 // Parse parameters
 $action = sanitize_text_field($_GET['action'] ?? 'list');
 $beleg_id = isset($_GET['beleg_id']) ? (int)$_GET['beleg_id'] : 0;
@@ -135,416 +157,263 @@ if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
 
 ?>
 <style>
-    .crm-belege-container {
+    .belege-upload-container {
         background: #fff;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .crm-belege-filters {
-        background: #f9f9f9;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 10px;
-    }
-    
-    .crm-belege-filters input,
-    .crm-belege-filters select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        font-size: 13px;
-    }
-    
-    .crm-beleg-list {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-    }
-    
-    .crm-beleg-list thead {
-        background: #f5f5f5;
-    }
-    
-    .crm-beleg-list th {
-        padding: 12px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 13px;
-        border-bottom: 2px solid #ddd;
-    }
-    
-    .crm-beleg-list td {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
-    }
-    
-    .crm-beleg-list tbody tr:hover {
-        background: #fafafa;
-    }
-    
-    .crm-beleg-actions {
-        white-space: nowrap;
-    }
-    
-    .crm-beleg-actions a,
-    .crm-beleg-actions button {
-        padding: 4px 8px;
-        margin-right: 5px;
-        font-size: 12px;
-        text-decoration: none;
-        border-radius: 3px;
-        cursor: pointer;
-        background: #f0f0f0;
-        border: none;
-        color: #0073aa;
-    }
-    
-    .crm-beleg-actions a:hover,
-    .crm-beleg-actions button:hover {
-        background: #e0e0e0;
-    }
-    
-    .crm-beleg-delete {
-        color: #dc3545 !important;
-    }
-    
-    .crm-beleg-delete:hover {
-        background: #f8d7da !important;
-    }
-    
-    .crm-badge {
-        display: inline-block;
-        padding: 3px 8px;
-        border-radius: 3px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    
-    .crm-badge-typ {
-        background: #e3f2fd;
-        color: #0d47a1;
-    }
-    
-    .crm-badge-kategorie {
-        background: #f3e5f5;
-        color: #4a148c;
-    }
-    
-    .crm-upload-section {
-        background: #f9f9f9;
-        padding: 20px;
-        border: 2px dashed #ddd;
+        padding: 30px;
+        border: 1px solid #e0e0e0;
         border-radius: 5px;
         margin-bottom: 30px;
     }
     
-    .crm-upload-section h3 {
-        margin-top: 0;
+    .belege-section-header {
+        margin: 0 0 25px 0;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #0073aa;
+        font-size: 18px;
+        color: #333;
+        font-weight: 600;
     }
     
-    .crm-upload-form {
+    .belege-form-section {
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 25px;
+        border-left: 5px solid #0073aa;
+    }
+    
+    .belege-form-section.basic {
+        background: #f9f9f9;
+    }
+    
+    .belege-form-section.transaction {
+        background: #f0f8ff;
+        border-left-color: #2196f3;
+    }
+    
+    .belege-section-title {
+        margin: 0 0 20px 0;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #333;
+    }
+    
+    .belege-form-section.transaction .belege-section-title {
+        color: #1976d2;
+    }
+    
+    .belege-form-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
     }
     
-    .crm-form-group {
+    .belege-form-row.full {
+        grid-template-columns: 1fr;
+    }
+    
+    .belege-form-group {
         display: flex;
         flex-direction: column;
     }
     
-    .crm-form-group label {
+    .belege-form-group label {
         font-weight: 600;
-        margin-bottom: 5px;
-        font-size: 13px;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
     }
     
-    .crm-form-group input,
-    .crm-form-group select,
-    .crm-form-group textarea {
-        padding: 8px 12px;
+    .belege-form-group .required {
+        color: #d32f2f;
+    }
+    
+    .belege-form-group input,
+    .belege-form-group select,
+    .belege-form-group textarea {
+        padding: 10px 12px;
         border: 1px solid #ddd;
-        border-radius: 3px;
-        font-size: 13px;
+        border-radius: 4px;
+        font-size: 14px;
         font-family: inherit;
+        transition: border-color 0.2s;
     }
     
-    .crm-form-group textarea {
+    .belege-form-group input:focus,
+    .belege-form-group select:focus,
+    .belege-form-group textarea:focus {
+        outline: none;
+        border-color: #0073aa;
+        box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+    }
+    
+    .belege-form-group textarea {
+        min-height: 100px;
         resize: vertical;
-        min-height: 80px;
     }
     
-    .crm-form-group-full {
-        grid-column: 1 / -1;
+    .belege-form-group small {
+        display: block;
+        margin-top: 6px;
+        color: #666;
+        font-size: 13px;
     }
     
-    .crm-submit-section {
-        grid-column: 1 / -1;
+    .belege-conditional-fields {
+        display: none;
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    .belege-conditional-fields.show {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .belege-submit-section {
         display: flex;
         gap: 10px;
-        margin-top: 10px;
+        margin-top: 30px;
     }
     
-    .crm-btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
+    .belege-submit-btn {
+        padding: 12px 30px;
+        font-size: 15px;
         font-weight: 600;
-    }
-    
-    .crm-btn-primary {
         background: #0073aa;
         color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
     }
     
-    .crm-btn-primary:hover {
+    .belege-submit-btn:hover {
         background: #005a87;
-    }
-    
-    .crm-btn-secondary {
-        background: #f0f0f0;
-        color: #333;
-    }
-    
-    .crm-btn-secondary:hover {
-        background: #e0e0e0;
-    }
-    
-    .crm-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 30px;
-    }
-    
-    .crm-stat-box {
-        background: #f9f9f9;
-        padding: 15px;
-        border-left: 4px solid #0073aa;
-        border-radius: 5px;
-    }
-    
-    .crm-stat-box-label {
-        font-size: 12px;
-        color: #666;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-    
-    .crm-stat-box-value {
-        font-size: 24px;
-        font-weight: 600;
-        color: #333;
-        margin-top: 5px;
-    }
-    
-    .crm-no-belege {
-        text-align: center;
-        padding: 40px 20px;
-        color: #999;
-    }
-    
-    .crm-no-belege svg {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 20px;
-        opacity: 0.3;
-    }
-    
-    #trans_kategorie_group,
-    #trans_amount_group,
-    #trans_tax_rate_group,
-    #trans_description_group,
-    #trans_notizen_tags_group {
-        transition: opacity 0.3s ease;
     }
 </style>
 
-<script>
-function toggleTransactionFields() {
-    const transType = document.getElementById('transaction_type').value;
-    const condFields = document.getElementById('trans_conditional_fields');
+<div class="belege-upload-container">
+    <h3 class="belege-section-header"><?php _e('Neuen Beleg hochladen', 'cpsmartcrm'); ?></h3>
     
-    if (transType !== 'none') {
-        condFields.style.display = 'block';
-    } else {
-        condFields.style.display = 'none';
-    }
-}
-</script>
-
-<div class="crm-belege-container">
-    <h2><?php _e('📎 Belege & Dokumente', 'cpsmartcrm'); ?></h2>
-    
-    <?php
-    // Statistiken abrufen
-    $stats = WPsCRM_get_belege_statistics($date_from ?: null, $date_to ?: null);
-    $total_belege = $wpdb->get_var("SELECT COUNT(*) FROM {$b_table} WHERE deleted = 0");
-    $total_size = $wpdb->get_var("SELECT SUM(file_size) FROM {$b_table} WHERE deleted = 0");
-    ?>
-    
-    <div class="crm-stats">
-        <div class="crm-stat-box">
-            <div class="crm-stat-box-label"><?php _e('Belege insgesamt', 'cpsmartcrm'); ?></div>
-            <div class="crm-stat-box-value"><?php echo $total_belege; ?></div>
-        </div>
-        <div class="crm-stat-box">
-            <div class="crm-stat-box-label"><?php _e('Kategorien', 'cpsmartcrm'); ?></div>
-            <div class="crm-stat-box-value"><?php echo count($stats); ?></div>
-        </div>
-        <div class="crm-stat-box">
-            <div class="crm-stat-box-label"><?php _e('Speicherplatz', 'cpsmartcrm'); ?></div>
-            <div class="crm-stat-box-value"><?php echo size_format($total_size); ?></div>
-        </div>
-    </div>
-    
-    <!-- Upload Section -->
-    <div class="crm-upload-section">
-        <h3><?php _e('📤 Neuen Beleg hochladen', 'cpsmartcrm'); ?></h3>
-        <form method="post" enctype="multipart/form-data" class="crm-upload-form">
-            <?php wp_nonce_field('belege_upload'); ?>
+    <form method="post" enctype="multipart/form-data">
+        <?php wp_nonce_field('belege_upload'); ?>
+        <input type="hidden" name="upload_beleg" value="1">
+        
+        <!-- SCHRITT 1: BELEGINFORMATIONEN -->
+        <div class="belege-form-section basic">
+            <h4 class="belege-section-title">📋 <?php _e('Schritt 1: Beleginformationen', 'cpsmartcrm'); ?></h4>
             
-            <div class="crm-form-group">
-                <label for="beleg_datei"><?php _e('Datei', 'cpsmartcrm'); ?> *</label>
+            <!-- Datei-Upload -->
+            <div class="belege-form-group" style="margin-bottom: 20px;">
+                <label for="beleg_datei">
+                    <?php _e('Datei', 'cpsmartcrm'); ?> <span class="required">*</span>
+                </label>
                 <input type="file" id="beleg_datei" name="beleg_datei" required 
                        accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.zip">
-                <small><?php _e('Max. 10MB | PDF, JPG, PNG, DOC, XLS, ZIP', 'cpsmartcrm'); ?></small>
+                <small><?php _e('Max. 10MB | Akzeptierte Formate: PDF, JPG, PNG, GIF, DOC, DOCX, XLS, XLSX, ZIP', 'cpsmartcrm'); ?></small>
             </div>
             
-            <div class="crm-form-group">
-                <label for="beleg_typ"><?php _e('Belegtyp', 'cpsmartcrm'); ?></label>
-                <select id="beleg_typ" name="beleg_typ">
-                    <option value="Rechnung"><?php _e('Rechnung', 'cpsmartcrm'); ?></option>
-                    <option value="Quittung"><?php _e('Quittung', 'cpsmartcrm'); ?></option>
-                    <option value="Beleg"><?php _e('Beleg', 'cpsmartcrm'); ?></option>
-                    <option value="Zahlungsnachweis"><?php _e('Zahlungsnachweis', 'cpsmartcrm'); ?></option>
-                    <option value="Rechnung Lieferant"><?php _e('Lieferantenrechnung', 'cpsmartcrm'); ?></option>
-                    <option value="Kostenvoranschlag"><?php _e('Kostenvoranschlag', 'cpsmartcrm'); ?></option>
-                </select>
-            </div>
-            
-            <div class="crm-form-group">
-                <label for="beleg_datum"><?php _e('Belegdatum', 'cpsmartcrm'); ?></label>
-                <input type="date" id="beleg_datum" name="beleg_datum" value="<?php echo date('Y-m-d'); ?>">
-            </div>
-            
-            <div class="crm-form-group">
-                <label for="kategorie"><?php _e('Kategorie', 'cpsmartcrm'); ?> *</label>
-                <select id="kategorie" name="kategorie" required>
-                    <option value=""><?php _e('-- Wählen --', 'cpsmartcrm'); ?></option>
-                    <option value="Betriebskosten"><?php _e('Betriebskosten', 'cpsmartcrm'); ?></option>
-                    <option value="Material"><?php _e('Material', 'cpsmartcrm'); ?></option>
-                    <option value="Dienste"><?php _e('Dienste', 'cpsmartcrm'); ?></option>
-                    <option value="Reiskosten"><?php _e('Reiskosten', 'cpsmartcrm'); ?></option>
-                    <option value="Versicherung"><?php _e('Versicherung', 'cpsmartcrm'); ?></option>
-                    <option value="Strom/Gas/Wasser"><?php _e('Strom/Gas/Wasser', 'cpsmartcrm'); ?></option>
-                    <option value="Telefon/Internet"><?php _e('Telefon/Internet', 'cpsmartcrm'); ?></option>
-                    <option value="Miete"><?php _e('Miete', 'cpsmartcrm'); ?></option>
-                    <option value="Sonstiges"><?php _e('Sonstiges', 'cpsmartcrm'); ?></option>
-                </select>
-            </div>
-            
-            <div class="crm-form-group">
-                <label for="fk_kunde"><?php _e('Kunde (optional)', 'cpsmartcrm'); ?></label>
-                <select id="fk_kunde" name="fk_kunde">
-                    <option value=""><?php _e('-- Keine Zuordnung --', 'cpsmartcrm'); ?></option>
-                    <?php
-                    $kunden = $wpdb->get_results("SELECT ID_kunde, name, nachname FROM " . WPsCRM_TABLE . "kunde WHERE eliminato = 0 ORDER BY name LIMIT 100");
-                    foreach ($kunden as $kunde) {
-                        echo '<option value="' . $kunde->ID_kunde . '">' . esc_html($kunde->name . ' ' . $kunde->nachname) . '</option>';
-                    }
-                    ?>
-                </select>
-            </div>
-            
-            <div class="crm-form-group crm-form-group-full">
-                <label for="beschreibung"><?php _e('Beschreibung', 'cpsmartcrm'); ?></label>
-                <textarea id="beschreibung" name="beschreibung" placeholder="<?php _e('Kurzbeschreibung des Belegs...', 'cpsmartcrm'); ?>"></textarea>
-            </div>
-        </form>
-    </div>
-    
-    <!-- TRANSACTION SECTION - Separate Box -->
-    <div style="background: #f5f9fc; border: 1px solid #b3d9ef; border-radius: 5px; padding: 20px; margin-bottom: 30px;">
-        <h3 style="margin: 0 0 5px 0; color: #0073aa; font-size: 16px;">
-            <?php _e('Ausgabe / Einnahme zuordnen', 'cpsmartcrm'); ?>
-        </h3>
-        <p style="font-size: 12px; color: #666; margin: 0 0 20px 0;">
-            <?php _e('Optional: Erstelle oder verknüpfe eine Ausgabe oder Einnahme zu diesem Beleg', 'cpsmartcrm'); ?>
-        </p>
-        
-        <form method="post" enctype="multipart/form-data" class="crm-upload-form">
-            <?php wp_nonce_field('belege_upload'); ?>
-            
-            <!-- Hidden fields for beleg info -->
-            <input type="hidden" name="upload_beleg" value="1">
-            <input type="hidden" id="hidden_beleg_datei" name="beleg_datei">
-            <input type="hidden" name="beleg_typ" value="Beleg">
-            <input type="hidden" id="hidden_beleg_datum" name="beleg_datum" value="<?php echo date('Y-m-d'); ?>">
-            <input type="hidden" name="kategorie" value="Sonstiges">
-            
-            <!-- Transaction Type - ALWAYS VISIBLE -->
-            <div style="margin-bottom: 20px;">
-                <div class="crm-form-group">
-                    <label for="transaction_type" style="font-weight: 600; color: #333;">
-                        <?php _e('Transaktionstyp *', 'cpsmartcrm'); ?>
-                    </label>
-                    <select id="transaction_type" name="transaction_type" onchange="toggleTransactionFields()" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 100%;">
-                        <option value="none">— <?php _e('Keine Zuordnung', 'cpsmartcrm'); ?> —</option>
-                        <option value="expense"><?php _e('Ausgabe', 'cpsmartcrm'); ?></option>
-                        <option value="income"><?php _e('Einnahme', 'cpsmartcrm'); ?></option>
+            <!-- Belegtyp, Datum, Kunde -->
+            <div class="belege-form-row">
+                <div class="belege-form-group">
+                    <label for="beleg_typ"><?php _e('Belegtyp', 'cpsmartcrm'); ?></label>
+                    <select id="beleg_typ" name="beleg_typ">
+                        <option value="Rechnung"><?php _e('Rechnung', 'cpsmartcrm'); ?></option>
+                        <option value="Quittung"><?php _e('Quittung', 'cpsmartcrm'); ?></option>
+                        <option value="Beleg"><?php _e('Beleg', 'cpsmartcrm'); ?></option>
+                        <option value="Zahlungsnachweis"><?php _e('Zahlungsnachweis', 'cpsmartcrm'); ?></option>
+                        <option value="Rechnung Lieferant"><?php _e('Lieferantenrechnung', 'cpsmartcrm'); ?></option>
+                        <option value="Kostenvoranschlag"><?php _e('Kostenvoranschlag', 'cpsmartcrm'); ?></option>
+                    </select>
+                </div>
+                
+                <div class="belege-form-group">
+                    <label for="beleg_datum"><?php _e('Belegdatum', 'cpsmartcrm'); ?></label>
+                    <input type="date" id="beleg_datum" name="beleg_datum" value="<?php echo date('Y-m-d'); ?>">
+                </div>
+                
+                <div class="belege-form-group">
+                    <label for="fk_kunde"><?php _e('Kunde (optional)', 'cpsmartcrm'); ?></label>
+                    <select id="fk_kunde" name="fk_kunde">
+                        <option value=""><?php _e('-- Keine Zuordnung --', 'cpsmartcrm'); ?></option>
+                        <?php
+                        $kunden = $wpdb->get_results("SELECT ID_kunde, name, nachname FROM " . WPsCRM_TABLE . "kunde WHERE eliminato = 0 ORDER BY name LIMIT 100");
+                        foreach ($kunden as $kunde) {
+                            echo '<option value="' . $kunde->ID_kunde . '">' . esc_html($kunde->name . ' ' . $kunde->nachname) . '</option>';
+                        }
+                        ?>
                     </select>
                 </div>
             </div>
             
-            <!-- CONDITIONAL FIELDS - Hidden by default -->
-            <div id="trans_conditional_fields" style="display: none;">
-                <!-- Row 1: Kategorie, Betrag, USt-Satz -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div class="crm-form-group">
-                        <label for="trans_kategorie" style="font-weight: 600; color: #333;">
-                            <?php _e('Kategorie *', 'cpsmartcrm'); ?>
+            <!-- Beschreibung -->
+            <div class="belege-form-row full">
+                <div class="belege-form-group">
+                    <label for="beschreibung"><?php _e('Beschreibung', 'cpsmartcrm'); ?></label>
+                    <textarea id="beschreibung" name="beschreibung" 
+                              placeholder="<?php _e('z.B. Rechnungsbeschreibung, Notizen zum Beleg...', 'cpsmartcrm'); ?>"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SCHRITT 2: OPTIONAL TRANSAKTION -->
+        <div class="belege-form-section transaction">
+            <h4 class="belege-section-title"><?php _e('Schritt 2 (Optional): Transaktion zuordnen', 'cpsmartcrm'); ?></h4>
+            
+            <div class="belege-form-group" style="margin-bottom: 20px;">
+                <label for="transaction_type">
+                    <?php _e('Soll diesem Beleg eine Ausgabe oder Einnahme zugeordnet werden?', 'cpsmartcrm'); ?>
+                </label>
+                <select id="transaction_type" name="transaction_type" onchange="toggleTransactionFields()">
+                    <option value="none">— <?php _e('Nein, keine Zuordnung', 'cpsmartcrm'); ?> —</option>
+                    <option value="expense"><?php _e('Ja, als Ausgabe', 'cpsmartcrm'); ?></option>
+                    <option value="income"><?php _e('Ja, als Einnahme', 'cpsmartcrm'); ?></option>
+                </select>
+            </div>
+            
+            <!-- Bedingte Felder -->
+            <div id="trans_conditional_fields" class="belege-conditional-fields">
+                <!-- Kategorie, Betrag, USt-Satz -->
+                <div class="belege-form-row">
+                    <div class="belege-form-group">
+                        <label for="trans_kategorie">
+                            <?php _e('Kategorie', 'cpsmartcrm'); ?> <span class="required">*</span>
                         </label>
-                        <select id="trans_kategorie" name="trans_kategorie" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <select id="trans_kategorie" name="trans_kategorie">
                             <option value="">— <?php _e('Wählen', 'cpsmartcrm'); ?> —</option>
-                            <optgroup label="<?php _e('Ausgaben', 'cpsmartcrm'); ?>">
-                                <option value="Material"><?php _e('Material', 'cpsmartcrm'); ?></option>
-                                <option value="Software"><?php _e('Software', 'cpsmartcrm'); ?></option>
-                                <option value="Reiskosten"><?php _e('Reiskosten', 'cpsmartcrm'); ?></option>
-                                <option value="Büromaterial"><?php _e('Büromaterial', 'cpsmartcrm'); ?></option>
-                                <option value="Marketing"><?php _e('Marketing', 'cpsmartcrm'); ?></option>
-                                <option value="Sonstiges"><?php _e('Sonstiges', 'cpsmartcrm'); ?></option>
-                            </optgroup>
-                            <optgroup label="<?php _e('Einnahmen', 'cpsmartcrm'); ?>">
-                                <option value="Dienstleistung"><?php _e('Dienstleistung', 'cpsmartcrm'); ?></option>
-                                <option value="Produktverkauf"><?php _e('Produktverkauf', 'cpsmartcrm'); ?></option>
-                                <option value="Wartung"><?php _e('Wartung', 'cpsmartcrm'); ?></option>
-                                <option value="Abo"><?php _e('Abo', 'cpsmartcrm'); ?></option>
-                                <option value="Sonstiges"><?php _e('Sonstiges', 'cpsmartcrm'); ?></option>
-                            </optgroup>
+                            <?php if (!empty($expense_categories)): ?>
+                                <optgroup label="<?php _e('Ausgaben', 'cpsmartcrm'); ?>">
+                                    <?php foreach ($expense_categories as $cat): ?>
+                                        <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                            <?php endif; ?>
+                            <?php if (!empty($income_categories)): ?>
+                                <optgroup label="<?php _e('Einnahmen', 'cpsmartcrm'); ?>">
+                                    <?php foreach ($income_categories as $cat): ?>
+                                        <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                            <?php endif; ?>
                         </select>
                     </div>
                     
-                    <div class="crm-form-group">
-                        <label for="trans_amount" style="font-weight: 600; color: #333;">
-                            <?php _e('Betrag (netto) *', 'cpsmartcrm'); ?>
+                    <div class="belege-form-group">
+                        <label for="trans_amount">
+                            <?php _e('Betrag (netto)', 'cpsmartcrm'); ?> <span class="required">*</span>
                         </label>
-                        <input type="number" id="trans_amount" name="trans_amount" step="0.01" min="0" placeholder="0,00" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <input type="number" id="trans_amount" name="trans_amount" step="0.01" min="0" placeholder="0,00">
                     </div>
                     
-                    <div class="crm-form-group">
-                        <label for="trans_tax_rate" style="font-weight: 600; color: #333;">
-                            <?php _e('USt.-Satz', 'cpsmartcrm'); ?>
-                        </label>
-                        <select id="trans_tax_rate" name="trans_tax_rate" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    <div class="belege-form-group">
+                        <label for="trans_tax_rate"><?php _e('USt.-Satz', 'cpsmartcrm'); ?></label>
+                        <select id="trans_tax_rate" name="trans_tax_rate">
                             <option value="0">0 % (<?php _e('befreit', 'cpsmartcrm'); ?>)</option>
                             <option value="7">7 % (<?php _e('Ermäßigt', 'cpsmartcrm'); ?>)</option>
                             <option value="19" selected>19 % (<?php _e('Regulär', 'cpsmartcrm'); ?>)</option>
@@ -552,275 +421,255 @@ function toggleTransactionFields() {
                     </div>
                 </div>
                 
-                <!-- Row 2: Beschreibung -->
-                <div style="margin-bottom: 20px;">
-                    <div class="crm-form-group">
-                        <label for="trans_description" style="font-weight: 600; color: #333;">
-                            <?php _e('Beschreibung / Referenz', 'cpsmartcrm'); ?>
-                        </label>
-                        <input type="text" id="trans_description" name="trans_description" placeholder="<?php _e('z.B. Rechnungsnummer, Beleg-ID...', 'cpsmartcrm'); ?>" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 100%;">
+                <!-- Beschreibung / Referenz -->
+                <div class="belege-form-row full">
+                    <div class="belege-form-group">
+                        <label for="trans_description"><?php _e('Beschreibung / Referenz', 'cpsmartcrm'); ?></label>
+                        <input type="text" id="trans_description" name="trans_description" 
+                               placeholder="<?php _e('z.B. Rechnungsnummer, Beleg-ID...', 'cpsmartcrm'); ?>">
                     </div>
                 </div>
                 
-                <!-- Row 3: Notizen und Tags -->
+                <!-- Notizen & Tags -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div class="crm-form-group">
-                        <label for="notizen" style="font-weight: 600; color: #333;">
-                            <?php _e('Notizen', 'cpsmartcrm'); ?>
-                        </label>
-                        <textarea id="notizen" name="notizen" placeholder="<?php _e('Interne Notizen...', 'cpsmartcrm'); ?>" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-height: 60px;"></textarea>
+                    <div class="belege-form-group">
+                        <label for="notizen"><?php _e('Notizen', 'cpsmartcrm'); ?></label>
+                        <textarea id="notizen" name="notizen" 
+                                  placeholder="<?php _e('Interne Notizen...', 'cpsmartcrm'); ?>"></textarea>
                     </div>
                     
-                    <div class="crm-form-group">
-                        <label for="tags" style="font-weight: 600; color: #333;">
-                            <?php _e('Tags (komma-getrennt)', 'cpsmartcrm'); ?>
-                        </label>
-                        <input type="text" id="tags" name="tags" placeholder="<?php _e('z.B. Steuer, Abzugsfähig', 'cpsmartcrm'); ?>" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    <div class="belege-form-group">
+                        <label for="tags"><?php _e('Tags (komma-getrennt)', 'cpsmartcrm'); ?></label>
+                        <textarea id="tags" name="tags" 
+                                  placeholder="<?php _e('z.B. Steuer, Abzugsfähig, Prüfung', 'cpsmartcrm'); ?>"></textarea>
                     </div>
                 </div>
             </div>
-        </form>
-    </div>
-    
-    <!-- Original Upload Form - Redesigned -->
-    <div class="crm-upload-section">
-        <h3><?php _e('📤 Neuen Beleg hochladen', 'cpsmartcrm'); ?></h3>
-        <form method="post" enctype="multipart/form-data" class="crm-upload-form">
-            <?php wp_nonce_field('belege_upload'); ?>
-            
-            <div class="crm-form-group">
-                <label for="beleg_datei"><?php _e('Datei', 'cpsmartcrm'); ?> *</label>
-                <input type="file" id="beleg_datei" name="beleg_datei" required 
-                       accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.zip">
-                <small><?php _e('Max. 10MB | PDF, JPG, PNG, DOC, XLS, ZIP', 'cpsmartcrm'); ?></small>
-            </div>
-            
-            <div class="crm-form-group">
-                <label for="beleg_typ"><?php _e('Belegtyp', 'cpsmartcrm'); ?></label>
-                <select id="beleg_typ" name="beleg_typ">
-                    <option value="Rechnung"><?php _e('Rechnung', 'cpsmartcrm'); ?></option>
-                    <option value="Quittung"><?php _e('Quittung', 'cpsmartcrm'); ?></option>
-                    <option value="Beleg"><?php _e('Beleg', 'cpsmartcrm'); ?></option>
-                    <option value="Zahlungsnachweis"><?php _e('Zahlungsnachweis', 'cpsmartcrm'); ?></option>
-                    <option value="Rechnung Lieferant"><?php _e('Lieferantenrechnung', 'cpsmartcrm'); ?></option>
-                    <option value="Kostenvoranschlag"><?php _e('Kostenvoranschlag', 'cpsmartcrm'); ?></option>
-                </select>
-            </div>
-            
-            <div class="crm-form-group">
-                <label for="beleg_datum"><?php _e('Belegdatum', 'cpsmartcrm'); ?></label>
-                <input type="date" id="beleg_datum" name="beleg_datum" value="<?php echo date('Y-m-d'); ?>">
-            </div>
-            
-            <div class="crm-form-group">
-                <label for="kategorie"><?php _e('Kategorie', 'cpsmartcrm'); ?> *</label>
-                <select id="kategorie" name="kategorie" required>
-                    <option value=""><?php _e('-- Wählen --', 'cpsmartcrm'); ?></option>
-                    <option value="Betriebskosten"><?php _e('Betriebskosten', 'cpsmartcrm'); ?></option>
-                    <option value="Material"><?php _e('Material', 'cpsmartcrm'); ?></option>
-                    <option value="Dienste"><?php _e('Dienste', 'cpsmartcrm'); ?></option>
-                    <option value="Reiskosten"><?php _e('Reiskosten', 'cpsmartcrm'); ?></option>
-                    <option value="Versicherung"><?php _e('Versicherung', 'cpsmartcrm'); ?></option>
-                    <option value="Strom/Gas/Wasser"><?php _e('Strom/Gas/Wasser', 'cpsmartcrm'); ?></option>
-                    <option value="Telefon/Internet"><?php _e('Telefon/Internet', 'cpsmartcrm'); ?></option>
-                    <option value="Miete"><?php _e('Miete', 'cpsmartcrm'); ?></option>
-                    <option value="Sonstiges"><?php _e('Sonstiges', 'cpsmartcrm'); ?></option>
-                </select>
-            </div>
-            
-            <div class="crm-form-group">
-                <label for="fk_kunde"><?php _e('Kunde (optional)', 'cpsmartcrm'); ?></label>
-                <select id="fk_kunde" name="fk_kunde">
-                    <option value=""><?php _e('-- Keine Zuordnung --', 'cpsmartcrm'); ?></option>
-                    <?php
-                    $kunden = $wpdb->get_results("SELECT ID_kunde, name, nachname FROM " . WPsCRM_TABLE . "kunde WHERE eliminato = 0 ORDER BY name LIMIT 100");
-                    foreach ($kunden as $kunde) {
-                        echo '<option value="' . $kunde->ID_kunde . '">' . esc_html($kunde->name . ' ' . $kunde->nachname) . '</option>';
-                    }
-                    ?>
-                </select>
-            </div>
-            
-            <div class="crm-form-group crm-form-group-full">
-                <label for="beschreibung"><?php _e('Beschreibung', 'cpsmartcrm'); ?></label>
-                <textarea id="beschreibung" name="beschreibung" placeholder="<?php _e('Kurzbeschreibung des Belegs...', 'cpsmartcrm'); ?>"></textarea>
-            </div>
-            
-            <div class="crm-form-group crm-form-group-full">
-                <label for="notizen"><?php _e('Notizen', 'cpsmartcrm'); ?></label>
-                <textarea id="notizen" name="notizen" placeholder="<?php _e('Interne Notizen...', 'cpsmartcrm'); ?>"></textarea>
-            </div>
-            
-            <div class="crm-form-group crm-form-group-full">
-                <label for="tags"><?php _e('Tags (komma-getrennt)', 'cpsmartcrm'); ?></label>
-                <input type="text" id="tags" name="tags" placeholder="<?php _e('z.B. Steuer, Abzugsfähig, Prüfung ausstehend', 'cpsmartcrm'); ?>">
-            </div>
-            
-            <div class="crm-submit-section">
-                <button type="submit" name="upload_beleg" class="crm-btn crm-btn-primary">
-                    <?php _e('✓ Beleg speichern', 'cpsmartcrm'); ?>
-                </button>
-            </div>
-        </form>
-    </div>
-    <div class="crm-belege-filters">
-        <form method="get" style="display: contents;">
-            <input type="hidden" name="page" value="smart-crm">
-            <input type="hidden" name="p" value="buchhaltung/index.php">
-            <input type="hidden" name="accounting_tab" value="belege">
-            
-            <input type="search" name="search" placeholder="<?php _e('Belegnummer, Beschreibung...', 'cpsmartcrm'); ?>" 
-                   value="<?php echo esc_attr($search); ?>">
-            
-            <select name="beleg_typ">
-                <option value=""><?php _e('Alle Belegtypen', 'cpsmartcrm'); ?></option>
-                <option value="Rechnung" <?php selected($beleg_typ, 'Rechnung'); ?>><?php _e('Rechnung', 'cpsmartcrm'); ?></option>
-                <option value="Quittung" <?php selected($beleg_typ, 'Quittung'); ?>><?php _e('Quittung', 'cpsmartcrm'); ?></option>
-                <option value="Beleg" <?php selected($beleg_typ, 'Beleg'); ?>><?php _e('Beleg', 'cpsmartcrm'); ?></option>
-                <option value="Zahlungsnachweis" <?php selected($beleg_typ, 'Zahlungsnachweis'); ?>><?php _e('Zahlungsnachweis', 'cpsmartcrm'); ?></option>
-                <option value="Rechnung Lieferant" <?php selected($beleg_typ, 'Rechnung Lieferant'); ?>><?php _e('Lieferantenrechnung', 'cpsmartcrm'); ?></option>
-            </select>
-            
-            <select name="kategorie">
-                <option value=""><?php _e('Alle Kategorien', 'cpsmartcrm'); ?></option>
-                <option value="Betriebskosten" <?php selected($kategorie, 'Betriebskosten'); ?>><?php _e('Betriebskosten', 'cpsmartcrm'); ?></option>
-                <option value="Material" <?php selected($kategorie, 'Material'); ?>><?php _e('Material', 'cpsmartcrm'); ?></option>
-                <option value="Dienste" <?php selected($kategorie, 'Dienste'); ?>><?php _e('Dienste', 'cpsmartcrm'); ?></option>
-                <option value="Reiskosten" <?php selected($kategorie, 'Reiskosten'); ?>><?php _e('Reiskosten', 'cpsmartcrm'); ?></option>
-                <option value="Versicherung" <?php selected($kategorie, 'Versicherung'); ?>><?php _e('Versicherung', 'cpsmartcrm'); ?></option>
-            </select>
-            
-            <input type="date" name="date_from" value="<?php echo esc_attr($date_from); ?>" 
-                   placeholder="<?php _e('Von Datum', 'cpsmartcrm'); ?>">
-            
-            <input type="date" name="date_to" value="<?php echo esc_attr($date_to); ?>" 
-                   placeholder="<?php _e('Bis Datum', 'cpsmartcrm'); ?>">
-            
-            <button type="submit" class="crm-btn crm-btn-primary"><?php _e('🔍 Filtern', 'cpsmartcrm'); ?></button>
-            <a href="?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege" class="crm-btn crm-btn-secondary">
-                <?php _e('Zurücksetzen', 'cpsmartcrm'); ?>
-            </a>
-        </form>
-    </div>
-    
-    <!-- Belege List -->
-    <?php
-    $where = "deleted = 0";
-    $where_args = array();
-    
-    if (!empty($search)) {
-        $where .= " AND (belegnummer LIKE %s OR beschreibung LIKE %s)";
-        $search_term = '%' . $wpdb->esc_like($search) . '%';
-        $where_args[] = $search_term;
-        $where_args[] = $search_term;
-    }
-    
-    if (!empty($beleg_typ)) {
-        $where .= " AND beleg_typ = %s";
-        $where_args[] = $beleg_typ;
-    }
-    
-    if (!empty($kategorie)) {
-        $where .= " AND kategorie = %s";
-        $where_args[] = $kategorie;
-    }
-    
-    if (!empty($date_from)) {
-        $where .= " AND beleg_datum >= %s";
-        $where_args[] = $date_from;
-    }
-    
-    if (!empty($date_to)) {
-        $where .= " AND beleg_datum <= %s";
-        $where_args[] = $date_to;
-    }
-    
-    // Get total count
-    $sql = "SELECT COUNT(*) FROM {$b_table} WHERE {$where}";
-    if (!empty($where_args)) {
-        $sql = $wpdb->prepare($sql, ...$where_args);
-    }
-    $total_items = (int)$wpdb->get_var($sql);
-    $total_pages = ceil($total_items / $items_per_page);
-    
-    // Get belege
-    $sql = "SELECT * FROM {$b_table} WHERE {$where} ORDER BY beleg_datum DESC LIMIT %d OFFSET %d";
-    $sql_args = array_merge($where_args, array($items_per_page, $offset));
-    $sql = $wpdb->prepare($sql, ...$sql_args);
-    $belege = $wpdb->get_results($sql);
-    
-    if (!empty($belege)) {
-    ?>
-        <table class="crm-beleg-list">
-            <thead>
-                <tr>
-                    <th><?php _e('Belegnummer', 'cpsmartcrm'); ?></th>
-                    <th><?php _e('Datum', 'cpsmartcrm'); ?></th>
-                    <th><?php _e('Typ', 'cpsmartcrm'); ?></th>
-                    <th><?php _e('Kategorie', 'cpsmartcrm'); ?></th>
-                    <th><?php _e('Beschreibung', 'cpsmartcrm'); ?></th>
-                    <th><?php _e('Datei', 'cpsmartcrm'); ?></th>
-                    <th><?php _e('Aktionen', 'cpsmartcrm'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($belege as $beleg): ?>
-                <tr>
-                    <td><strong><?php echo esc_html($beleg->belegnummer); ?></strong></td>
-                    <td><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($beleg->beleg_datum))); ?></td>
-                    <td><span class="crm-badge crm-badge-typ"><?php echo esc_html($beleg->beleg_typ); ?></span></td>
-                    <td><span class="crm-badge crm-badge-kategorie"><?php echo esc_html($beleg->kategorie); ?></span></td>
-                    <td><?php echo esc_html(substr($beleg->beschreibung, 0, 50)); ?><?php echo strlen($beleg->beschreibung) > 50 ? '...' : ''; ?></td>
-                    <td><small><?php echo esc_html($beleg->filename); ?></small></td>
-                    <td class="crm-beleg-actions">
-                        <a href="?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=download&beleg_id=<?php echo $beleg->id; ?>" 
-                           class="crm-btn" title="<?php _e('Herunterladen', 'cpsmartcrm'); ?>">
-                            ⬇️
-                        </a>
-                        <a href="?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=delete&beleg_id=<?php echo $beleg->id; ?>&<?php echo wp_create_nonce('delete_beleg_' . $beleg->id); ?>" 
-                           class="crm-btn crm-beleg-delete" onclick="return confirm('<?php _e('Beleg wirklich löschen?', 'cpsmartcrm'); ?>')" 
-                           title="<?php _e('Löschen', 'cpsmartcrm'); ?>">
-                            🗑️
-                        </a>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        </div>
         
-        <!-- Pagination -->
-        <?php if ($total_pages > 1): ?>
-        <div style="margin-top: 20px; text-align: center;">
-            <?php
-            $base = add_query_arg(array(
-                'paged' => '%#%',
-                'search' => $search,
-                'beleg_typ' => $beleg_typ,
-                'kategorie' => $kategorie,
-                'date_from' => $date_from,
-                'date_to' => $date_to,
-            ), '?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege');
-            
-            $args = array(
-                'base' => $base,
-                'format' => '&paged=%#%',
-                'prev_text' => '&laquo;',
-                'next_text' => '&raquo;',
-                'total' => $total_pages,
-                'current' => $page,
-            );
-            
-            echo paginate_links($args);
-            ?>
+        <!-- SUBMIT BUTTON -->
+        <div class="belege-submit-section">
+            <button type="submit" class="belege-submit-btn">
+                💾 <?php _e('Beleg speichern', 'cpsmartcrm'); ?>
+            </button>
         </div>
-        <?php endif; ?>
-    <?php
+    </form>
+</div>
+
+<script>
+function toggleTransactionFields() {
+    const transType = document.getElementById('transaction_type').value;
+    const condFields = document.getElementById('trans_conditional_fields');
+    const kategoriSelect = document.getElementById('trans_kategorie');
+    
+    if (transType !== 'none') {
+        condFields.classList.add('show');
+        
+        // Filter kategorie options based on transaction type
+        const options = kategoriSelect.querySelectorAll('option, optgroup');
+        options.forEach(el => {
+            if (el.tagName === 'OPTGROUP') {
+                if (transType === 'expense') {
+                    el.style.display = el.label.includes('Ausgab') ? 'block' : 'none';
+                } else if (transType === 'income') {
+                    el.style.display = el.label.includes('Einnahm') ? 'block' : 'none';
+                }
+            }
+        });
+        
+        kategoriSelect.value = '';
     } else {
-    ?>
-        <div class="crm-no-belege">
-            <p><?php _e('Keine Belege gefunden.', 'cpsmartcrm'); ?></p>
-        </div>
-    <?php
+        condFields.classList.remove('show');
     }
+}
+</script>
+
+<?php
+// Statistiken abrufen
+$stats = WPsCRM_get_belege_statistics($date_from ?: null, $date_to ?: null);
+$total_belege = $wpdb->get_var("SELECT COUNT(*) FROM {$b_table} WHERE deleted = 0");
+$total_size = $wpdb->get_var("SELECT SUM(file_size) FROM {$b_table} WHERE deleted = 0");
+?>
+
+<!-- STATISTIKEN -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 30px 0;">
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; border-left: 4px solid #0073aa;">
+        <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">
+            <?php _e('Belege insgesamt', 'cpsmartcrm'); ?>
+        </div>
+        <div style="font-size: 28px; font-weight: 600; color: #0073aa;">
+            <?php echo $total_belege; ?>
+        </div>
+    </div>
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; border-left: 4px solid #2196f3;">
+        <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">
+            <?php _e('Kategorien', 'cpsmartcrm'); ?>
+        </div>
+        <div style="font-size: 28px; font-weight: 600; color: #2196f3;">
+            <?php echo count($stats); ?>
+        </div>
+    </div>
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; border-left: 4px solid #4caf50;">
+        <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">
+            <?php _e('Speicherplatz', 'cpsmartcrm'); ?>
+        </div>
+        <div style="font-size: 28px; font-weight: 600; color: #4caf50;">
+            <?php echo size_format($total_size); ?>
+        </div>
+    </div>
+</div>
+
+<!-- FILTER SECTION -->
+<div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+    <form method="get" style="display: contents;">
+        <input type="hidden" name="page" value="smart-crm">
+        <input type="hidden" name="p" value="buchhaltung/index.php">
+        <input type="hidden" name="accounting_tab" value="belege">
+        
+        <input type="search" name="search" placeholder="<?php _e('Belegnummer, Beschreibung...', 'cpsmartcrm'); ?>" 
+               value="<?php echo esc_attr($search); ?>" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 3px;">
+        
+        <select name="beleg_typ" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 3px;">
+            <option value=""><?php _e('Alle Belegtypen', 'cpsmartcrm'); ?></option>
+            <option value="Rechnung" <?php selected($beleg_typ, 'Rechnung'); ?>><?php _e('Rechnung', 'cpsmartcrm'); ?></option>
+            <option value="Quittung" <?php selected($beleg_typ, 'Quittung'); ?>><?php _e('Quittung', 'cpsmartcrm'); ?></option>
+            <option value="Beleg" <?php selected($beleg_typ, 'Beleg'); ?>><?php _e('Beleg', 'cpsmartcrm'); ?></option>
+            <option value="Zahlungsnachweis" <?php selected($beleg_typ, 'Zahlungsnachweis'); ?>><?php _e('Zahlungsnachweis', 'cpsmartcrm'); ?></option>
+            <option value="Rechnung Lieferant" <?php selected($beleg_typ, 'Rechnung Lieferant'); ?>><?php _e('Lieferantenrechnung', 'cpsmartcrm'); ?></option>
+        </select>
+        
+        <input type="date" name="date_from" value="<?php echo esc_attr($date_from); ?>" 
+               style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 3px;">
+        
+        <input type="date" name="date_to" value="<?php echo esc_attr($date_to); ?>" 
+               style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 3px;">
+        
+        <button type="submit" style="padding: 8px 16px; background: #0073aa; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: 600;">
+            🔍 <?php _e('Filtern', 'cpsmartcrm'); ?>
+        </button>
+        <a href="?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege" 
+           style="padding: 8px 16px; background: #f0f0f0; color: #333; text-decoration: none; border-radius: 3px; display: inline-block; font-weight: 600;">
+            <?php _e('Zurücksetzen', 'cpsmartcrm'); ?>
+        </a>
+    </form>
+</div>
+
+<!-- BELEGE LIST -->
+<?php
+$where = "deleted = 0";
+$where_args = array();
+
+if (!empty($search)) {
+    $where .= " AND (belegnummer LIKE %s OR beschreibung LIKE %s)";
+    $search_term = '%' . $wpdb->esc_like($search) . '%';
+    $where_args[] = $search_term;
+    $where_args[] = $search_term;
+}
+
+if (!empty($beleg_typ)) {
+    $where .= " AND beleg_typ = %s";
+    $where_args[] = $beleg_typ;
+}
+
+if (!empty($date_from)) {
+    $where .= " AND beleg_datum >= %s";
+    $where_args[] = $date_from;
+}
+
+if (!empty($date_to)) {
+    $where .= " AND beleg_datum <= %s";
+    $where_args[] = $date_to;
+}
+
+// Get total count
+$sql = "SELECT COUNT(*) FROM {$b_table} WHERE {$where}";
+if (!empty($where_args)) {
+    $sql = $wpdb->prepare($sql, ...$where_args);
+}
+$total_items = (int)$wpdb->get_var($sql);
+$total_pages = ceil($total_items / $items_per_page);
+
+// Get belege
+$sql = "SELECT * FROM {$b_table} WHERE {$where} ORDER BY beleg_datum DESC LIMIT %d OFFSET %d";
+$sql_args = array_merge($where_args, array($items_per_page, $offset));
+$sql = $wpdb->prepare($sql, ...$sql_args);
+$belege = $wpdb->get_results($sql);
+
+if (!empty($belege)) {
+?>
+<table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+    <thead style="background: #f5f5f5;">
+        <tr>
+            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; font-size: 13px;"><?php _e('Belegnummer', 'cpsmartcrm'); ?></th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; font-size: 13px;"><?php _e('Datum', 'cpsmartcrm'); ?></th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; font-size: 13px;"><?php _e('Typ', 'cpsmartcrm'); ?></th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; font-size: 13px;"><?php _e('Beschreibung', 'cpsmartcrm'); ?></th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; font-size: 13px;"><?php _e('Datei', 'cpsmartcrm'); ?></th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; font-size: 13px;"><?php _e('Aktionen', 'cpsmartcrm'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($belege as $beleg): ?>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 12px; font-size: 13px;"><strong><?php echo esc_html($beleg->belegnummer); ?></strong></td>
+            <td style="padding: 12px; font-size: 13px;"><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($beleg->beleg_datum))); ?></td>
+            <td style="padding: 12px; font-size: 13px;">
+                <span style="display: inline-block; padding: 3px 8px; border-radius: 3px; background: #e3f2fd; color: #0d47a1; font-weight: 600; font-size: 11px;">
+                    <?php echo esc_html($beleg->beleg_typ); ?>
+                </span>
+            </td>
+            <td style="padding: 12px; font-size: 13px; max-width: 300px;">
+                <?php echo esc_html(substr($beleg->beschreibung, 0, 50)); ?><?php echo strlen($beleg->beschreibung) > 50 ? '...' : ''; ?>
+            </td>
+            <td style="padding: 12px; font-size: 13px;"><small><?php echo esc_html($beleg->filename); ?></small></td>
+            <td style="padding: 12px; font-size: 13px;">
+                <a href="?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=download&beleg_id=<?php echo $beleg->id; ?>" 
+                   style="padding: 4px 8px; background: #f0f0f0; color: #0073aa; text-decoration: none; border-radius: 3px; font-size: 12px; margin-right: 5px; display: inline-block;">
+                    ⬇️ <?php _e('Download', 'cpsmartcrm'); ?>
+                </a>
+                <a href="?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=delete&beleg_id=<?php echo $beleg->id; ?>&<?php echo wp_create_nonce('delete_beleg_' . $beleg->id); ?>" 
+                   onclick="return confirm('<?php _e('Beleg wirklich löschen?', 'cpsmartcrm'); ?>')" 
+                   style="padding: 4px 8px; background: #f8d7da; color: #dc3545; text-decoration: none; border-radius: 3px; font-size: 12px; display: inline-block;">
+                    🗑️ <?php _e('Löschen', 'cpsmartcrm'); ?>
+                </a>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<?php if ($total_pages > 1): ?>
+<div style="margin-top: 30px; text-align: center;">
+    <?php
+    $base = add_query_arg(array(
+        'paged' => '%#%',
+        'search' => $search,
+        'beleg_typ' => $beleg_typ,
+        'date_from' => $date_from,
+        'date_to' => $date_to,
+    ), '?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege');
+    
+    $args = array(
+        'base' => $base,
+        'format' => '&paged=%#%',
+        'prev_text' => '&laquo;',
+        'next_text' => '&raquo;',
+        'total' => $total_pages,
+        'current' => $page,
+    );
+    
+    echo paginate_links($args);
     ?>
+</div>
+<?php endif; ?>
+
+<?php
+} else {
+?>
+<div style="text-align: center; padding: 40px 20px; color: #999;">
+    <p style="font-size: 16px;">📋 <?php _e('Keine Belege gefunden.', 'cpsmartcrm'); ?></p>
+</div>
+<?php
+}
+?>
 </div>
