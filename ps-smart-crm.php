@@ -3,7 +3,7 @@
 Plugin Name: PS Smart CRM
 Plugin URI: https://power-source.github.io/ps-smart-crm/
 Description: Fügt ClassicPress ein leistungsstarkes CRM hinzu. Verwalten Sie Kunden, Rechnungen, TODO, Termine und zukünftige Benachrichtigungen an Agenten, Benutzer und Kunden
-Version: 1.0.0
+Version: 1.0.1
 Author:       PSOURCE
 Author URI:   https://github.com/Power-Source
 Text Domain: cpsmartcrm
