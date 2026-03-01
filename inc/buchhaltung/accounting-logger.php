@@ -72,12 +72,6 @@ function wpscrm_log_accounting_activity($action, $data = array(), $transaction_i
         '%s', // created_at
     ));
     
-    if ($result === false) {
-        error_log('⚠️ Accounting Log failed: ' . $wpdb->last_error);
-    } else {
-        error_log('✅ Accounting Activity logged: ' . $action . ' by ' . $username);
-    }
-    
     return $result !== false;
 }
 
@@ -230,8 +224,6 @@ function wpscrm_create_accounting_log_table() {
     
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
-    
-    error_log('✅ Accounting log table created/updated');
 }
 
 // Create table on plugin activation/load

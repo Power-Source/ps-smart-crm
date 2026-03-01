@@ -35,7 +35,6 @@ function WPsCRM_mp_ensure_incomes_table() {
         ) ENGINE=MyISAM " . $charset_collate . " AUTO_INCREMENT=1;";
         
         dbDelta($sql);
-        error_log('[WPsCRM MP] Created missing incomes table: ' . $table);
     }
 }
 
@@ -255,7 +254,6 @@ function WPsCRM_mp_sync_paid_order($order)
     
     // Double-check table still exists
     if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
-        error_log('[WPsCRM MP] incomes table could not be created: ' . $table);
         return;
     }
     
@@ -344,7 +342,6 @@ function WPsCRM_mp_cleanup_duplicates() {
             if (!empty($dup_ids)) {
                 foreach ($dup_ids as $id) {
                     $wpdb->delete($table, array('id' => $id));
-                    error_log('[WPsCRM MP] Removed duplicate income entry ID ' . $id);
                 }
             }
         }
