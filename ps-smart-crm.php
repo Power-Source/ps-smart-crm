@@ -86,6 +86,7 @@ define('WPsCRM_TABLE',$wpdb->prefix .'smartcrm_');
 define('WPsCRM_PATH',__FILE__);
 define('WPsCRM_DIR',dirname(__FILE__ ) );
 define('WPsCRM_URL',plugin_dir_url( __FILE__ ) );
+define('WPSCRM_VERSION', '1.0.1');
 $upload_dir = wp_upload_dir();
 define('WPsCRM_UPLOADS', $upload_dir['basedir'] . '/CRMdocuments');
 define('WPsCRM_IMPORT_FILE',WPsCRM_DIR.'/logs/import.txt');

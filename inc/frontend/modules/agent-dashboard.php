@@ -26,12 +26,18 @@ $is_customer = is_user_logged_in() ? !empty(wpscrm_get_customer_by_email($curren
 global $wpdb;
 $agents_table = WPsCRM_TABLE . 'agents';
 $agent = null;
+$pm_integration = null;
 
 if ($is_agent) {
     $agent = $wpdb->get_row($wpdb->prepare(
         "SELECT * FROM $agents_table WHERE user_id = %d",
         $user_id
     ));
+    
+    // PM Integration laden
+    if (class_exists('WPsCRM_PM_Integration')) {
+        $pm_integration = WPsCRM_PM_Integration::get_instance();
+    }
 }
 ?>
 
@@ -134,17 +140,30 @@ if ($is_agent) {
                 <h3 style="margin: 0 0 15px 0; color: #4caf50; display: flex; align-items: center;">
                     <span style="font-size: 24px; margin-right: 10px;">📬</span>
                     <span>Mein Postfach</span>
-                    <span id="crm-inbox-badge" class="crm-badge" style="background: #f44336; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; margin-left: 10px;">0</span>
                 </h3>
                 
-                <div id="crm-inbox-list" style="max-height: 300px; overflow-y: auto;">
-                    <!-- Messages loaded via AJAX -->
-                    <p style="color: #999; text-align: center; padding: 20px;">Laden...</p>
-                </div>
-                
-                <a href="#" style="display: block; text-align: center; margin-top: 12px; padding: 10px; color: #4caf50; text-decoration: none; border-top: 1px solid #eee;">
-                    Vollständiges Postfach →
-                </a>
+                <?php if ($pm_integration && $pm_integration->is_pm_active()) : ?>
+                    <!-- Real PM Inbox -->
+                    <div id="crm-inbox-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; padding: 10px;">
+                        <?php echo do_shortcode('[message_inbox]'); ?>
+                    </div>
+                    
+                    <?php 
+                    $pm_inbox_url = $pm_integration->get_pm_inbox_url('inbox');
+                    if ($pm_inbox_url) : 
+                    ?>
+                        <a href="<?php echo esc_url($pm_inbox_url); ?>" style="display: block; text-align: center; margin-top: 12px; padding: 10px; color: #4caf50; text-decoration: none; border-top: 1px solid #eee;">
+                            Vollständiges Postfach →
+                        </a>
+                    <?php endif; ?>
+                <?php else : ?>
+                    <!-- PM System not available -->
+                    <div style="padding: 20px; text-align: center; background: #f5f5f5; border-radius: 4px;">
+                        <p style="color: #999; margin: 0;">
+                            Private Messaging nicht verfügbar
+                        </p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
