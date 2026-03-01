@@ -1,109 +1,11 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
-
-/**
- * PS Smart CRM - Agent-Rollen Liste
- * 
- * Backend-Verwaltung für flexible Agent-Rollen
- */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 global $wpdb;
 $table = WPsCRM_TABLE . 'agent_roles';
 
-// Handle Actions (AJAX-ähnlich)
-if ( isset( $_POST['action'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'crm_agent_roles' ) ) {
-	
-	switch ( $_POST['action'] ) {
-		case 'add':
-			$wpdb->insert(
-				$table,
-				array(
-					'role_slug' => sanitize_key( $_POST['role_slug'] ),
-					'role_name' => sanitize_text_field( $_POST['role_name'] ),
-					'display_name' => sanitize_text_field( $_POST['display_name'] ),
-					'department' => sanitize_text_field( $_POST['department'] ),
-					'icon' => sanitize_text_field( $_POST['icon'] ),
-					'show_in_contact' => isset( $_POST['show_in_contact'] ) ? 1 : 0,
-					'is_system_role' => isset( $_POST['is_system_role'] ) ? 1 : 0,
-					'sort_order' => absint( $_POST['sort_order'] ),
-					'capabilities' => wp_json_encode( array() ),
-				),
-				array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s' )
-			);
-			
-			echo '<div class="alert alert-success">' . __( 'Rolle erfolgreich hinzugefügt!', 'cpsmartcrm' ) . '</div>';
-			break;
-			
-		case 'edit':
-			$role_id = absint( $_POST['role_id'] );
-			$existing_role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
-			
-			$wpdb->update(
-				$table,
-				array(
-					'role_slug' => sanitize_key( $_POST['role_slug'] ),
-					'role_name' => sanitize_text_field( $_POST['role_name'] ),
-					'display_name' => sanitize_text_field( $_POST['display_name'] ),
-					'department' => sanitize_text_field( $_POST['department'] ),
-					'icon' => sanitize_text_field( $_POST['icon'] ),
-					'show_in_contact' => isset( $_POST['show_in_contact'] ) ? 1 : 0,
-					// is_system_role kann nicht geändert werden
-					'sort_order' => absint( $_POST['sort_order'] ),
-					'updated_at' => current_time( 'mysql' ),
-				),
-				array( 'id' => $role_id ),
-				array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s' ),
-				array( '%d' )
-			);
-			
-			echo '<div class="alert alert-success">' . __( 'Rolle erfolgreich aktualisiert!', 'cpsmartcrm' ) . '</div>';
-			break;
-			
-		case 'delete':
-			$role_id = absint( $_POST['role_id'] );
-			$existing_role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
-			
-			if ( $existing_role && ! $existing_role->is_system_role ) {
-				$wpdb->delete( $table, array( 'id' => $role_id ), array( '%d' ) );
-				echo '<div class="alert alert-success">' . __( 'Rolle erfolgreich gelöscht!', 'cpsmartcrm' ) . '</div>';
-			} else {
-				echo '<div class="alert alert-danger">' . __( 'System-Rollen können nicht gelöscht werden!', 'cpsmartcrm' ) . '</div>';
-			}
-			break;
-	
-		case 'assign_users':
-			$role_id = absint( $_POST['role_id'] );
-			$selected_users = isset( $_POST['role_users'] ) ? array_map( 'absint', $_POST['role_users'] ) : array();
-			
-			// Alle Benutzer mit manage_crm finden
-			$all_crm_users = get_users( array(
-				'fields' => 'ID',
-			) );
-			
-			// Rollen entfernen aus Benutzern, die nicht ausgewählt wurden
-			foreach ( $all_crm_users as $user_id ) {
-				$current_role = get_user_meta( $user_id, '_crm_agent_role', true );
-				if ( $current_role === $edit_role->role_slug || get_user_meta( $user_id, '_crm_agent_role', true ) === $edit_role->role_slug ) {
-					if ( ! in_array( $user_id, $selected_users ) ) {
-						delete_user_meta( $user_id, '_crm_agent_role' );
-					}
-				}
-			}
-			
-			// Ausgewählten Benutzern die Rolle hinzufügen
-			foreach ( $selected_users as $user_id ) {
-				update_user_meta( $user_id, '_crm_agent_role', $edit_role->role_slug );
-			}
-			
-			echo '<div class="alert alert-success">' . __( 'Benutzer erfolgreich zugewiesen!', 'cpsmartcrm' ) . '</div>';
-			break;
-	}
-}
-
-// Fetch alle Rollen
-$roles = $wpdb->get_results( "SELECT * FROM $table ORDER BY sort_order ASC, role_name ASC" );
-
-// Dashicons Liste für Icon-Picker
 $dashicons = array(
 	'dashicons-businessman' => 'Businessman',
 	'dashicons-groups' => 'Groups',
@@ -121,399 +23,399 @@ $dashicons = array(
 	'dashicons-admin-tools' => 'Tools',
 );
 
-// Edit Mode
+$default_caps = array(
+	'wp_role' => '',
+	'can_view_accounting' => 0,
+	'can_edit_accounting' => 0,
+	'can_view_documents' => 0,
+	'can_edit_documents' => 0,
+	'can_view_customers' => 0,
+	'can_edit_customers' => 0,
+);
+
+if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'crm_agent_roles' ) ) {
+	switch ( sanitize_key( $_POST['action'] ) ) {
+		case 'add':
+			$caps = array(
+				'wp_role' => sanitize_key( $_POST['wp_role'] ?? '' ),
+				'can_view_accounting' => isset( $_POST['can_view_accounting'] ) ? 1 : 0,
+				'can_edit_accounting' => isset( $_POST['can_edit_accounting'] ) ? 1 : 0,
+				'can_view_documents' => isset( $_POST['can_view_documents'] ) ? 1 : 0,
+				'can_edit_documents' => isset( $_POST['can_edit_documents'] ) ? 1 : 0,
+				'can_view_customers' => isset( $_POST['can_view_customers'] ) ? 1 : 0,
+				'can_edit_customers' => isset( $_POST['can_edit_customers'] ) ? 1 : 0,
+			);
+
+			$wpdb->insert(
+				$table,
+				array(
+					'role_slug' => sanitize_key( $_POST['role_slug'] ?? '' ),
+					'role_name' => sanitize_text_field( $_POST['role_name'] ?? '' ),
+					'display_name' => sanitize_text_field( $_POST['display_name'] ?? '' ),
+					'department' => sanitize_text_field( $_POST['department'] ?? '' ),
+					'icon' => sanitize_text_field( $_POST['icon'] ?? 'dashicons-businessman' ),
+					'show_in_contact' => isset( $_POST['show_in_contact'] ) ? 1 : 0,
+					'is_system_role' => isset( $_POST['is_system_role'] ) ? 1 : 0,
+					'sort_order' => absint( $_POST['sort_order'] ?? 0 ),
+					'capabilities' => wp_json_encode( $caps ),
+					'created_at' => current_time( 'mysql' ),
+				),
+				array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s' )
+			);
+
+			echo '<div class="alert alert-success">' . esc_html__( 'Rolle erfolgreich hinzugefügt!', 'cpsmartcrm' ) . '</div>';
+			break;
+
+		case 'edit':
+			$role_id = absint( $_POST['role_id'] ?? 0 );
+			$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
+			if ( $role ) {
+				$caps = array(
+					'wp_role' => sanitize_key( $_POST['wp_role'] ?? '' ),
+					'can_view_accounting' => isset( $_POST['can_view_accounting'] ) ? 1 : 0,
+					'can_edit_accounting' => isset( $_POST['can_edit_accounting'] ) ? 1 : 0,
+					'can_view_documents' => isset( $_POST['can_view_documents'] ) ? 1 : 0,
+					'can_edit_documents' => isset( $_POST['can_edit_documents'] ) ? 1 : 0,
+					'can_view_customers' => isset( $_POST['can_view_customers'] ) ? 1 : 0,
+					'can_edit_customers' => isset( $_POST['can_edit_customers'] ) ? 1 : 0,
+				);
+
+				$wpdb->update(
+					$table,
+					array(
+						'role_slug' => sanitize_key( $_POST['role_slug'] ?? '' ),
+						'role_name' => sanitize_text_field( $_POST['role_name'] ?? '' ),
+						'display_name' => sanitize_text_field( $_POST['display_name'] ?? '' ),
+						'department' => sanitize_text_field( $_POST['department'] ?? '' ),
+						'icon' => sanitize_text_field( $_POST['icon'] ?? 'dashicons-businessman' ),
+						'show_in_contact' => isset( $_POST['show_in_contact'] ) ? 1 : 0,
+						'sort_order' => absint( $_POST['sort_order'] ?? 0 ),
+						'capabilities' => wp_json_encode( $caps ),
+						'updated_at' => current_time( 'mysql' ),
+					),
+					array( 'id' => $role_id ),
+					array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s' ),
+					array( '%d' )
+				);
+
+				echo '<div class="alert alert-success">' . esc_html__( 'Rolle erfolgreich aktualisiert!', 'cpsmartcrm' ) . '</div>';
+			}
+			break;
+
+		case 'delete':
+			$role_id = absint( $_POST['role_id'] ?? 0 );
+			$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
+			if ( $role && ! (int) $role->is_system_role ) {
+				$wpdb->delete( $table, array( 'id' => $role_id ), array( '%d' ) );
+				echo '<div class="alert alert-success">' . esc_html__( 'Rolle erfolgreich gelöscht!', 'cpsmartcrm' ) . '</div>';
+			} else {
+				echo '<div class="alert alert-danger">' . esc_html__( 'System-Rollen können nicht gelöscht werden!', 'cpsmartcrm' ) . '</div>';
+			}
+			break;
+
+		case 'assign_users':
+			$role_id = absint( $_POST['role_id'] ?? 0 );
+			$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
+			if ( $role ) {
+				$selected_users = isset( $_POST['role_users'] ) ? array_map( 'absint', (array) $_POST['role_users'] ) : array();
+				$all_users = get_users( array( 'fields' => 'ID' ) );
+
+				foreach ( $all_users as $user_id ) {
+					$current_role_slug = get_user_meta( $user_id, '_crm_agent_role', true );
+					if ( $current_role_slug === $role->role_slug && ! in_array( $user_id, $selected_users, true ) ) {
+						delete_user_meta( $user_id, '_crm_agent_role' );
+						if ( function_exists( 'wpscrm_remove_role_permissions' ) ) {
+							wpscrm_remove_role_permissions( $user_id, $role->role_slug );
+						}
+					}
+				}
+
+				foreach ( $selected_users as $user_id ) {
+					update_user_meta( $user_id, '_crm_agent_role', $role->role_slug );
+					if ( function_exists( 'wpscrm_apply_role_permissions' ) ) {
+						wpscrm_apply_role_permissions( $user_id, $role->role_slug );
+					}
+				}
+
+				echo '<div class="alert alert-success">' . esc_html__( 'Benutzerzuordnung gespeichert.', 'cpsmartcrm' ) . '</div>';
+			}
+			break;
+	}
+}
+
+$roles = $wpdb->get_results( "SELECT * FROM $table ORDER BY sort_order ASC, role_name ASC" );
+
 $edit_role = null;
 if ( isset( $_GET['edit'] ) ) {
 	$edit_role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", absint( $_GET['edit'] ) ) );
 }
 
+$edit_caps = $default_caps;
+if ( $edit_role && ! empty( $edit_role->capabilities ) ) {
+	$decoded = json_decode( $edit_role->capabilities, true );
+	if ( is_array( $decoded ) ) {
+		$edit_caps = wp_parse_args( $decoded, $default_caps );
+	}
+}
+
+$users_assigned_to_edit = array();
+if ( $edit_role ) {
+	$all_users = get_users( array( 'orderby' => 'display_name', 'order' => 'ASC' ) );
+	foreach ( $all_users as $user ) {
+		if ( get_user_meta( $user->ID, '_crm_agent_role', true ) === $edit_role->role_slug ) {
+			$users_assigned_to_edit[] = $user;
+		}
+	}
+}
 ?>
 
 <style>
-.crm-roles-container {
-	max-width: 1200px;
-	margin: 20px auto;
-}
-.crm-roles-form {
-	background: #fff;
-	padding: 20px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	margin-bottom: 30px;
-}
-.crm-roles-table {
-	background: #fff;
-	border: 1px solid #ccc;
-}
-.crm-roles-table table {
-	width: 100%;
-	border-collapse: collapse;
-}
-.crm-roles-table th,
-.crm-roles-table td {
-	padding: 12px;
-	text-align: left;
-	border-bottom: 1px solid #e5e5e5;
-}
-.crm-roles-table th {
-	background: #f7f7f7;
-	font-weight: 600;
-}
-.crm-roles-table .icon-preview {
-	font-size: 24px;
-	color: #0073aa;
-}
-.crm-roles-table .badge {
-	display: inline-block;
-	padding: 4px 8px;
-	border-radius: 3px;
-	font-size: 11px;
-	font-weight: 600;
-	text-transform: uppercase;
-}
-.crm-roles-table .badge-system {
-	background: #d63638;
-	color: #fff;
-}
-.crm-roles-table .badge-contact {
-	background: #00a32a;
-	color: #fff;
-}
-.form-row {
-	margin-bottom: 15px;
-}
-.form-row label {
-	display: block;
-	font-weight: 600;
-	margin-bottom: 5px;
-}
-.form-row input[type="text"],
-.form-row input[type="number"],
-.form-row select {
-	width: 100%;
-	padding: 8px;
-	border: 1px solid #ccc;
-	border-radius: 3px;
-}
-.form-row-inline {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-.btn-actions {
-	display: flex;
-	gap: 5px;
-}
+.crm-roles-container { max-width: 1300px; margin: 20px auto; }
+.crm-roles-form, .crm-roles-table, .role-users-box { background: #fff; border: 1px solid #dcdcde; border-radius: 4px; margin-bottom: 24px; }
+.crm-roles-form { padding: 20px; }
+.crm-roles-table table { width: 100%; border-collapse: collapse; }
+.crm-roles-table th, .crm-roles-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f1; vertical-align: top; }
+.crm-roles-table th { background: #f6f7f7; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(300px, 1fr)); gap: 16px; }
+.form-row label { font-weight: 600; display: block; margin-bottom: 6px; }
+.form-row input[type="text"], .form-row input[type="number"], .form-row select { width: 100%; }
+.form-row small { color: #666; }
+.full-row { grid-column: 1 / -1; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+.badge-system { background: #d63638; color: #fff; }
+.badge-contact { background: #00a32a; color: #fff; }
+.permissions-grid { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 14px; background: #f6f7f7; padding: 12px; border: 1px solid #e3e5e8; }
+.role-users-box { padding: 18px; }
+.role-users-box ul { margin: 8px 0 0; padding-left: 20px; }
+.inline-list { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.inline-pill { display: inline-block; background: #eef4ff; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
 </style>
 
 <div class="crm-roles-container">
-	
-	<h2>
-		<span class="dashicons dashicons-groups" style="font-size:28px;"></span>
-		<?php echo $edit_role ? __( 'Rolle bearbeiten', 'cpsmartcrm' ) : __( 'Neue Agent-Rolle erstellen', 'cpsmartcrm' ); ?>
-	</h2>
-	
+	<h2><?php echo $edit_role ? esc_html__( 'Rolle bearbeiten', 'cpsmartcrm' ) : esc_html__( 'Neue Agent-Rolle erstellen', 'cpsmartcrm' ); ?></h2>
+
+	<?php if ( $edit_role ) : ?>
+		<div class="role-users-box" id="role-users">
+			<strong><?php esc_html_e( 'Aktuell zugeordnete Benutzer:', 'cpsmartcrm' ); ?></strong>
+			<?php if ( empty( $users_assigned_to_edit ) ) : ?>
+				<p style="margin-top:8px;color:#666;"><?php esc_html_e( 'Dieser Rolle ist aktuell kein Benutzer zugeordnet.', 'cpsmartcrm' ); ?></p>
+			<?php else : ?>
+				<ul>
+					<?php foreach ( $users_assigned_to_edit as $assigned_user ) : ?>
+						<li><?php echo esc_html( $assigned_user->display_name . ' (' . $assigned_user->user_email . ')' ); ?></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+	<?php endif; ?>
+
 	<div class="crm-roles-form">
-		<form method="post" action="">
+		<form method="post">
 			<?php wp_nonce_field( 'crm_agent_roles' ); ?>
-	.role-info-box {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
-		padding: 20px;
-		border-radius: 4px;
-		margin-bottom: 20px;
-		display: none;
-	}
-	.role-info-box.show {
-		display: block;
-	}
-	.role-info-box h4 {
-		margin: 0 0 10px 0;
-		font-size: 16px;
-	}
-	.role-info-box ul {
-		margin: 0;
-		padding-left: 20px;
-	}
-	.role-info-box li {
-		margin: 5px 0;
-		font-size: 14px;
-	}
-	.role-info-box .no-users {
-		font-style: italic;
-		opacity: 0.9;
-	}
 			<input type="hidden" name="action" value="<?php echo $edit_role ? 'edit' : 'add'; ?>" />
 			<?php if ( $edit_role ) : ?>
 				<input type="hidden" name="role_id" value="<?php echo esc_attr( $edit_role->id ); ?>" />
-		<div class="role-info-box show">
-			<h4><?php _e( '🔗 Derzeit zugeordnet zu:', 'cpsmartcrm' ); ?></h4>
-			<?php
-			$all_users = get_users();
-			$role_users = array();
-			foreach ( $all_users as $user ) {
-				$user_role = get_user_meta( $user->ID, '_crm_agent_role', true );
-				if ( $user_role === $edit_role->role_slug ) {
-					$role_users[] = $user->display_name . ' (' . $user->user_email . ')';
-				}
-			}
-		
-			if ( empty( $role_users ) ) {
-				echo '<p class="no-users">' . __( 'Keine Benutzer zugeordnet', 'cpsmartcrm' ) . '</p>';
-			} else {
-				echo '<ul><li>' . implode( '</li><li>', $role_users ) . '</li></ul>';
-			}
-			?>
-		</div>
 			<?php endif; ?>
-			
-			<div class="form-row">
-				<label><?php _e( 'Rollen-Slug (eindeutig)', 'cpsmartcrm' ); ?> *</label>
-				<input type="text" name="role_slug" required 
-					   value="<?php echo $edit_role ? esc_attr( $edit_role->role_slug ) : ''; ?>"
-					   pattern="[a-z0-9_-]+" 
-					   placeholder="chef, buero, vertrieb, lager..."
-					   <?php echo ( $edit_role && $edit_role->is_system_role ) ? 'readonly' : ''; ?> />
-				<small><?php _e( 'Nur Kleinbuchstaben, Zahlen, Unterstriche und Bindestriche', 'cpsmartcrm' ); ?></small>
-			</div>
-			
-			<div class="form-row">
-				<label><?php _e( 'Rollen-Name (intern)', 'cpsmartcrm' ); ?> *</label>
-				<input type="text" name="role_name" required 
-					   value="<?php echo $edit_role ? esc_attr( $edit_role->role_name ) : ''; ?>"
-					   placeholder="Chef, Büro, Vertrieb..." />
-			</div>
-			
-			<div class="form-row">
-				<label><?php _e( 'Anzeigename (Frontend)', 'cpsmartcrm' ); ?></label>
-				<input type="text" name="display_name" 
-					   value="<?php echo $edit_role ? esc_attr( $edit_role->display_name ) : ''; ?>"
-					   placeholder="Chef kontaktieren, Büro kontaktieren..." />
-			</div>
-			
-			<div class="form-row">
-				<label><?php _e( 'Abteilung', 'cpsmartcrm' ); ?></label>
-				<input type="text" name="department" 
-					   value="<?php echo $edit_role ? esc_attr( $edit_role->department ) : ''; ?>"
-					   placeholder="Verwaltung, Verkauf, Lager..." />
-			</div>
-			
-			<div class="form-row">
-				<label><?php _e( 'Icon (Dashicons)', 'cpsmartcrm' ); ?></label>
-				<select name="icon" id="role-icon-select">
-					<?php foreach ( $dashicons as $icon_class => $icon_name ) : ?>
-						<option value="<?php echo esc_attr( $icon_class ); ?>"
-								<?php selected( $edit_role ? $edit_role->icon : '', $icon_class ); ?>>
-							<?php echo esc_html( $icon_name ); ?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-				<div id="icon-preview" style="margin-top:10px;font-size:32px;"></div>
-			</div>
-			
-			<div class="form-row">
-				<label><?php _e( 'Sortierreihenfolge', 'cpsmartcrm' ); ?></label>
-				<input type="number" name="sort_order" value="<?php echo $edit_role ? esc_attr( $edit_role->sort_order ) : 50; ?>" min="0" max="999" />
-				<small><?php _e( 'Niedrigere Zahlen erscheinen zuerst', 'cpsmartcrm' ); ?></small>
-			</div>
-			
-			<div class="form-row form-row-inline">
-				<label>
-					<input type="checkbox" name="show_in_contact" value="1" 
-						   <?php checked( $edit_role ? $edit_role->show_in_contact : 0, 1 ); ?> />
-					<?php _e( 'Im Frontend als Kontakt-Button anzeigen', 'cpsmartcrm' ); ?>
-				</label>
-			</div>
-			
-			<?php if ( ! $edit_role ) : ?>
-				<div class="form-row form-row-inline">
-					<label>
-						<input type="checkbox" name="is_system_role" value="1" />
-						<?php _e( 'System-Rolle (kann nicht gelöscht werden)', 'cpsmartcrm' ); ?>
-					</label>
+
+			<div class="form-grid">
+				<div class="form-row">
+					<label><?php esc_html_e( 'Rollen-Slug (eindeutig)', 'cpsmartcrm' ); ?> *</label>
+					<input type="text" name="role_slug" pattern="[a-z0-9_-]+" required value="<?php echo esc_attr( $edit_role ? $edit_role->role_slug : '' ); ?>" <?php echo ( $edit_role && (int) $edit_role->is_system_role ) ? 'readonly' : ''; ?> />
 				</div>
-			<?php endif; ?>
-			
-			<div class="form-row">
-				<button type="submit" class="button button-primary">
-					<?php echo $edit_role ? __( 'Rolle aktualisieren', 'cpsmartcrm' ) : __( 'Rolle erstellen', 'cpsmartcrm' ); ?>
-				</button>
-				<?php if ( $edit_role ) : ?>
-					<a href="<?php echo admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php' ); ?>" class="button">
-						<?php _e( 'Abbrechen', 'cpsmartcrm' ); ?>
-					</a>
-				<?php endif; ?>
+				<div class="form-row">
+					<label><?php esc_html_e( 'Rollen-Name', 'cpsmartcrm' ); ?> *</label>
+					<input type="text" name="role_name" required value="<?php echo esc_attr( $edit_role ? $edit_role->role_name : '' ); ?>" />
+				</div>
+
+				<div class="form-row">
+					<label><?php esc_html_e( 'Anzeigename (Frontend)', 'cpsmartcrm' ); ?></label>
+					<input type="text" name="display_name" value="<?php echo esc_attr( $edit_role ? $edit_role->display_name : '' ); ?>" />
+				</div>
+				<div class="form-row">
+					<label><?php esc_html_e( 'Abteilung', 'cpsmartcrm' ); ?></label>
+					<input type="text" name="department" value="<?php echo esc_attr( $edit_role ? $edit_role->department : '' ); ?>" />
+				</div>
+
+				<div class="form-row">
+					<label><?php esc_html_e( 'Icon (Dashicons)', 'cpsmartcrm' ); ?></label>
+					<select name="icon" id="role-icon-select">
+						<?php foreach ( $dashicons as $icon_class => $icon_name ) : ?>
+							<option value="<?php echo esc_attr( $icon_class ); ?>" <?php selected( $edit_role ? $edit_role->icon : '', $icon_class ); ?>><?php echo esc_html( $icon_name ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<div id="icon-preview" style="margin-top:8px;font-size:26px;"></div>
+				</div>
+				<div class="form-row">
+					<label><?php esc_html_e( 'Sortierreihenfolge', 'cpsmartcrm' ); ?></label>
+					<input type="number" name="sort_order" min="0" max="999" value="<?php echo esc_attr( $edit_role ? $edit_role->sort_order : 50 ); ?>" />
+				</div>
+
+				<div class="form-row">
+					<label><?php esc_html_e( 'WordPress-Rolle (optional)', 'cpsmartcrm' ); ?></label>
+					<select name="wp_role">
+						<option value=""><?php esc_html_e( '— Keine zusätzliche WP-Rolle —', 'cpsmartcrm' ); ?></option>
+						<?php
+						global $wp_roles;
+						foreach ( $wp_roles->roles as $role_key => $role_info ) {
+							echo '<option value="' . esc_attr( $role_key ) . '" ' . selected( $edit_caps['wp_role'], $role_key, false ) . '>' . esc_html( $role_info['name'] ) . '</option>';
+						}
+						?>
+					</select>
+					<small><?php esc_html_e( 'Wird bei Benutzerzuweisung automatisch gesetzt.', 'cpsmartcrm' ); ?></small>
+				</div>
+
+				<div class="form-row full-row">
+					<label><?php esc_html_e( 'Sichtbarkeit & Typ', 'cpsmartcrm' ); ?></label>
+					<label><input type="checkbox" name="show_in_contact" value="1" <?php checked( $edit_role ? $edit_role->show_in_contact : 0, 1 ); ?> /> <?php esc_html_e( 'Im Frontend als Kontakt-Button anzeigen', 'cpsmartcrm' ); ?></label>
+					<?php if ( ! $edit_role ) : ?>
+						&nbsp;&nbsp;&nbsp;
+						<label><input type="checkbox" name="is_system_role" value="1" /> <?php esc_html_e( 'System-Rolle (nicht löschbar)', 'cpsmartcrm' ); ?></label>
+					<?php endif; ?>
+				</div>
+
+				<div class="form-row full-row">
+					<label><?php esc_html_e( 'Rechte', 'cpsmartcrm' ); ?></label>
+					<div class="permissions-grid">
+						<div>
+							<strong><?php esc_html_e( 'Buchhaltung', 'cpsmartcrm' ); ?></strong><br>
+							<label><input type="checkbox" name="can_view_accounting" value="1" <?php checked( $edit_caps['can_view_accounting'], 1 ); ?> /> <?php esc_html_e( 'Anzeigen', 'cpsmartcrm' ); ?></label><br>
+							<label><input type="checkbox" name="can_edit_accounting" value="1" <?php checked( $edit_caps['can_edit_accounting'], 1 ); ?> /> <?php esc_html_e( 'Bearbeiten', 'cpsmartcrm' ); ?></label>
+						</div>
+						<div>
+							<strong><?php esc_html_e( 'Dokumente', 'cpsmartcrm' ); ?></strong><br>
+							<label><input type="checkbox" name="can_view_documents" value="1" <?php checked( $edit_caps['can_view_documents'], 1 ); ?> /> <?php esc_html_e( 'Anzeigen', 'cpsmartcrm' ); ?></label><br>
+							<label><input type="checkbox" name="can_edit_documents" value="1" <?php checked( $edit_caps['can_edit_documents'], 1 ); ?> /> <?php esc_html_e( 'Bearbeiten/Löschen', 'cpsmartcrm' ); ?></label>
+						</div>
+						<div>
+							<strong><?php esc_html_e( 'Kunden', 'cpsmartcrm' ); ?></strong><br>
+							<label><input type="checkbox" name="can_view_customers" value="1" <?php checked( $edit_caps['can_view_customers'], 1 ); ?> /> <?php esc_html_e( 'Anzeigen', 'cpsmartcrm' ); ?></label><br>
+							<label><input type="checkbox" name="can_edit_customers" value="1" <?php checked( $edit_caps['can_edit_customers'], 1 ); ?> /> <?php esc_html_e( 'Bearbeiten/Löschen', 'cpsmartcrm' ); ?></label>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-row full-row">
+					<button type="submit" class="button button-primary"><?php echo $edit_role ? esc_html__( 'Rolle aktualisieren', 'cpsmartcrm' ) : esc_html__( 'Rolle erstellen', 'cpsmartcrm' ); ?></button>
+					<?php if ( $edit_role ) : ?>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php' ) ); ?>" class="button"><?php esc_html_e( 'Abbrechen', 'cpsmartcrm' ); ?></a>
+					<?php endif; ?>
+				</div>
 			</div>
 		</form>
 	</div>
-	
+
 	<?php if ( $edit_role ) : ?>
-		<div class="crm-role-users" id="role-users">
-			<h3><?php _e( 'Benutzer dieser Rolle', 'cpsmartcrm' ); ?></h3>
-			
+		<div class="role-users-box">
+			<h3 style="margin-top:0;"><?php esc_html_e( 'Benutzer dieser Rolle verwalten', 'cpsmartcrm' ); ?></h3>
 			<form method="post">
 				<?php wp_nonce_field( 'crm_agent_roles' ); ?>
 				<input type="hidden" name="action" value="assign_users" />
 				<input type="hidden" name="role_id" value="<?php echo esc_attr( $edit_role->id ); ?>" />
-				
-				<div style="background:#f9fafb;padding:15px;border-radius:4px;max-height:300px;overflow-y:auto;border:1px solid #e5e5e5;">
+				<div style="max-height:280px; overflow:auto; border:1px solid #e3e5e8; padding:12px; background:#f9f9f9;">
 					<?php
-					$all_users = get_users( array(
-						'orderby' => 'display_name',
-						'order' => 'ASC',
-					) );
-					
+					$all_users = get_users( array( 'orderby' => 'display_name', 'order' => 'ASC' ) );
 					if ( empty( $all_users ) ) {
-						echo '<p style="color:#999;">' . __( 'Keine Benutzer vorhanden.', 'cpsmartcrm' ) . '</p>';
+						echo '<p>' . esc_html__( 'Keine Benutzer vorhanden.', 'cpsmartcrm' ) . '</p>';
 					} else {
 						foreach ( $all_users as $user ) {
-							$user_role = get_user_meta( $user->ID, '_crm_agent_role', true );
-							$is_checked = $user_role === $edit_role->role_slug;
-							?>
-							<div style="margin-bottom:8px;">
-								<label style="display:flex;align-items:center;cursor:pointer;padding:8px;border-radius:3px;transition:background 0.2s;">
-									<input type="checkbox" name="role_users[]" value="<?php echo esc_attr( $user->ID ); ?>" 
-										   <?php checked( $is_checked, true ); ?> 
-										   style="margin-right:10px;" />
-									<strong><?php echo esc_html( $user->display_name ); ?></strong>
-									<span style="margin-left:auto;font-size:12px;color:#999;">
-										(<?php echo esc_html( $user->user_email ); ?>)
-										<?php if ( $user_role && $user_role !== $edit_role->role_slug ) : ?>
-											<span style="color:#f59e0b;font-weight:600;margin-left:10px;">
-												<?php _e( 'hat Rolle: ', 'cpsmartcrm' ); echo esc_html( $user_role ); ?>
-											</span>
-										<?php endif; ?>
-									</span>
-								</label>
-							</div>
-							<?php
+							$current_role_slug = get_user_meta( $user->ID, '_crm_agent_role', true );
+							$checked = ( $current_role_slug === $edit_role->role_slug );
+							echo '<label style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:1px solid #ececec;">';
+							echo '<span><input type="checkbox" name="role_users[]" value="' . esc_attr( $user->ID ) . '" ' . checked( $checked, true, false ) . '> <strong>' . esc_html( $user->display_name ) . '</strong> <small>(' . esc_html( $user->user_email ) . ')</small></span>';
+							if ( $current_role_slug && ! $checked ) {
+								echo '<span style="color:#996800;">' . esc_html__( 'hat Rolle:', 'cpsmartcrm' ) . ' ' . esc_html( $current_role_slug ) . '</span>';
+							}
+							echo '</label>';
 						}
 					}
 					?>
 				</div>
-				
-				<button type="submit" class="button button-primary" style="margin-top:15px;">
-					<?php _e( 'Benutzer speichern', 'cpsmartcrm' ); ?>
-				</button>
+				<p style="margin-top:12px;"><button type="submit" class="button button-primary"><?php esc_html_e( 'Benutzer speichern', 'cpsmartcrm' ); ?></button></p>
 			</form>
 		</div>
-		
-		<style>
-			.crm-role-users {
-				background: #fff;
-				padding: 20px;
-				border-radius: 4px;
-				border: 1px solid #e5e5e5;
-				margin-bottom: 30px;
-				margin-top: 30px;
-			}
-			.crm-role-users h3 {
-				margin-top: 0;
-				margin-bottom: 15px;
-				color: #374151;
-			}
-		</style>
 	<?php endif; ?>
-	
-	<h2><?php _e( 'Vorhandene Rollen', 'cpsmartcrm' ); ?></h2>
-	
+
+	<h2><?php esc_html_e( 'Vorhandene Rollen', 'cpsmartcrm' ); ?></h2>
 	<div class="crm-roles-table">
 		<table>
 			<thead>
-				<tr>
-					<th><?php _e( 'Icon', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Rolle', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Slug', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Abteilung', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Anzeigename', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Reihenfolge', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Benutzer', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Eigenschaften', 'cpsmartcrm' ); ?></th>
-					<th><?php _e( 'Aktionen', 'cpsmartcrm' ); ?></th>
-				</tr>
+			<tr>
+				<th><?php esc_html_e( 'Icon', 'cpsmartcrm' ); ?></th>
+				<th><?php esc_html_e( 'Rolle', 'cpsmartcrm' ); ?></th>
+				<th><?php esc_html_e( 'Slug', 'cpsmartcrm' ); ?></th>
+				<th><?php esc_html_e( 'Abteilung', 'cpsmartcrm' ); ?></th>
+				<th><?php esc_html_e( 'Benutzer', 'cpsmartcrm' ); ?></th>
+				<th><?php esc_html_e( 'Rechte', 'cpsmartcrm' ); ?></th>
+				<th><?php esc_html_e( 'Eigenschaften', 'cpsmartcrm' ); ?></th>
+				<th><?php esc_html_e( 'Aktionen', 'cpsmartcrm' ); ?></th>
+			</tr>
 			</thead>
 			<tbody>
-				<?php if ( empty( $roles ) ) : ?>
+			<?php if ( empty( $roles ) ) : ?>
+				<tr><td colspan="8" style="text-align:center;padding:26px;"><?php esc_html_e( 'Keine Rollen gefunden.', 'cpsmartcrm' ); ?></td></tr>
+			<?php else : ?>
+				<?php foreach ( $roles as $role ) : ?>
+					<?php
+					$role_users = array();
+					$all_users_for_count = get_users( array( 'fields' => array( 'ID', 'display_name' ) ) );
+					foreach ( $all_users_for_count as $user ) {
+						if ( get_user_meta( $user->ID, '_crm_agent_role', true ) === $role->role_slug ) {
+							$role_users[] = $user->display_name;
+						}
+					}
+					$caps = wp_parse_args( json_decode( $role->capabilities, true ), $default_caps );
+					?>
 					<tr>
-						<td colspan="9" style="text-align:center;padding:30px;">
-							<?php _e( 'Keine Rollen gefunden. Erstelle deine erste Rolle!', 'cpsmartcrm' ); ?>
+						<td><span class="dashicons <?php echo esc_attr( $role->icon ); ?>"></span></td>
+						<td><strong><?php echo esc_html( $role->role_name ); ?></strong></td>
+						<td><code><?php echo esc_html( $role->role_slug ); ?></code></td>
+						<td><?php echo esc_html( $role->department ); ?></td>
+						<td>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php&edit=' . $role->id ) ); ?>#role-users"><strong><?php echo (int) count( $role_users ); ?></strong> <?php esc_html_e( 'Benutzer', 'cpsmartcrm' ); ?></a>
+							<?php if ( ! empty( $role_users ) ) : ?>
+								<div class="inline-list" style="margin-top:4px;">
+									<?php foreach ( $role_users as $name ) : ?>
+										<span class="inline-pill"><?php echo esc_html( $name ); ?></span>
+									<?php endforeach; ?>
+								</div>
+							<?php endif; ?>
+						</td>
+						<td>
+							<?php if ( ! empty( $caps['wp_role'] ) ) : ?><span class="inline-pill">WP: <?php echo esc_html( $caps['wp_role'] ); ?></span><?php endif; ?>
+							<?php if ( ! empty( $caps['can_view_accounting'] ) || ! empty( $caps['can_edit_accounting'] ) ) : ?><span class="inline-pill">💼 <?php echo ! empty( $caps['can_edit_accounting'] ) ? 'Edit' : 'View'; ?></span><?php endif; ?>
+							<?php if ( ! empty( $caps['can_view_documents'] ) || ! empty( $caps['can_edit_documents'] ) ) : ?><span class="inline-pill">📄 <?php echo ! empty( $caps['can_edit_documents'] ) ? 'Edit' : 'View'; ?></span><?php endif; ?>
+							<?php if ( ! empty( $caps['can_view_customers'] ) || ! empty( $caps['can_edit_customers'] ) ) : ?><span class="inline-pill">👥 <?php echo ! empty( $caps['can_edit_customers'] ) ? 'Edit' : 'View'; ?></span><?php endif; ?>
+						</td>
+						<td>
+							<?php if ( (int) $role->is_system_role ) : ?><span class="badge badge-system"><?php esc_html_e( 'System', 'cpsmartcrm' ); ?></span><?php endif; ?>
+							<?php if ( (int) $role->show_in_contact ) : ?><span class="badge badge-contact"><?php esc_html_e( 'Kontakt', 'cpsmartcrm' ); ?></span><?php endif; ?>
+						</td>
+						<td>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php&edit=' . $role->id ) ); ?>" class="button button-small"><?php esc_html_e( 'Bearbeiten', 'cpsmartcrm' ); ?></a>
+							<?php if ( ! (int) $role->is_system_role ) : ?>
+								<form method="post" style="display:inline;" onsubmit="return confirm('<?php echo esc_js( __( 'Wirklich löschen?', 'cpsmartcrm' ) ); ?>');">
+									<?php wp_nonce_field( 'crm_agent_roles' ); ?>
+									<input type="hidden" name="action" value="delete">
+									<input type="hidden" name="role_id" value="<?php echo esc_attr( $role->id ); ?>">
+									<button type="submit" class="button button-small button-link-delete"><?php esc_html_e( 'Löschen', 'cpsmartcrm' ); ?></button>
+								</form>
+							<?php endif; ?>
 						</td>
 					</tr>
-				<?php else : ?>
-					<?php foreach ( $roles as $role ) : ?>
-						<?php
-						// Zähle Benutzer mit dieser Rolle
-						$users_with_role = count_users();
-						$role_user_count = 0;
-						$all_users = get_users();
-						foreach ( $all_users as $user ) {
-							$user_role = get_user_meta( $user->ID, '_crm_agent_role', true );
-							if ( $user_role === $role->role_slug ) {
-								$role_user_count++;
-							}
-						}
-						?>
-						<tr>
-							<td>
-								<span class="icon-preview dashicons <?php echo esc_attr( $role->icon ); ?>"></span>
-							</td>
-							<td><strong><?php echo esc_html( $role->role_name ); ?></strong></td>
-							<td><code><?php echo esc_html( $role->role_slug ); ?></code></td>
-							<td><?php echo esc_html( $role->department ); ?></td>
-							<td><?php echo esc_html( $role->display_name ); ?></td>
-							<td><?php echo esc_html( $role->sort_order ); ?></td>
-							<td>
-								<a href="<?php echo admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php&edit=' . $role->id ); ?>#role-users" 
-								   style="color:#667eea;text-decoration:none;font-weight:600;">
-									<?php echo $role_user_count; ?> 
-									<?php echo $role_user_count === 1 ? __( 'Benutzer', 'cpsmartcrm' ) : __( 'Benutzer', 'cpsmartcrm' ); ?>
-								</a>
-							</td>
-							<td>
-								<?php if ( $role->is_system_role ) : ?>
-									<span class="badge badge-system"><?php _e( 'System', 'cpsmartcrm' ); ?></span>
-								<?php endif; ?>
-								<?php if ( $role->show_in_contact ) : ?>
-									<span class="badge badge-contact"><?php _e( 'Kontakt', 'cpsmartcrm' ); ?></span>
-								<?php endif; ?>
-							</td>
-							<td>
-								<div class="btn-actions">
-									<a href="<?php echo admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php&edit=' . $role->id ); ?>" 
-									   class="button button-small">
-										<?php _e( 'Bearbeiten', 'cpsmartcrm' ); ?>
-									</a>
-									<?php if ( ! $role->is_system_role ) : ?>
-										<form method="post" style="display:inline;" 
-											  onsubmit="return confirm('<?php _e( 'Wirklich löschen?', 'cpsmartcrm' ); ?>');">
-											<?php wp_nonce_field( 'crm_agent_roles' ); ?>
-											<input type="hidden" name="action" value="delete" />
-											<input type="hidden" name="role_id" value="<?php echo esc_attr( $role->id ); ?>" />
-											<button type="submit" class="button button-small button-link-delete">
-												<?php _e( 'Löschen', 'cpsmartcrm' ); ?>
-											</button>
-										</form>
-									<?php endif; ?>
-								</div>
-							</td>
-						</tr>
-					<?php endforeach; ?>
-				<?php endif; ?>
+				<?php endforeach; ?>
+			<?php endif; ?>
 			</tbody>
 		</table>
 	</div>
-	
 </div>
 
 <script>
-jQuery(document).ready(function($) {
-	// Icon Preview
+jQuery(function($) {
 	function updateIconPreview() {
 		var selectedIcon = $('#role-icon-select').val();
 		$('#icon-preview').html('<span class="dashicons ' + selectedIcon + '"></span>');
 	}
-	
 	$('#role-icon-select').on('change', updateIconPreview);
-	updateIconPreview(); // Initial
+	updateIconPreview();
 });
 </script>

@@ -12,6 +12,13 @@ if (!current_user_can('manage_crm')) {
     wp_die(__('Du hast keine Berechtigung, diese Seite zu sehen.', 'cpsmartcrm'));
 }
 
+$current_user_id = get_current_user_id();
+$is_admin = current_user_can('manage_options');
+
+if (!$is_admin && function_exists('wpscrm_user_can') && !wpscrm_user_can($current_user_id, 'can_view_accounting')) {
+	wp_die(__('Du hast keine Berechtigung für die Buchhaltung.', 'cpsmartcrm'));
+}
+
 // Load helpers
 require_once dirname(__FILE__) . '/helpers.php';
 
@@ -22,36 +29,42 @@ $available_tabs = array(
         'icon' => 'glyphicon glyphicon-dashboard',
         'file' => 'tabs/dashboard.php',
         'capability' => 'manage_crm',
+        'permission_key' => 'can_view_accounting',
     ),
     'accounting' => array(
         'label' => __('Buchhaltung', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-book',
         'file' => 'tabs/accounting.php',
         'capability' => 'manage_crm',
+        'permission_key' => 'can_view_accounting',
     ),
     'belege' => array(
         'label' => __('Belege', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-folder-open',
         'file' => 'tabs/belege.php',
         'capability' => 'manage_crm',
+        'permission_key' => 'can_view_documents',
     ),
     'settings' => array(
         'label' => __('Einstellungen', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-cog',
         'file' => 'tabs/settings.php',
         'capability' => 'manage_crm',
+        'permission_key' => 'can_edit_accounting',
     ),
     'integrations' => array(
         'label' => __('Integrationen', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-plug',
         'file' => 'tabs/integrations.php',
         'capability' => 'manage_crm',
+        'permission_key' => 'can_edit_accounting',
     ),
     'statistics' => array(
         'label' => __('Statistik', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-stats',
         'file' => 'tabs/statistics.php',
         'capability' => 'manage_crm',
+        'permission_key' => 'can_view_accounting',
     ),
 );
 
@@ -61,9 +74,26 @@ $available_tabs = apply_filters('WPsCRM_accounting_tabs', $available_tabs);
 // Determine active tab
 $active_tab = sanitize_key($_GET['accounting_tab'] ?? 'dashboard');
 
+$wpscrm_tab_allowed = function($tab_info) use ($is_admin, $current_user_id) {
+    if (!current_user_can($tab_info['capability'])) {
+        return false;
+    }
+    if ($is_admin) {
+        return true;
+    }
+    if (!empty($tab_info['permission_key']) && function_exists('wpscrm_user_can')) {
+        return wpscrm_user_can($current_user_id, $tab_info['permission_key']);
+    }
+    return true;
+};
+
 // Validate tab exists and user has capability
-if (!isset($available_tabs[$active_tab]) || !current_user_can($available_tabs[$active_tab]['capability'])) {
+if (!isset($available_tabs[$active_tab]) || !$wpscrm_tab_allowed($available_tabs[$active_tab])) {
     $active_tab = 'dashboard';
+}
+
+if (!isset($available_tabs[$active_tab]) || !$wpscrm_tab_allowed($available_tabs[$active_tab])) {
+    wp_die(__('Kein erlaubter Buchhaltungs-Tab verfügbar.', 'cpsmartcrm'));
 }
 
 // Get tab file path
@@ -82,7 +112,7 @@ if (!file_exists($tab_file)) {
     <!-- Tab Navigation -->
     <nav class="nav-tab-wrapper" style="background: #fff; border-bottom: 1px solid #ccc; margin-bottom: 20px;">
         <?php foreach ($available_tabs as $tab_key => $tab_info) : ?>
-            <?php if (current_user_can($tab_info['capability'])) : ?>
+                        <?php if ($wpscrm_tab_allowed($tab_info)) : ?>
                      <a href="<?php echo esc_url(admin_url('admin.php?page=smart-crm&p=buchhaltung/index.php&accounting_tab=' . $tab_key)); ?>" 
                    class="nav-tab <?php echo ($active_tab === $tab_key) ? 'nav-tab-active' : ''; ?>" 
                    style="padding: 12px 16px; display: inline-flex; align-items: center; gap: 8px;">

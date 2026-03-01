@@ -10,6 +10,15 @@ if (!current_user_can('manage_crm')) {
     wp_die(__('Du hast keine Berechtigung, diese Seite zu sehen.', 'cpsmartcrm'));
 }
 
+$wpscrm_user_id = get_current_user_id();
+$wpscrm_is_admin = current_user_can('manage_options');
+$can_view_documents = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_view_documents');
+$can_edit_documents = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_edit_documents');
+
+if (!$can_view_documents) {
+	wp_die(__('Du hast keine Berechtigung für den Belege-Bereich.', 'cpsmartcrm'));
+}
+
 global $wpdb;
 $b_table = WPsCRM_TABLE . 'belege';
 $d_table = WPsCRM_TABLE . 'documenti';
@@ -68,13 +77,19 @@ if ($action === 'download' && $beleg_id > 0) {
 
 // Handle file delete
 if ($action === 'delete' && $beleg_id > 0 && check_admin_referer('delete_beleg_' . $beleg_id)) {
-    WPsCRM_delete_beleg($beleg_id);
-    echo '<div class="notice notice-success is-dismissible"><p>' . __('Beleg gelöscht.', 'cpsmartcrm') . '</p></div>';
+    if (!$can_edit_documents) {
+        echo '<div class="notice notice-error is-dismissible"><p>' . __('Keine Berechtigung zum Löschen von Belegen.', 'cpsmartcrm') . '</p></div>';
+    } else {
+        WPsCRM_delete_beleg($beleg_id);
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Beleg gelöscht.', 'cpsmartcrm') . '</p></div>';
+    }
 }
 
 // Handle file upload
 if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
-    if (!empty($_FILES['beleg_datei'])) {
+    if (!$can_edit_documents) {
+        echo '<div class="notice notice-error is-dismissible"><p>' . __('Keine Berechtigung zum Hochladen oder Bearbeiten von Belegen.', 'cpsmartcrm') . '</p></div>';
+    } elseif (!empty($_FILES['beleg_datei'])) {
         // Bestimme ob eine neue Ausgabe/Einnahme erstellt werden soll
         $new_transaction_id = null;
         $transaction_type = sanitize_text_field($_POST['transaction_type'] ?? 'none');
@@ -304,6 +319,10 @@ if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
 
 <div class="belege-upload-container">
     <h3 class="belege-section-header"><?php _e('Neuen Beleg hochladen', 'cpsmartcrm'); ?></h3>
+
+    <?php if (!$can_edit_documents) : ?>
+        <div class="notice notice-warning"><p><?php _e('Du hast nur Leserechte für Belege. Upload, Bearbeiten und Löschen sind deaktiviert.', 'cpsmartcrm'); ?></p></div>
+    <?php endif; ?>
     
     <form method="post" enctype="multipart/form-data">
         <?php wp_nonce_field('belege_upload'); ?>

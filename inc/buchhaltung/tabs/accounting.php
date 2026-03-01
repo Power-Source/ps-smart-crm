@@ -12,6 +12,15 @@ if (!current_user_can('manage_crm')) {
     wp_die(__('Du hast keine Berechtigung, diese Seite zu sehen.', 'cpsmartcrm'));
 }
 
+$wpscrm_user_id = get_current_user_id();
+$wpscrm_is_admin = current_user_can('manage_options');
+$can_view_accounting = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_view_accounting');
+$can_edit_accounting = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_edit_accounting');
+
+if (!$can_view_accounting) {
+	wp_die(__('Du hast keine Berechtigung für diesen Buchhaltungsbereich.', 'cpsmartcrm'));
+}
+
 global $wpdb;
 
 $d_table = WPsCRM_TABLE . 'documenti';
@@ -65,7 +74,9 @@ $action_error = '';
 
 // Handle new expense entry
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_expense') {
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_expense_action')) {
+    if (!$can_edit_accounting) {
+        $action_error = __('Du hast keine Berechtigung zum Bearbeiten der Buchhaltung.', 'cpsmartcrm');
+    } elseif (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_expense_action')) {
         $action_error = __('Sicherheitsüberprüfung fehlgeschlagen.', 'cpsmartcrm');
     } else {
         $expense_date = sanitize_text_field($_POST['expense_date'] ?? date('Y-m-d'));
@@ -108,7 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle new manual income entry
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_income') {
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_income_action')) {
+    if (!$can_edit_accounting) {
+        $action_error = __('Du hast keine Berechtigung zum Bearbeiten der Buchhaltung.', 'cpsmartcrm');
+    } elseif (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_income_action')) {
         $action_error = __('Sicherheitsüberprüfung fehlgeschlagen.', 'cpsmartcrm');
     } else {
         $income_date = sanitize_text_field($_POST['income_date'] ?? date('Y-m-d'));
