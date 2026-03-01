@@ -3,15 +3,32 @@
  */
 
 jQuery(document).ready(function($) {
+    // Support both crmFrontend and crmAjax global objects
     const crmFrontend = window.crmFrontend || {};
+    const crmAjax = window.crmAjax || window.crmFrontend || {};
     
-    // Load initial stats
-    loadAgentStats();
-    loadActiveTiming();
+    // Expose crmAjax globally if it came from crmFrontend
+    if (!window.crmAjax && window.crmFrontend) {
+        window.crmAjax = window.crmFrontend;
+    }
     
-    // Refresh stats every 30 seconds
-    setInterval(loadAgentStats, 30000);
-    setInterval(loadActiveTiming, 10000);
+    // Only load dashboard features if they exist
+    if ($('#crm-total-hours').length) {
+        loadAgentStats();
+    }
+    
+    if ($('#crm-timer-display').length) {
+        loadActiveTiming();
+    }
+    
+    // Refresh stats every 30 seconds (only if element exists)
+    if ($('#crm-total-hours').length) {
+        setInterval(loadAgentStats, 30000);
+    }
+    
+    if ($('#crm-timer-display').length) {
+        setInterval(loadActiveTiming, 10000);
+    }
     
     /**
      * Load Agent Statistics
@@ -58,63 +75,67 @@ jQuery(document).ready(function($) {
     /**
      * Start Timer Button Click
      */
-    $('#crm-btn-start-timer').on('click', function(e) {
-        e.preventDefault();
-        
-        $.ajax({
-            type: 'POST',
-            url: crmFrontend.ajaxurl,
-            data: {
-                action: 'crm_agent_timetracking_toggle',
-                action_type: 'start',
-                nonce: crmFrontend.nonce,
-                project_id: 0,
-                task_id: 0
-            },
-            success: function(response) {
-                if (response.success) {
-                    startTimerDisplay(response.data.tracking_id, response.data.start_time);
-                    loadAgentStats();
-                } else {
-                    alert('Fehler: ' + response.data.message);
+    if ($('#crm-btn-start-timer').length) {
+        $('#crm-btn-start-timer').on('click', function(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                type: 'POST',
+                url: crmFrontend.ajaxurl,
+                data: {
+                    action: 'crm_agent_timetracking_toggle',
+                    action_type: 'start',
+                    nonce: crmFrontend.nonce,
+                    project_id: 0,
+                    task_id: 0
+                },
+                success: function(response) {
+                    if (response.success) {
+                        startTimerDisplay(response.data.tracking_id, response.data.start_time);
+                        loadAgentStats();
+                    } else {
+                        alert('Fehler: ' + response.data.message);
+                    }
                 }
-            }
+            });
         });
-    });
+    }
     
     /**
      * Stop Timer Button Click
      */
-    $('#crm-btn-stop-timer').on('click', function(e) {
-        e.preventDefault();
-        
-        const trackingId = $(this).data('tracking-id');
-        
-        $.ajax({
-            type: 'POST',
-            url: crmFrontend.ajaxurl,
-            data: {
-                action: 'crm_agent_timetracking_toggle',
-                action_type: 'stop',
-                tracking_id: trackingId,
-                nonce: crmFrontend.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    stopTimerDisplay();
-                    loadAgentStats();
+    if ($('#crm-btn-stop-timer').length) {
+        $('#crm-btn-stop-timer').on('click', function(e) {
+            e.preventDefault();
+            
+            const trackingId = $(this).data('tracking-id');
+            
+            $.ajax({
+                type: 'POST',
+                url: crmFrontend.ajaxurl,
+                data: {
+                    action: 'crm_agent_timetracking_toggle',
+                    action_type: 'stop',
+                    tracking_id: trackingId,
+                    nonce: crmFrontend.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        stopTimerDisplay();
+                        loadAgentStats();
+                    }
                 }
-            }
+            });
         });
-    });
+    }
     
     /**
      * Start Timer Display and Interval
      */
     function startTimerDisplay(trackingId, startTime) {
-        $('#crm-btn-start-timer').hide();
-        $('#crm-btn-stop-timer').data('tracking-id', trackingId).show();
-        $('#crm-current-activity').show();
+        if ($('#crm-btn-start-timer').length) $('#crm-btn-start-timer').hide();
+        if ($('#crm-btn-stop-timer').length) $('#crm-btn-stop-timer').data('tracking-id', trackingId).show();
+        if ($('#crm-current-activity').length) $('#crm-current-activity').show();
         
         // Clear existing interval
         if (window.crmTimerInterval) {
@@ -129,11 +150,13 @@ jQuery(document).ready(function($) {
             const minutes = Math.floor((elapsed % 3600) / 60);
             const seconds = elapsed % 60;
             
-            $('#crm-timer-display').text(
-                String(hours).padStart(2, '0') + ':' +
-                String(minutes).padStart(2, '0') + ':' +
-                String(seconds).padStart(2, '0')
-            );
+            if ($('#crm-timer-display').length) {
+                $('#crm-timer-display').text(
+                    String(hours).padStart(2, '0') + ':' +
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0')
+                );
+            }
         }, 1000);
     }
     
@@ -145,9 +168,9 @@ jQuery(document).ready(function($) {
             clearInterval(window.crmTimerInterval);
         }
         
-        $('#crm-timer-display').text('00:00:00');
-        $('#crm-btn-start-timer').show();
-        $('#crm-btn-stop-timer').hide();
-        $('#crm-current-activity').hide();
+        if ($('#crm-timer-display').length) $('#crm-timer-display').text('00:00:00');
+        if ($('#crm-btn-start-timer').length) $('#crm-btn-start-timer').show();
+        if ($('#crm-btn-stop-timer').length) $('#crm-btn-stop-timer').hide();
+        if ($('#crm-current-activity').length) $('#crm-current-activity').hide();
     }
 });

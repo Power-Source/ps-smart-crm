@@ -40,6 +40,47 @@ class WPsCRM_Agent_Dashboard extends WPsCRM_Module_Base {
 		add_action( 'wp_ajax_crm_get_customer_documents', 'wpscrm_agent_dashboard_get_customer_documents' );
 		add_action( 'wp_ajax_crm_get_customer_contacts', 'wpscrm_agent_dashboard_get_customer_contacts' );
 		add_action( 'wp_ajax_crm_frontend_save_contact', 'wpscrm_agent_dashboard_save_contact' );
+		
+		// Enqueue scripts with proper localization
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_dashboard_scripts' ) );
+	}
+	
+	/**
+	 * Enqueue Dashboard Scripts with Localized Data
+	 * Ensures crmAjax is properly defined for AJAX calls
+	 */
+	public function enqueue_dashboard_scripts() {
+		// Get plugin root and URL
+		$plugin_root = dirname( dirname( dirname( dirname( $this->base_path ) ) ) );
+		$plugin_url = plugins_url( '', $plugin_root . '/ps-smart-crm.php' );
+		$base_url = $plugin_url . '/inc/frontend/modules/' . $this->module_id;
+		
+		// Enqueue stylesheet
+		wp_enqueue_style(
+			'crm-agent-dashboard-style',
+			$base_url . '/assets/style.css',
+			array(),
+			WPSCRM_VERSION
+		);
+		
+		// Enqueue script
+		wp_enqueue_script(
+			'crm-agent-dashboard-script',
+			$base_url . '/assets/script.js',
+			array( 'jquery' ),
+			WPSCRM_VERSION,
+			true
+		);
+		
+		// Localize script - Make crmAjax available globally with AJAX URL and nonce
+		wp_localize_script(
+			'crm-agent-dashboard-script',
+			'crmAjax',
+			array(
+				'ajaxurl'       => admin_url( 'admin-ajax.php' ),
+				'nonce'         => wp_create_nonce( 'crm_customer_management' ),
+			)
+		);
 	}
 	
 	/**

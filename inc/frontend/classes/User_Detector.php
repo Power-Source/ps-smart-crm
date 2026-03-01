@@ -168,6 +168,18 @@ class WPsCRM_User_Detector {
 		global $wpdb;
 		
 		$agents_table = WPsCRM_TABLE . 'agents';
+		
+		// Check if agents table exists
+		$table_exists = $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+			DB_NAME,
+			$agents_table
+		) );
+		
+		if ( ! $table_exists ) {
+			return;
+		}
+		
 		$agent = $wpdb->get_row( $wpdb->prepare(
 			"SELECT * FROM $agents_table WHERE user_id = %d",
 			$this->user_id

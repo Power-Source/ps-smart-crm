@@ -778,7 +778,9 @@ jQuery(document).ready(function($) {
     $('#customer-search-input').on('keypress', function(e) {
         if (e.which === 13) {
             e.preventDefault();
-            $('#btn-search-customers').click();
+            if ($('#btn-search-customers').length) {
+                $('#btn-search-customers').click();
+            }
         }
     });
     
@@ -851,21 +853,21 @@ jQuery(document).ready(function($) {
                     // Multi-Selects
                     if (c.categoria) {
                         var cats = c.categoria.split(',');
-                        $('#customerCategory').val(cats).trigger('change');
+                        if ($('#customerCategory').length) $('#customerCategory').val(cats).trigger('change');
                     }
                     
                     if(c.interessi) {
                         var ints = c.interessi.split(',');
-                        $('#customerInterests').val(ints).trigger('change');
+                        if ($('#customerInterests').length) $('#customerInterests').val(ints).trigger('change');
                     }
                     
                     if (c.provenienza) {
                         var provs = c.provenienza.split(',');
-                        $('#customerComesfrom').val(provs).trigger('change');
+                        if ($('#customerComesfrom').length) $('#customerComesfrom').val(provs).trigger('change');
                     }
                     
                     if (c.agente) {
-                        $('#selectAgent').val(c.agente);
+                        if ($('#selectAgent').length) $('#selectAgent').val(c.agente);
                     }
                 }
             }
@@ -899,7 +901,9 @@ jQuery(document).ready(function($) {
                     alert('<?php _e('Kunde erfolgreich gespeichert!', 'cpsmartcrm'); ?>');
                     resetCustomerForm();
                     loadCustomersList();
-                    $('.crm-customers-tab-btn[data-tab="customers-list"]').click();
+                    if ($('.crm-customers-tab-btn[data-tab="customers-list"]').length) {
+                        $('.crm-customers-tab-btn[data-tab="customers-list"]').click();
+                    }
                     $('.crm-customers-tab-btn[data-tab="customers-form"]').hide();
                 } else {
                     alert('<?php _e('Fehler beim Speichern: ', 'cpsmartcrm'); ?>' + (response.data.message || ''));
@@ -912,18 +916,22 @@ jQuery(document).ready(function($) {
     // FORMULAR ZURÜCKSETZEN
     // =========================
     function resetCustomerForm() {
-        $('#form-customer-save')[0].reset();
-        $('#customer-id-hidden').val('0');
-        $('#customerCategory, #customerInterests, #customerComesfrom').val(null).trigger('change');
-        $('#einstiegsdatum').val('<?php echo date('d.m.Y'); ?>');
-        $('input[name="tipo_cliente"][value="1"]').prop('checked', true);
-        $('input[name="abrechnungsmodus"][value="0"]').prop('checked', true);
+        if ($('#form-customer-save').length) $('#form-customer-save')[0].reset();
+        if ($('#customer-id-hidden').length) $('#customer-id-hidden').val('0');
+        if ($('#customerCategory, #customerInterests, #customerComesfrom').length) {
+            $('#customerCategory, #customerInterests, #customerComesfrom').val(null).trigger('change');
+        }
+        if ($('#einstiegsdatum').length) $('#einstiegsdatum').val('<?php echo date('d.m.Y'); ?>');
+        if ($('input[name="tipo_cliente"][value="1"]').length) $('input[name="tipo_cliente"][value="1"]').prop('checked', true);
+        if ($('input[name="abrechnungsmodus"][value="0"]').length) $('input[name="abrechnungsmodus"][value="0"]').prop('checked', true);
     }
     
     $('#btn-reset-customer-form').on('click', resetCustomerForm);
     
     $('#btn-cancel-customer-form').on('click', function() {
-        $('.crm-customers-tab-btn[data-tab="customers-list"]').click();
+        if ($('.crm-customers-tab-btn[data-tab="customers-list"]').length) {
+            $('.crm-customers-tab-btn[data-tab="customers-list"]').click();
+        }
         $('.crm-customers-tab-btn[data-tab="customers-form"]').hide();
     });
     
@@ -1059,7 +1067,7 @@ jQuery(document).ready(function($) {
     // KONTAKT HINZUFÜGEN
     // =========================
     $('#btn-add-contact').on('click', function() {
-        $('#form-contact-save')[0].reset();
+        if ($('#form-contact-save').length) $('#form-contact-save')[0].reset();
         $('#contact-id').val('0');
         $('#contact-fk-kunde').val(selectedCustomerId);
         $('#contact-modal').fadeIn();
@@ -1095,7 +1103,9 @@ jQuery(document).ready(function($) {
     // ZURÜCK ZUR LISTE
     // =========================
     $('.btn-back-to-list').on('click', function() {
-        $('.crm-customers-tab-btn[data-tab="customers-list"]').click();
+        if ($('.crm-customers-tab-btn[data-tab="customers-list"]').length) {
+            $('.crm-customers-tab-btn[data-tab="customers-list"]').click();
+        }
         $('.crm-customers-tab-btn[data-tab="customers-docs"]').hide();
         $('.crm-customers-tab-btn[data-tab="customers-contacts"]').hide();
         $('.crm-customers-tab-btn[data-tab="customers-form"]').hide();

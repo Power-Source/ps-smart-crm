@@ -68,8 +68,21 @@ if ( ! function_exists( 'wpscrm_is_user_agent' ) ) {
 		}
 		
 		global $wpdb;
+		$agents_table = WPsCRM_TABLE . 'agents';
+		
+		// Check if agents table exists
+		$table_exists = $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+			DB_NAME,
+			$agents_table
+		) );
+		
+		if ( ! $table_exists ) {
+			return false;
+		}
+		
 		$agent = $wpdb->get_var( $wpdb->prepare(
-			"SELECT id FROM " . WPsCRM_TABLE . "agents WHERE user_id = %d",
+			"SELECT id FROM " . $agents_table . " WHERE user_id = %d",
 			$user_id
 		) );
 		
