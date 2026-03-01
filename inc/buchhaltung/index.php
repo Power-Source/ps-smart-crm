@@ -22,6 +22,9 @@ if (!$is_admin && function_exists('wpscrm_user_can') && !wpscrm_user_can($curren
 // Load helpers
 require_once dirname(__FILE__) . '/helpers.php';
 
+// Load timetracking integration module
+require_once dirname(__FILE__) . '/modules/timetracking-integration.php';
+
 // Available tabs
 $available_tabs = array(
     'dashboard' => array(
@@ -35,6 +38,13 @@ $available_tabs = array(
         'label' => __('Buchhaltung', 'cpsmartcrm'),
         'icon' => 'glyphicon glyphicon-book',
         'file' => 'tabs/accounting.php',
+        'capability' => 'manage_crm',
+        'permission_key' => 'can_view_accounting',
+    ),
+    'abrechnung' => array(
+        'label' => __('Abrechnung (Zeiterfassung)', 'cpsmartcrm'),
+        'icon' => 'glyphicon glyphicon-time',
+        'file' => 'tabs/abrechnung.php',
         'capability' => 'manage_crm',
         'permission_key' => 'can_view_accounting',
     ),

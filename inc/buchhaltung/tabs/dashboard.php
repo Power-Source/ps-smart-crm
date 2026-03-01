@@ -22,6 +22,33 @@ $counts = array(
     'booked' => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$d_table} WHERE tipo = %d AND registrato = 1", $invoice_type)),
 );
 
+// Get timetracking summary (unbilled hours)
+$tt_summary = function_exists( 'wpscrm_get_timetracking_summary' )
+	? wpscrm_get_timetracking_summary( date( 'Y-m-01' ), date( 'Y-m-d' ) )
+	: array();
+
+$unbilled_total_hours = 0;
+$unbilled_total_amount = 0;
+foreach ( $tt_summary as $agent_row ) {
+	$unbilled_total_hours += round( $agent_row->total_minutes / 60, 2 );
+	
+	// Get agent billing info for revenue calculation
+	$billing_info = function_exists( 'wpscrm_get_agent_billing_info' )
+		? wpscrm_get_agent_billing_info( $agent_row->user_id )
+		: (object) array( 'hourly_rate' => 0, 'rate_type' => 'net' );
+	
+	$agent_hours = round( $agent_row->total_minutes / 60, 2 );
+	$agent_amount = ( 'gross' === $billing_info->rate_type )
+		? $agent_hours * $billing_info->hourly_rate
+		: $agent_hours * $billing_info->hourly_rate * 1.19;
+	
+	$unbilled_total_amount += $agent_amount;
+}
+
+// Get billing drafts
+$billing_table = WPsCRM_TABLE . 'billing_drafts';
+$draft_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $billing_table WHERE status = 'draft'" );
+
 // Get accounting summary for paid invoices
 $summary = WPsCRM_get_accounting_summary(array('date_from' => date('Y-01-01'), 'date_to' => date('Y-12-31')));
 
@@ -45,6 +72,62 @@ $recent_invoices = $wpdb->get_results(
         <strong>ℹ️ <?php _e('Status: Unternehmer mit Umsatzsteuer', 'cpsmartcrm'); ?></strong><br />
         <small><?php _e('Umsatzsteuer-ID: ', 'cpsmartcrm'); ?><?php echo esc_html($bus_options['business_ustid'] ?? '—'); ?></small>
     </div>
+<?php endif; ?>
+
+<!-- TIMETRACKING PROJECTION SECTION (DIE MAGIE) -->
+<?php if ( count( $tt_summary ) > 0 || $draft_count > 0 ) : ?>
+	<div style="background: #f0f8ff; border: 2px solid #2196F3; border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+		<h3 style="margin-top: 0; color: #1565c0;">📊 <?php esc_html_e( 'Zeiterfassung → Abrechnung (Echtzeit-Projektion)', 'cpsmartcrm' ); ?></h3>
+		
+		<div style="display: flex; gap: 16px; flex-wrap: wrap;">
+			<!-- Offene Stunden -->
+			<div class="card" style="min-width: 200px; padding: 12px; background: #e3f2fd; border-left: 4px solid #2196F3;">
+				<div style="font-size: 12px; color: #1565c0; font-weight: 600; margin-bottom: 4px;">
+					<?php esc_html_e( 'Offene Arbeitszeiten', 'cpsmartcrm' ); ?>
+				</div>
+				<div style="font-size: 22px; font-weight: 700; color: #1565c0;">
+					<?php echo esc_html( round( $unbilled_total_hours, 2 ) ); ?> h
+				</div>
+				<div style="font-size: 11px; color: #666; margin-top: 4px;">
+					<?php esc_html_e( 'noch nicht abgerechnet', 'cpsmartcrm' ); ?>
+				</div>
+			</div>
+			
+			<!-- Geschätzter Betrag -->
+			<div class="card" style="min-width: 200px; padding: 12px; background: #c8e6c9; border-left: 4px solid #4caf50;">
+				<div style="font-size: 12px; color: #2e7d32; font-weight: 600; margin-bottom: 4px;">
+					<?php esc_html_e( 'Geschätzter Betrag', 'cpsmartcrm' ); ?>
+				</div>
+				<div style="font-size: 22px; font-weight: 700; color: #2e7d32;">
+					€ <?php echo esc_html( number_format( $unbilled_total_amount, 2, ',', '.' ) ); ?>
+				</div>
+				<div style="font-size: 11px; color: #666; margin-top: 4px;">
+					<?php esc_html_e( 'Projektierte Einnahme (brutto)', 'cpsmartcrm' ); ?>
+				</div>
+			</div>
+			
+			<!-- Entwürfe -->
+			<?php if ( $draft_count > 0 ) : ?>
+				<div class="card" style="min-width: 200px; padding: 12px; background: #fff9c4; border-left: 4px solid #fbc02d;">
+					<div style="font-size: 12px; color: #f57f17; font-weight: 600; margin-bottom: 4px;">
+						<?php esc_html_e( 'Abrechnungsentwürfe', 'cpsmartcrm' ); ?>
+					</div>
+					<div style="font-size: 22px; font-weight: 700; color: #f57f17;">
+						<?php echo esc_html( $draft_count ); ?>
+					</div>
+					<div style="font-size: 11px; color: #666; margin-top: 4px;">
+						<?php printf( esc_html__( 'ausstehende Buchung', 'cpsmartcrm' ) ); ?>
+					</div>
+				</div>
+			<?php endif; ?>
+		</div>
+		
+		<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #bbdefb;">
+			<a href="admin.php?page=smart-crm&p=buchhaltung/index.php&accounting_tab=abrechnung" class="button button-primary">
+				<?php esc_html_e( 'Zur Abrechnung →', 'cpsmartcrm' ); ?>
+			</a>
+		</div>
+	</div>
 <?php endif; ?>
 
 <div style="display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0;">

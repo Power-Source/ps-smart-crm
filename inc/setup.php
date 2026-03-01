@@ -342,6 +342,39 @@ function WPsCRM_crm_install() {
   KEY `deleted` (`deleted`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
 
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."billing_drafts` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `agent_id` int(10) unsigned NOT NULL COMMENT 'FK zu agents',
+  `user_id` int(10) unsigned NOT NULL COMMENT 'WordPress User-ID',
+  `status` enum('draft','billed','cancelled') NOT NULL DEFAULT 'draft' COMMENT 'Entwurf, Gebucht, Gelöscht',
+  `total_minutes` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Summe der erfassten Minuten',
+  `hourly_rate` float(9,2) unsigned NOT NULL DEFAULT '0.00' COMMENT 'Stundensatz zum Zeitpunkt der Erstellung',
+  `rate_type` varchar(20) NOT NULL DEFAULT 'net' COMMENT 'net oder gross',
+  `amount_net` float(9,2) unsigned NOT NULL DEFAULT '0.00' COMMENT 'Nettobetrag',
+  `amount_gross` float(9,2) unsigned NOT NULL DEFAULT '0.00' COMMENT 'Bruttobetrag (mit MwSt)',
+  `description` text COMMENT 'Beschreibung/Notizen',
+  `income_entry_id` int(10) unsigned DEFAULT NULL COMMENT 'FK zur incomes-Tabelle nach Buchung',
+  `document_id` int(10) unsigned DEFAULT NULL COMMENT 'FK zu Rechnung/Dokument',
+  `created_at` datetime NOT NULL,
+  `created_by` int(10) unsigned NOT NULL COMMENT 'Erstellt von User-ID',
+  `billed_at` datetime DEFAULT NULL,
+  `billed_by` int(10) unsigned DEFAULT NULL COMMENT 'Gebucht von User-ID',
+  PRIMARY KEY (`id`),
+  KEY `agent_id` (`agent_id`),
+  KEY `user_id` (`user_id`),
+  KEY `status` (`status`),
+  KEY `created_at` (`created_at`)
+) ENGINE=InnoDB ".$charset_collate." AUTO_INCREMENT=1;";
+
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."billing_drafts_items` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `billing_draft_id` int(10) unsigned NOT NULL COMMENT 'FK zu billing_drafts',
+  `timetracking_id` int(10) unsigned NOT NULL COMMENT 'FK zu timetracking',
+  PRIMARY KEY (`id`),
+  KEY `billing_draft_id` (`billing_draft_id`),
+  KEY `timetracking_id` (`timetracking_id`)
+) ENGINE=InnoDB ".$charset_collate." AUTO_INCREMENT=1;";
+
     //print_r ($sql);//exit;
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	$namefile="error_setup_".date("YmdHi").".txt";
