@@ -21,27 +21,14 @@ add_action('init', 'wpscrm_register_frontend_shortcodes');
  * Agent Dashboard Shortcode Handler
  */
 function wpscrm_render_agent_dashboard($atts) {
-    // Check if user is logged in
-    if (!is_user_logged_in()) {
-        return '<div style="background: #fff3cd; padding: 20px; border-radius: 8px; text-align: center;">
-                    <h3>⛔ Zugriff verweigert</h3>
-                    <p>Diese Seite ist nur für angemeldete Mitarbeiter verfügbar.</p>
-                </div>';
-    }
-    
+    // Dashboard ist OFFEN, aber Inhalte unterschiedlich basierend auf User
     $current_user = wp_get_current_user();
     
     // Check if user is agent (Agent-Rolle prüfen)
-    $is_agent = function_exists('wpscrm_is_user_agent') 
-        ? wpscrm_is_user_agent($current_user->ID) 
-        : current_user_can('manage_crm');
-    
-    if (!$is_agent && !current_user_can('manage_options')) {
-        return '<div style="background: #ffcdd2; padding: 20px; border-radius: 8px; text-align: center;">
-                    <h3>❌ Keine Berechtigung</h3>
-                    <p>Du hast keine Berechtigung, das Agent-Dashboard zu sehen.</p>
-                </div>';
-    }
+    $is_agent = is_user_logged_in() && (
+        (function_exists('wpscrm_is_user_agent') && wpscrm_is_user_agent($current_user->ID)) ||
+        current_user_can('manage_options')
+    );
     
     // Load Agent Dashboard
     ob_start();
@@ -53,27 +40,8 @@ function wpscrm_render_agent_dashboard($atts) {
  * Customer Portal Shortcode Handler
  */
 function wpscrm_render_customer_portal($atts) {
-    // Check if user is logged in
-    if (!is_user_logged_in()) {
-        return '<div style="background: #fff3cd; padding: 20px; border-radius: 8px; text-align: center;">
-                    <h3>🔐 Anmeldung erforderlich</h3>
-                    <p>Bitte melden Sie sich an, um Ihre Rechnungen und Angebote zu sehen.</p>
-                    ' . wp_login_form(array('echo' => false)) . '
-                </div>';
-    }
-    
+    // Portal ist OFFEN, aber Inhalte unterschiedlich basierend auf User
     $current_user = wp_get_current_user();
-    
-    // Check if user is customer
-    $customer_id = wpscrm_get_customer_by_email($current_user->user_email);
-    
-    if (!$customer_id) {
-        return '<div style="background: #ffcdd2; padding: 20px; border-radius: 8px; text-align: center;">
-                    <h3>⚠️ Kein Kundenkonto</h3>
-                    <p>Es konnte kein Kundenkonto für Ihre E-Mail-Adresse gefunden werden.</p>
-                    <p><a href="' . wp_logout_url() . '">Logout</a></p>
-                </div>';
-    }
     
     // Load Customer Portal
     ob_start();
@@ -122,7 +90,7 @@ function wpscrm_get_customer_by_email($email) {
 }
 
 /**
- * Helper: Check if user is agent
+ * Check if user is agent
  */
 if (!function_exists('wpscrm_is_user_agent')) {
     function wpscrm_is_user_agent($user_id = null) {
@@ -141,7 +109,64 @@ if (!function_exists('wpscrm_is_user_agent')) {
 }
 
 /**
+ * AJAX: Create Frontend Page
+ */
+function wpscrm_create_frontend_page_callback() {
+    // Verify nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crm_create_frontend_page')) {
+        wp_send_json_error(array('message' => 'Sicherheitsüberprüfung fehlgeschlagen.'));
+    }
+
+    // Check permissions
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => 'Sie haben keine Berechtigung, diese Aktion durchzuführen.'));
+    }
+
+    $page_type = sanitize_text_field($_POST['page_type']);
+    
+    // Determine page title & content based on type
+    if ($page_type === 'intranet') {
+        $page_title = 'Intranet - Agenten-Dashboard';
+        $page_content = '[crm_agent_dashboard]';
+    } elseif ($page_type === 'customer') {
+        $page_title = 'Kundenzone - Kundenkonto';
+        $page_content = '[crm_customer_portal]';
+    } else {
+        wp_send_json_error(array('message' => 'Ungültiger Seitentyp.'));
+    }
+
+    // Create WordPress page
+    $page_id = wp_insert_post(array(
+        'post_type'    => 'page',
+        'post_title'   => $page_title,
+        'post_content' => $page_content,
+        'post_status'  => 'publish',
+    ));
+
+    if (is_wp_error($page_id)) {
+        wp_send_json_error(array('message' => 'Seite konnte nicht erstellt werden.'));
+    }
+
+    // Save to settings
+    $options = get_option('CRM_frontend_settings', array());
+    if ($page_type === 'intranet') {
+        $options['frontend_intranet_page'] = $page_id;
+    } else {
+        $options['frontend_customer_page'] = $page_id;
+    }
+    update_option('CRM_frontend_settings', $options);
+
+    wp_send_json_success(array(
+        'page_id' => $page_id,
+        'page_title' => $page_title,
+        'message' => sprintf(__('%s wurde erfolgreich erstellt!', 'cpsmartcrm'), $page_title)
+    ));
+}
+add_action('wp_ajax_crm_create_frontend_page', 'wpscrm_create_frontend_page_callback');
+
+/**
  * Load Frontend API Handlers
  */
 require_once dirname(__FILE__) . '/api/agent-api.php';
 require_once dirname(__FILE__) . '/api/customer-api.php';
+

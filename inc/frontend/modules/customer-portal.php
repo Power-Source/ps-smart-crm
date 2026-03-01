@@ -2,6 +2,11 @@
 /**
  * Customer Portal Frontend Module
  * Rechnungen, Angebote, Postfach
+ * 
+ * Bedingte Anzeige je nach Benutzertyp:
+ * - Kunde: Vollständiges Portal mit Rechnungen, Angeboten, Postfach
+ * - Agent: Hinweis auf Agenten-Dashboard
+ * - Gast: Aufforderung zum Anmelden
  */
 
 if (!defined('ABSPATH')) exit;
@@ -9,15 +14,30 @@ if (!defined('ABSPATH')) exit;
 $current_user = wp_get_current_user();
 global $wpdb;
 
-// Get customer data
-$customer_id = wpscrm_get_customer_by_email($current_user->user_email);
-$contacts_table = WPsCRM_TABLE . 'contacts';
+// User type detection
+$is_customer = is_user_logged_in() ? !empty(wpscrm_get_customer_by_email($current_user->user_email)) : false;
+$is_agent = is_user_logged_in() && (
+    (function_exists('wpscrm_is_user_agent') && wpscrm_is_user_agent($current_user->ID)) ||
+    current_user_can('manage_options')
+);
 
-$customer = $wpdb->get_row($wpdb->prepare(
-    "SELECT * FROM $contacts_table WHERE id = %d AND deleted = 0",
-    $customer_id
-));
+// Get customer data (nur wenn Kunde)
+$customer_id = null;
+$customer = null;
+
+if ($is_customer) {
+    $customer_id = wpscrm_get_customer_by_email($current_user->user_email);
+    $contacts_table = WPsCRM_TABLE . 'contacts';
+    
+    $customer = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $contacts_table WHERE id = %d AND deleted = 0",
+        $customer_id
+    ));
+}
 ?>
+
+<!-- CUSTOMER PORTAL CONTENT -->
+<?php if ($is_customer) : ?>
 
 <div class="crm-customer-portal" style="padding: 20px; background: #f5f5f5; min-height: 100vh;">
     
@@ -347,3 +367,36 @@ jQuery(document).ready(function($) {
     }
 });
 </script>
+
+<!-- AGENT NOTICE -->
+<?php elseif ($is_agent) : ?>
+
+<div style="padding: 40px 20px; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div style="max-width: 500px; background: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #4CAF50; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
+        <h2 style="margin: 0 0 15px 0; color: #333;">Agent-Bereich</h2>
+        <p style="margin: 0 0 25px 0; color: #666; line-height: 1.6;">
+            Bitte nutze das <strong>Agenten-Dashboard</strong> für deine Timetracking, Aufgaben und Statistiken.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <a href="javascript:history.back();" class="button button-secondary">← Zurück</a>
+        </div>
+    </div>
+</div>
+
+<?php else : ?>
+
+<!-- GUEST MESSAGE -->
+<div style="padding: 40px 20px; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div style="max-width: 500px; background: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #FFC107; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
+        <h2 style="margin: 0 0 15px 0; color: #333;">Kundenzone</h2>
+        <p style="margin: 0 0 25px 0; color: #666; line-height: 1.6;">
+            Dieser Bereich ist nur für registrierte Kunden sichtbar. Bitte melden Sie sich an, um Ihre Rechnungen, Angebote und Dokumente zu sehen.
+        </p>
+        <a href="<?php echo wp_login_url(); ?>" class="button button-primary">🔑 Anmelden</a>
+    </div>
+</div>
+
+<?php endif; ?>
+

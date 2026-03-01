@@ -759,17 +759,38 @@ class CRM_Options_Settings{
                         <?php _e('WordPress-Seite für das Agent-Dashboard. Nur für angemeldete Mitarbeiter sichtbar.', 'cpsmartcrm'); ?>
                     </p>
                     
-                    <select name="CRM_frontend_settings[frontend_intranet_page]" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                        <option value="">— <?php _e('Seite auswählen', 'cpsmartcrm'); ?> —</option>
-                        <?php
-                        $pages = get_pages(array('number' => 100));
-                        $selected_intranet = $options['frontend_intranet_page'] ?? '';
-                        foreach ($pages as $page) {
-                            $selected = selected($selected_intranet, $page->ID, false);
-                            echo '<option value="' . esc_attr($page->ID) . '" ' . $selected . '>' . esc_html($page->post_title) . '</option>';
-                        }
-                        ?>
-                    </select>
+                    <!-- Select + Buttons Row -->
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <select id="crm-intranet-page-select" name="CRM_frontend_settings[frontend_intranet_page]" style="flex: 1; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">— <?php _e('Seite auswählen', 'cpsmartcrm'); ?> —</option>
+                            <?php
+                            $pages = get_pages(array('number' => 100));
+                            $selected_intranet = $options['frontend_intranet_page'] ?? '';
+                            foreach ($pages as $page) {
+                                $selected = selected($selected_intranet, $page->ID, false);
+                                echo '<option value="' . esc_attr($page->ID) . '" ' . $selected . '>' . esc_html($page->post_title) . '</option>';
+                            }
+                            ?>
+                        </select>
+
+                        <!-- Buttons Container -->
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 0 0 auto;">
+                            <!-- Create Button (shown when empty) -->
+                            <button id="crm-intranet-create-btn" type="button" class="button button-primary crm-create-page-btn" data-page-type="intranet" style="display: <?php echo empty($selected_intranet) ? 'block' : 'none'; ?>; white-space: nowrap;">
+                                ➕ <?php _e('Seite erstellen', 'cpsmartcrm'); ?>
+                            </button>
+                            
+                            <!-- Edit Button (shown when selected) -->
+                            <a id="crm-intranet-edit-btn" href="#" class="button button-secondary" target="_blank" style="display: <?php echo !empty($selected_intranet) ? 'flex' : 'none'; ?>; align-items: center; text-decoration: none; white-space: nowrap;">
+                                ✏️ <?php _e('Seite bearbeiten →Editor', 'cpsmartcrm'); ?>
+                            </a>
+                            
+                            <!-- View Button (shown when selected) -->
+                            <a id="crm-intranet-view-btn" href="#" class="button button-secondary" target="_blank" style="display: <?php echo !empty($selected_intranet) ? 'block' : 'none'; ?>; white-space: nowrap;">
+                                👁️ <?php _e('Seite ansehen', 'cpsmartcrm'); ?>
+                            </a>
+                        </div>
+                    </div>
                     
                     <div style="background: #e3f2fd; padding: 12px; border-radius: 4px; margin-top: 12px; border-left: 3px solid #2196F3;">
                         <small style="color: #1565c0; font-weight: 500;">
@@ -791,16 +812,37 @@ class CRM_Options_Settings{
                         <?php _e('WordPress-Seite für das Kundenportal. Nur für angemeldete Kunden sichtbar.', 'cpsmartcrm'); ?>
                     </p>
                     
-                    <select name="CRM_frontend_settings[frontend_customer_page]" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                        <option value="">— <?php _e('Seite auswählen', 'cpsmartcrm'); ?> —</option>
-                        <?php
-                        $selected_customer = $options['frontend_customer_page'] ?? '';
-                        foreach ($pages as $page) {
-                            $selected = selected($selected_customer, $page->ID, false);
-                            echo '<option value="' . esc_attr($page->ID) . '" ' . $selected . '>' . esc_html($page->post_title) . '</option>';
-                        }
-                        ?>
-                    </select>
+                    <!-- Select + Buttons Row -->
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <select id="crm-customer-page-select" name="CRM_frontend_settings[frontend_customer_page]" style="flex: 1; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">— <?php _e('Seite auswählen', 'cpsmartcrm'); ?> —</option>
+                            <?php
+                            $selected_customer = $options['frontend_customer_page'] ?? '';
+                            foreach ($pages as $page) {
+                                $selected = selected($selected_customer, $page->ID, false);
+                                echo '<option value="' . esc_attr($page->ID) . '" ' . $selected . '>' . esc_html($page->post_title) . '</option>';
+                            }
+                            ?>
+                        </select>
+
+                        <!-- Buttons Container -->
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 0 0 auto;">
+                            <!-- Create Button (shown when empty) -->
+                            <button id="crm-customer-create-btn" type="button" class="button button-primary crm-create-page-btn" data-page-type="customer" style="display: <?php echo empty($selected_customer) ? 'block' : 'none'; ?>; white-space: nowrap;">
+                                ➕ <?php _e('Seite erstellen', 'cpsmartcrm'); ?>
+                            </button>
+                            
+                            <!-- Edit Button (shown when selected) -->
+                            <a id="crm-customer-edit-btn" href="#" class="button button-secondary" target="_blank" style="display: <?php echo !empty($selected_customer) ? 'flex' : 'none'; ?>; align-items: center; text-decoration: none; white-space: nowrap;">
+                                ✏️ <?php _e('Seite bearbeiten →Editor', 'cpsmartcrm'); ?>
+                            </a>
+                            
+                            <!-- View Button (shown when selected) -->
+                            <a id="crm-customer-view-btn" href="#" class="button button-secondary" target="_blank" style="display: <?php echo !empty($selected_customer) ? 'block' : 'none'; ?>; white-space: nowrap;">
+                                👁️ <?php _e('Seite ansehen', 'cpsmartcrm'); ?>
+                            </a>
+                        </div>
+                    </div>
                     
                     <div style="background: #f3e5f5; padding: 12px; border-radius: 4px; margin-top: 12px; border-left: 3px solid #9c27b0;">
                         <small style="color: #6a1b9a; font-weight: 500;">
@@ -820,6 +862,85 @@ class CRM_Options_Settings{
                     <?php _e('Die ausgewählten Seiten zeigen automatisch den richtigen Inhalt basierend auf den User-Rollen. Agenten sehen das Dashboard, Kunden das Portal. Nicht angemeldete Nutzer werden zum Login fordert.', 'cpsmartcrm'); ?>
                 </small>
             </div>
+        </div>
+
+        <script>
+        jQuery(document).ready(function($) {
+            // Intranet Seite Handler
+            $('#crm-intranet-page-select').on('change', function() {
+                updatePageButtons('intranet', $(this).val());
+            });
+
+            // Customer Portal Seite Handler
+            $('#crm-customer-page-select').on('change', function() {
+                updatePageButtons('customer', $(this).val());
+            });
+
+            // Seiten-Buttons updaten
+            function updatePageButtons(pageType, pageId) {
+                const createBtn = $('#crm-' + pageType + '-create-btn');
+                const editBtn = $('#crm-' + pageType + '-edit-btn');
+                const viewBtn = $('#crm-' + pageType + '-view-btn');
+
+                if (pageId) {
+                    // Seite gewählt -> Edit & View anzeigen
+                    createBtn.hide();
+                    editBtn.show().attr('href', '/wp-admin/post.php?post=' + pageId + '&action=edit');
+                    viewBtn.show().attr('href', '/?p=' + pageId);
+                } else {
+                    // Keine Seite -> Create anzeigen
+                    createBtn.show();
+                    editBtn.hide();
+                    viewBtn.hide();
+                }
+            }
+
+            // "Seite erstellen" Button Handler
+            $('.crm-create-page-btn').on('click', function(e) {
+                e.preventDefault();
+                const pageType = $(this).data('page-type');
+                const $btn = $(this);
+                
+                $btn.prop('disabled', true).text('⏳ ' + (pageType === 'intranet' ? 'Erstelle Intranet-Seite...' : 'Erstelle Kundenzone-Seite...'));
+
+                $.ajax({
+                    type: 'POST',
+                    url: ajaxurl,
+                    data: {
+                        action: 'crm_create_frontend_page',
+                        page_type: pageType,
+                        nonce: '<?php echo wp_create_nonce('crm_create_frontend_page'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Dropdown mit neuer Seite updaten
+                            const selectId = pageType === 'intranet' ? '#crm-intranet-page-select' : '#crm-customer-page-select';
+                            const $select = $(selectId);
+                            
+                            // Neue Option hinzufügen
+                            const opt = '<option value="' + response.data.page_id + '" selected>' + response.data.page_title + '</option>';
+                            $select.append(opt);
+                            $select.val(response.data.page_id).trigger('change');
+
+                            // Success-Nachricht
+                            alert('✅ ' + response.data.page_title + ' wurde erstellt!');
+                        } else {
+                            alert('❌ Fehler: ' + (response.data.message || 'Seite konnte nicht erstellt werden.'));
+                            $btn.prop('disabled', false).text('➕ ' + (pageType === 'intranet' ? 'Seite erstellen' : 'Seite erstellen'));
+                        }
+                    },
+                    error: function() {
+                        alert('❌ Fehler beim Erstellen der Seite.');
+                        $btn.prop('disabled', false).text('➕ ' + (pageType === 'intranet' ? 'Seite erstellen' : 'Seite erstellen'));
+                    }
+                });
+            });
+
+            // Initial buttons state
+            updatePageButtons('intranet', $('#crm-intranet-page-select').val());
+            updatePageButtons('customer', $('#crm-customer-page-select').val());
+        });
+        </script>
         </div>
 		<?php
 	}
