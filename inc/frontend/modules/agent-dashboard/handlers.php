@@ -461,7 +461,7 @@ function wpscrm_agent_dashboard_get_customer_documents() {
     
     global $wpdb;
     $kunde_table = WPsCRM_TABLE . 'kunde';
-    $dokumente_table = WPsCRM_TABLE . 'dokumente';
+    $dokumente_table = WPsCRM_TABLE . 'documenti';
     
     // Prüfe ob Kunde dem Agent gehört
     $customer_check = $wpdb->get_var( $wpdb->prepare(
@@ -472,6 +472,19 @@ function wpscrm_agent_dashboard_get_customer_documents() {
     
     if ( ! $customer_check ) {
         wp_send_json_error( array( 'message' => 'Kein Zugriff auf diesen Kunden' ) );
+    }
+    
+    // Prüfe ob Tabelle existiert
+    $table_exists = $wpdb->get_var( 
+        "SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '{$dokumente_table}' LIMIT 1"
+    );
+    
+    if ( ! $table_exists ) {
+        wp_send_json_success( array(
+            'quotations' => array(),
+            'invoices' => array(),
+            'proforma' => array()
+        ) );
     }
     
     // Lade alle Dokumente des Kunden
@@ -505,7 +518,26 @@ function wpscrm_agent_dashboard_get_customer_documents() {
         }
     }
     
-    wp_send_json_success( $documents );
+    // Gruppiere nach tipo
+    $quotations = array();
+    $invoices = array();
+    $proforma = array();
+    
+    foreach ( $documents as $doc ) {
+        if ( $doc['tipo'] == 1 ) {
+            $quotations[] = $doc;
+        } elseif ( $doc['tipo'] == 2 ) {
+            $invoices[] = $doc;
+        } elseif ( $doc['tipo'] == 3 ) {
+            $proforma[] = $doc;
+        }
+    }
+    
+    wp_send_json_success( array(
+        'quotations' => $quotations,
+        'invoices' => $invoices,
+        'proforma' => $proforma
+    ) );
 }
 
 /**
@@ -774,6 +806,149 @@ function wpscrm_agent_dashboard_create_appointment() {
 add_action( 'wp_ajax_crm_create_appointment', 'wpscrm_agent_dashboard_create_appointment' );
 
 /**
+ * Parse and validate line items from POST
+ * Compatible with CRM document row logic (qty * price - discount + VAT)
+ */
+function wpscrm_agent_dashboard_parse_line_items() {
+    $raw_items = wp_unslash( $_POST['line_items'] ?? '' );
+    $discount_mode = sanitize_text_field( $_POST['discount_mode'] ?? 'percent' );
+    if ( ! in_array( $discount_mode, array( 'percent', 'fixed' ), true ) ) {
+        $discount_mode = 'percent';
+    }
+
+    if ( empty( $raw_items ) ) {
+        return new WP_Error( 'missing_lines', 'Bitte mindestens eine Positionszeile hinzufügen.' );
+    }
+
+    $items = json_decode( $raw_items, true );
+    if ( ! is_array( $items ) ) {
+        return new WP_Error( 'invalid_lines', 'Ungültige Positionsdaten.' );
+    }
+
+    $validated_items = array();
+    $total_net = 0.0;
+    $total_tax = 0.0;
+    $total_gross = 0.0;
+
+    foreach ( $items as $item ) {
+        $line_type = intval( $item['line_type'] ?? 2 );
+        if ( ! in_array( $line_type, array( 2, 3, 4 ), true ) ) {
+            $line_type = 2;
+        }
+
+        $description = sanitize_textarea_field( $item['description'] ?? '' );
+        $quantity = floatval( $item['quantity'] ?? 0 );
+        $unit_price = floatval( $item['unit_price'] ?? 0 );
+        $discount_value = floatval( $item['discount_value'] ?? 0 );
+        $vat_percent = floatval( $item['vat_percent'] ?? 0 );
+
+        if ( $description === '' ) {
+            continue;
+        }
+
+        $line_net = 0;
+        $line_tax = 0;
+        $line_gross = 0;
+
+        if ( 3 !== $line_type ) {
+            if ( $quantity <= 0 || $unit_price < 0 ) {
+                continue;
+            }
+
+            if ( $discount_value < 0 ) {
+                $discount_value = 0;
+            }
+            if ( $vat_percent < 0 ) {
+                $vat_percent = 0;
+            }
+
+            $line_base = $quantity * $unit_price;
+            if ( 'fixed' === $discount_mode ) {
+                $discount_calc = min( $line_base, $discount_value );
+            } else {
+                $discount_calc = $line_base * $discount_value / 100;
+            }
+
+            $line_net = max( 0, $line_base - $discount_calc );
+            $line_tax = ( 4 === $line_type ) ? 0 : ( $line_net * ( $vat_percent / 100 ) );
+            $line_gross = $line_net + $line_tax;
+
+            if ( 4 === $line_type ) {
+                $line_net = -$line_net;
+                $line_tax = 0;
+                $line_gross = -$line_gross;
+                $vat_percent = 0;
+            }
+        } else {
+            $quantity = 0;
+            $unit_price = 0;
+            $discount_value = 0;
+            $vat_percent = 0;
+        }
+
+        $validated_items[] = array(
+            'line_type' => $line_type,
+            'description' => $description,
+            'quantity' => $quantity,
+            'unit_price' => $unit_price,
+            'discount_value' => $discount_value,
+            'vat_percent' => $vat_percent,
+            'line_net' => $line_net,
+            'line_tax' => $line_tax,
+            'line_gross' => $line_gross,
+        );
+
+        $total_net += $line_net;
+        $total_tax += $line_tax;
+        $total_gross += $line_gross;
+    }
+
+    if ( empty( $validated_items ) ) {
+        return new WP_Error( 'empty_lines', 'Bitte mindestens eine gültige Positionszeile hinzufügen.' );
+    }
+
+    return array(
+        'items' => $validated_items,
+        'discount_mode' => $discount_mode,
+        'totals' => array(
+            'net' => $total_net,
+            'tax' => $total_tax,
+            'gross' => $total_gross,
+        ),
+    );
+}
+
+/**
+ * Save document rows in dokumente_dettaglio
+ */
+function wpscrm_agent_dashboard_save_document_rows( $document_id, $line_items ) {
+    global $wpdb;
+    $detail_table = WPsCRM_TABLE . 'dokumente_dettaglio';
+
+    foreach ( $line_items as $index => $line_item ) {
+        $wpdb->insert(
+            $detail_table,
+            array(
+                'fk_dokumente' => $document_id,
+                'fk_artikel' => 0,
+                'qta' => $line_item['quantity'],
+                'n_riga' => $index + 1,
+                'sconto' => $line_item['discount_value'],
+                'iva' => (int) round( $line_item['vat_percent'] ),
+                'prezzo' => $line_item['unit_price'],
+                'totale' => $line_item['line_gross'],
+                'tipo' => $line_item['line_type'],
+                'codice' => '',
+                'descrizione' => $line_item['description'],
+                'eliminato' => 0,
+                'fk_subscriptionrules' => 0,
+            ),
+            array( '%d', '%d', '%f', '%d', '%f', '%d', '%f', '%f', '%d', '%s', '%s', '%d', '%d' )
+        );
+    }
+}
+
+/**
  * AJAX Handler: Create Quotation (Angebot)
  */
 function wpscrm_agent_dashboard_create_quotation() {
@@ -785,14 +960,13 @@ function wpscrm_agent_dashboard_create_quotation() {
     }
     
     global $wpdb;
-    $dokumente_table = WPsCRM_TABLE . 'dokumente';
+    $dokumente_table = WPsCRM_TABLE . 'documenti';
     $kunde_table = WPsCRM_TABLE . 'kunde';
     
     $customer_id = intval( $_POST['customer_id'] ?? 0 );
     $date = sanitize_text_field( $_POST['date'] ?? '' );
     $due_date = sanitize_text_field( $_POST['due_date'] ?? '' );
     $subject = sanitize_text_field( $_POST['subject'] ?? '' );
-    $amount = floatval( $_POST['amount'] ?? 0 );
     $notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
     
     if ( ! $customer_id || empty( $date ) || empty( $due_date ) || empty( $subject ) ) {
@@ -814,19 +988,64 @@ function wpscrm_agent_dashboard_create_quotation() {
     if ( ! strtotime( $date ) || ! strtotime( $due_date ) ) {
         wp_send_json_error( array( 'message' => 'Ungültige Datumsangabe' ) );
     }
+
+    $lines_payload = wpscrm_agent_dashboard_parse_line_items();
+    if ( is_wp_error( $lines_payload ) ) {
+        wp_send_json_error( array( 'message' => $lines_payload->get_error_message() ) );
+    }
+    $line_items = $lines_payload['items'];
+    $discount_mode = $lines_payload['discount_mode'];
+    $total_net = $lines_payload['totals']['net'];
+    $total_tax = $lines_payload['totals']['tax'];
+    $total_gross = $lines_payload['totals']['gross'];
     
+    $document_date = date( 'Y-m-d', strtotime( $date ) );
+    $due_date_sql = date( 'Y-m-d', strtotime( $due_date ) );
+    $data_timestamp = strtotime( $document_date );
+    $due_timestamp = strtotime( $due_date_sql );
+
+    $next_progressivo = (int) $wpdb->get_var( $wpdb->prepare(
+        "SELECT COALESCE(MAX(progressivo), 0) + 1 FROM {$dokumente_table} WHERE tipo = %d AND YEAR(data) = %d",
+        1,
+        (int) date( 'Y', $data_timestamp )
+    ) );
+
     $data = array(
-        'tipo'               => 1,  // 1 = Quotation/Angebot
-        'data'               => date( 'Y-m-d', strtotime( $date ) ),
-        'data_scadenza'      => date( 'Y-m-d', strtotime( $due_date ) ),
-        'oggetto'            => $subject,
-        'fk_kunde'           => $customer_id,
-        'fk_utenti_ins'      => $user_id,
-        'totale_imponibile'  => $amount,
-        'totale_imposta'     => 0,
-        'totale'             => $amount,
-        'annotazioni'        => $notes,
-        'data_inserimento'   => current_time( 'mysql' ),
+        'tipo'                  => 1,
+        'data'                  => $document_date,
+        'einstiegsdatum'        => current_time( 'Y-m-d' ),
+        'data_timestamp'        => $data_timestamp,
+        'data_scadenza_timestamp' => $due_timestamp,
+        'oggetto'               => $subject,
+        'riferimento'           => '',
+        'fk_kunde'              => $customer_id,
+        'fk_utenti_ins'         => $user_id,
+        'fk_utenti_age'         => $user_id,
+        'progressivo'           => max( 1, $next_progressivo ),
+        'totale_imponibile'     => $total_net,
+        'totale_imposta'        => $total_tax,
+        'totale'                => $total_gross,
+        'tot_cassa_inps'        => 0,
+        'ritenuta_acconto'      => 0,
+        'totale_netto'          => $total_gross,
+        'valore_preventivo'     => $total_net,
+        'sezionale_iva'         => '',
+        'movimenta_magazzino'   => '',
+        'testo_libero'          => '',
+        'modalita_pagamento'    => '',
+        'annotazioni'           => $notes,
+        'commento'              => '',
+        'giorni_pagamento'      => 0,
+        'data_scadenza'         => $due_date_sql,
+        'pagato'                => 0,
+        'registrato'            => 0,
+        'approvato'             => 0,
+        'filename'              => '',
+        'perc_realizzo'         => '',
+        'notifica_pagamento'    => 0,
+        'fk_woo_order'          => 0,
+        'origine_proforma'      => 0,
+        'tipo_sconto'           => ( 'fixed' === $discount_mode ) ? 1 : 0,
     );
     
     $result = $wpdb->insert( $dokumente_table, $data );
@@ -835,9 +1054,12 @@ function wpscrm_agent_dashboard_create_quotation() {
         wp_send_json_error( array( 'message' => 'Fehler beim Erstellen des Angebots' ) );
     }
     
+    $document_id = $wpdb->insert_id;
+    wpscrm_agent_dashboard_save_document_rows( $document_id, $line_items );
+
     wp_send_json_success( array(
         'message' => 'Angebot erstellt',
-        'document_id' => $wpdb->insert_id
+        'document_id' => $document_id
     ) );
 }
 add_action( 'wp_ajax_crm_create_quotation', 'wpscrm_agent_dashboard_create_quotation' );
@@ -854,15 +1076,13 @@ function wpscrm_agent_dashboard_create_invoice() {
     }
     
     global $wpdb;
-    $dokumente_table = WPsCRM_TABLE . 'dokumente';
+    $dokumente_table = WPsCRM_TABLE . 'documenti';
     $kunde_table = WPsCRM_TABLE . 'kunde';
     
     $customer_id = intval( $_POST['customer_id'] ?? 0 );
     $date = sanitize_text_field( $_POST['date'] ?? '' );
     $due_date = sanitize_text_field( $_POST['due_date'] ?? '' );
     $subject = sanitize_text_field( $_POST['subject'] ?? '' );
-    $netto = floatval( $_POST['netto'] ?? 0 );
-    $mwst_percent = floatval( $_POST['mwst_percent'] ?? 19 );
     $payment_method = sanitize_text_field( $_POST['payment_method'] ?? '' );
     $notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
     
@@ -886,23 +1106,63 @@ function wpscrm_agent_dashboard_create_invoice() {
         wp_send_json_error( array( 'message' => 'Ungültige Datumsangabe' ) );
     }
     
-    // Calculate tax
-    $tax_amount = $netto * ( $mwst_percent / 100 );
-    $gross = $netto + $tax_amount;
+    $lines_payload = wpscrm_agent_dashboard_parse_line_items();
+    if ( is_wp_error( $lines_payload ) ) {
+        wp_send_json_error( array( 'message' => $lines_payload->get_error_message() ) );
+    }
+    $line_items = $lines_payload['items'];
+    $discount_mode = $lines_payload['discount_mode'];
+    $total_net = $lines_payload['totals']['net'];
+    $total_tax = $lines_payload['totals']['tax'];
+    $total_gross = $lines_payload['totals']['gross'];
     
+    $document_date = date( 'Y-m-d', strtotime( $date ) );
+    $due_date_sql = date( 'Y-m-d', strtotime( $due_date ) );
+    $data_timestamp = strtotime( $document_date );
+    $due_timestamp = strtotime( $due_date_sql );
+
+    $next_progressivo = (int) $wpdb->get_var( $wpdb->prepare(
+        "SELECT COALESCE(MAX(progressivo), 0) + 1 FROM {$dokumente_table} WHERE tipo = %d AND YEAR(data) = %d",
+        2,
+        (int) date( 'Y', $data_timestamp )
+    ) );
+
     $data = array(
-        'tipo'               => 2,  // 2 = Invoice/Rechnung
-        'data'               => date( 'Y-m-d', strtotime( $date ) ),
-        'data_scadenza'      => date( 'Y-m-d', strtotime( $due_date ) ),
-        'oggetto'            => $subject,
-        'fk_kunde'           => $customer_id,
-        'fk_utenti_ins'      => $user_id,
-        'totale_imponibile'  => $netto,
-        'totale_imposta'     => $tax_amount,
-        'totale'             => $gross,
-        'modalita_pagamento' => $payment_method,
-        'annotazioni'        => $notes,
-        'data_inserimento'   => current_time( 'mysql' ),
+        'tipo'                  => 2,
+        'data'                  => $document_date,
+        'einstiegsdatum'        => current_time( 'Y-m-d' ),
+        'data_timestamp'        => $data_timestamp,
+        'data_scadenza_timestamp' => $due_timestamp,
+        'oggetto'               => $subject,
+        'riferimento'           => '',
+        'fk_kunde'              => $customer_id,
+        'fk_utenti_ins'         => $user_id,
+        'fk_utenti_age'         => $user_id,
+        'progressivo'           => max( 1, $next_progressivo ),
+        'totale_imponibile'     => $total_net,
+        'totale_imposta'        => $total_tax,
+        'totale'                => $total_gross,
+        'tot_cassa_inps'        => 0,
+        'ritenuta_acconto'      => 0,
+        'totale_netto'          => $total_gross,
+        'valore_preventivo'     => 0,
+        'sezionale_iva'         => '',
+        'movimenta_magazzino'   => '',
+        'testo_libero'          => '',
+        'modalita_pagamento'    => $payment_method,
+        'annotazioni'           => $notes,
+        'commento'              => '',
+        'giorni_pagamento'      => 0,
+        'data_scadenza'         => $due_date_sql,
+        'pagato'                => 0,
+        'registrato'            => 0,
+        'approvato'             => 0,
+        'filename'              => '',
+        'perc_realizzo'         => '',
+        'notifica_pagamento'    => 0,
+        'fk_woo_order'          => 0,
+        'origine_proforma'      => 0,
+        'tipo_sconto'           => ( 'fixed' === $discount_mode ) ? 1 : 0,
     );
     
     $result = $wpdb->insert( $dokumente_table, $data );
@@ -911,10 +1171,115 @@ function wpscrm_agent_dashboard_create_invoice() {
         wp_send_json_error( array( 'message' => 'Fehler beim Erstellen der Rechnung' ) );
     }
     
+    $document_id = $wpdb->insert_id;
+    wpscrm_agent_dashboard_save_document_rows( $document_id, $line_items );
+
     wp_send_json_success( array(
         'message' => 'Rechnung erstellt',
-        'document_id' => $wpdb->insert_id
+        'document_id' => $document_id
     ) );
 }
 add_action( 'wp_ajax_crm_create_invoice', 'wpscrm_agent_dashboard_create_invoice' );
+
+/**
+ * AJAX Handler: Create Proforma
+ */
+function wpscrm_agent_dashboard_create_proforma() {
+    check_ajax_referer( 'crm_customer_management', 'nonce' );
+
+    $user_id = get_current_user_id();
+    if ( ! $user_id ) {
+        wp_send_json_error( array( 'message' => 'Nicht authentifiziert' ) );
+    }
+
+    global $wpdb;
+    $dokumente_table = WPsCRM_TABLE . 'documenti';
+    $kunde_table = WPsCRM_TABLE . 'kunde';
+
+    $customer_id = intval( $_POST['customer_id'] ?? 0 );
+    $date = sanitize_text_field( $_POST['date'] ?? '' );
+    $due_date = sanitize_text_field( $_POST['due_date'] ?? '' );
+    $subject = sanitize_text_field( $_POST['subject'] ?? '' );
+    $amount = floatval( $_POST['amount'] ?? 0 );
+    $notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
+
+    if ( ! $customer_id || empty( $date ) || empty( $due_date ) || empty( $subject ) ) {
+        wp_send_json_error( array( 'message' => 'Erforderliche Felder fehlen' ) );
+    }
+
+    $customer_check = $wpdb->get_var( $wpdb->prepare(
+        "SELECT ID_kunde FROM {$kunde_table} WHERE ID_kunde = %d AND agente = %d AND eliminato = 0",
+        $customer_id,
+        $user_id
+    ) );
+
+    if ( ! $customer_check ) {
+        wp_send_json_error( array( 'message' => 'Kein Zugriff auf diesen Kunden' ) );
+    }
+
+    if ( ! strtotime( $date ) || ! strtotime( $due_date ) ) {
+        wp_send_json_error( array( 'message' => 'Ungültige Datumsangabe' ) );
+    }
+
+    $document_date = date( 'Y-m-d', strtotime( $date ) );
+    $due_date_sql = date( 'Y-m-d', strtotime( $due_date ) );
+    $data_timestamp = strtotime( $document_date );
+    $due_timestamp = strtotime( $due_date_sql );
+
+    $next_progressivo = (int) $wpdb->get_var( $wpdb->prepare(
+        "SELECT COALESCE(MAX(progressivo), 0) + 1 FROM {$dokumente_table} WHERE tipo = %d AND YEAR(data) = %d",
+        3,
+        (int) date( 'Y', $data_timestamp )
+    ) );
+
+    $data = array(
+        'tipo'                    => 3,
+        'data'                    => $document_date,
+        'einstiegsdatum'          => current_time( 'Y-m-d' ),
+        'data_timestamp'          => $data_timestamp,
+        'data_scadenza_timestamp' => $due_timestamp,
+        'oggetto'                 => $subject,
+        'riferimento'             => '',
+        'fk_kunde'                => $customer_id,
+        'fk_utenti_ins'           => $user_id,
+        'fk_utenti_age'           => $user_id,
+        'progressivo'             => max( 1, $next_progressivo ),
+        'totale_imponibile'       => $amount,
+        'totale_imposta'          => 0,
+        'totale'                  => $amount,
+        'tot_cassa_inps'          => 0,
+        'ritenuta_acconto'        => 0,
+        'totale_netto'            => $amount,
+        'valore_preventivo'       => 0,
+        'sezionale_iva'           => '',
+        'movimenta_magazzino'     => '',
+        'testo_libero'            => '',
+        'modalita_pagamento'      => '',
+        'annotazioni'             => $notes,
+        'commento'                => '',
+        'giorni_pagamento'        => 0,
+        'data_scadenza'           => $due_date_sql,
+        'pagato'                  => 0,
+        'registrato'              => 0,
+        'approvato'               => 0,
+        'filename'                => '',
+        'perc_realizzo'           => '',
+        'notifica_pagamento'      => 0,
+        'fk_woo_order'            => 0,
+        'origine_proforma'        => 1,
+        'tipo_sconto'             => 0,
+    );
+
+    $result = $wpdb->insert( $dokumente_table, $data );
+
+    if ( ! $result ) {
+        wp_send_json_error( array( 'message' => 'Fehler beim Erstellen der Proforma' ) );
+    }
+
+    wp_send_json_success( array(
+        'message' => 'Proforma erstellt',
+        'document_id' => $wpdb->insert_id
+    ) );
+}
+add_action( 'wp_ajax_crm_create_proforma', 'wpscrm_agent_dashboard_create_proforma' );
 

@@ -88,7 +88,7 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
                         <div class="crm-form-row">
                             <div class="crm-form-group">
                                 <label><?php _e('Datum Erstkontakt', 'cpsmartcrm'); ?></label>
-                                <input type="text" name="einstiegsdatum" id="einstiegsdatum" class="crm-input crm-datepicker" value="<?php echo date('d.m.Y'); ?>"
+                                <input type="text" name="einstiegsdatum" id="einstiegsdatum" class="crm-input crm-datepicker" value="<?php echo date('d.m.Y'); ?>">
                             </div>
                             <div class="crm-form-group">
                                 <label><?php _e('Land', 'cpsmartcrm'); ?> <span class="required">*</span></label>
@@ -317,6 +317,10 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
                         <i class="dashicons dashicons-plus"></i>
                         💰 <?php _e('Neue Rechnung', 'cpsmartcrm'); ?>
                     </button>
+                    <button type="button" class="crm-btn crm-btn-success" id="btn-add-proforma">
+                        <i class="dashicons dashicons-plus"></i>
+                        📄 <?php _e('Neue Proforma', 'cpsmartcrm'); ?>
+                    </button>
                 </div>
 
                 <!-- Quotation Form (Hidden) -->
@@ -337,8 +341,35 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
                         <input type="text" name="quotation-subject" placeholder="z.B. Angebot für Projektarbeit..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Gesamtbetrag</label>
-                        <input type="number" name="quotation-amount" step="0.01" placeholder="0.00" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                        <label style="display:block;font-size:12px;color:#666;margin-bottom:6px;font-weight:600;">Positionszeilen</label>
+                        <div class="crm-doc-line-wrap">
+                            <div class="crm-discount-mode" data-form-type="quotation">
+                                <span>Rabattart:</span>
+                                <label><input type="radio" name="quotation-discount-mode" value="percent" checked> %</label>
+                                <label><input type="radio" name="quotation-discount-mode" value="fixed"> €</label>
+                            </div>
+                            <table class="crm-doc-line-editor" id="quotation-lines-table">
+                                <thead>
+                                    <tr>
+                                        <th>Typ</th>
+                                        <th>Beschreibung</th>
+                                        <th>Menge</th>
+                                        <th>Einzelpreis</th>
+                                        <th>Rabatt</th>
+                                        <th>MwSt. %</th>
+                                        <th>Gesamt</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quotation-lines-body"></tbody>
+                            </table>
+                            <button type="button" class="crm-btn crm-btn-secondary crm-btn-sm" id="btn-add-quotation-line" style="margin-top:8px;">+ Zeile hinzufügen</button>
+                            <div class="crm-doc-totals" id="quotation-totals">
+                                <span>Netto: <strong id="quotation-total-net">0.00 €</strong></span>
+                                <span>MwSt.: <strong id="quotation-total-tax">0.00 €</strong></span>
+                                <span>Brutto: <strong id="quotation-total-gross">0.00 €</strong></span>
+                            </div>
+                        </div>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Notizen</label>
@@ -368,14 +399,35 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
                         <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Betreff</label>
                         <input type="text" name="invoice-subject" placeholder="z.B. Rechnung für Leistungen im September..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                        <div>
-                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Nettobetrag</label>
-                            <input type="number" name="invoice-netto" step="0.01" placeholder="0.00" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">MwSt. %</label>
-                            <input type="number" name="invoice-mwst" step="0.01" value="19" placeholder="19" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block;font-size:12px;color:#666;margin-bottom:6px;font-weight:600;">Rechnungszeilen</label>
+                        <div class="crm-doc-line-wrap">
+                            <div class="crm-discount-mode" data-form-type="invoice">
+                                <span>Rabattart:</span>
+                                <label><input type="radio" name="invoice-discount-mode" value="percent" checked> %</label>
+                                <label><input type="radio" name="invoice-discount-mode" value="fixed"> €</label>
+                            </div>
+                            <table class="crm-doc-line-editor" id="invoice-lines-table">
+                                <thead>
+                                    <tr>
+                                        <th>Typ</th>
+                                        <th>Beschreibung</th>
+                                        <th>Menge</th>
+                                        <th>Einzelpreis</th>
+                                        <th>Rabatt</th>
+                                        <th>MwSt. %</th>
+                                        <th>Gesamt</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoice-lines-body"></tbody>
+                            </table>
+                            <button type="button" class="crm-btn crm-btn-secondary crm-btn-sm" id="btn-add-invoice-line" style="margin-top:8px;">+ Zeile hinzufügen</button>
+                            <div class="crm-doc-totals" id="invoice-totals">
+                                <span>Netto: <strong id="invoice-total-net">0.00 €</strong></span>
+                                <span>MwSt.: <strong id="invoice-total-tax">0.00 €</strong></span>
+                                <span>Brutto: <strong id="invoice-total-gross">0.00 €</strong></span>
+                            </div>
                         </div>
                     </div>
                     <div style="margin-bottom: 12px;">
@@ -400,11 +452,43 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
                     <input type="hidden" name="nonce" value="<?php echo $nonce_customer; ?>">
                 </form>
 
+                <!-- Proforma Form (Hidden) -->
+                <form id="form-add-proforma" style="display: none; background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <h4><?php _e('Neue Proforma', 'cpsmartcrm'); ?></h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Datum</label>
+                            <input type="date" name="proforma-date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" value="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Fälligkeitsdatum</label>
+                            <input type="date" name="proforma-due-date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Betreff</label>
+                        <input type="text" name="proforma-subject" placeholder="z.B. Proforma für Vorauszahlung..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Gesamtbetrag</label>
+                        <input type="number" name="proforma-amount" step="0.01" placeholder="0.00" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Notizen</label>
+                        <textarea name="proforma-notes" placeholder="Zusätzliche Informationen..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; min-height: 60px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="crm-btn crm-btn-sm crm-btn-success" style="cursor: pointer;">✅ Speichern</button>
+                        <button type="button" class="crm-btn crm-btn-sm crm-btn-secondary btn-cancel-doc-form" style="cursor: pointer;">Abbrechen</button>
+                    </div>
+                    <input type="hidden" name="nonce" value="<?php echo $nonce_customer; ?>">
+                </form>
+
                 <div class="crm-docs-container" style="margin-top:20px;">
-                    <h4><?php _e('Angebote', 'cpsmartcrm'); ?> (Preventivi)</h4>
+                    <h4><?php _e('Angebote', 'cpsmartcrm'); ?></h4>
                     <div id="docs-quotes-list" class="crm-docs-list"></div>
 
-                    <h4 style="margin-top:30px;"><?php _e('Rechnungen', 'cpsmartcrm'); ?> (Fatture)</h4>
+                    <h4 style="margin-top:30px;"><?php _e('Rechnungen', 'cpsmartcrm'); ?></h4>
                     <div id="docs-invoices-list" class="crm-docs-list"></div>
 
                     <h4 style="margin-top:30px;"><?php _e('Proforma', 'cpsmartcrm'); ?></h4>
@@ -513,11 +597,11 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
     border-bottom: 2px solid #fff;
     margin-bottom: -2px;
     font-weight: 700;
-    color: #4caf50;
+    color: #2f455c;
 }
 
 .crm-customers-module .crm-customers-tab-btn:hover:not(.active) {
-    background: #e8f5e9;
+    background: #eef2f6;
 }
 
 .crm-customers-module .crm-customers-tab-content {
@@ -543,7 +627,7 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 6px;
-    border-left: 4px solid #4caf50;
+    border-left: 4px solid #7c8b99;
 }
 
 .crm-customers-module .crm-customer-form .crm-form-section h4 {
@@ -608,9 +692,9 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
 .crm-customers-module .crm-input:focus,
 .crm-customers-module .crm-select:focus,
 .crm-customers-module .crm-select-multi:focus {
-    border-color: #4caf50;
+    border-color: #7c8b99;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(76,175,80,0.1);
+    box-shadow: 0 0 0 2px rgba(124,139,153,0.14);
 }
 
 .crm-customers-module .crm-form-actions {
@@ -622,7 +706,7 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
 }
 
 .crm-customers-module .crm-badge {
-    background: #ff9800;
+    background: #7a8793;
     color: white;
     padding: 2px 8px;
     border-radius: 10px;
@@ -645,8 +729,8 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
 }
 
 .crm-customers-module .crm-customer-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-color: #4caf50;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    border-color: #8a97a3;
     transform: translateY(-2px);
 }
 
@@ -740,6 +824,79 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
     background: #f9f9f9;
 }
 
+.crm-customers-module .crm-doc-line-wrap {
+    background: #fff;
+    border: 1px solid #d9e0e6;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.crm-customers-module .crm-discount-mode {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #526477;
+}
+
+.crm-customers-module .crm-discount-mode label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.crm-customers-module .crm-doc-line-editor {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.crm-customers-module .crm-doc-line-editor th,
+.crm-customers-module .crm-doc-line-editor td {
+    border-bottom: 1px solid #e7edf2;
+    padding: 8px 6px;
+    text-align: left;
+}
+
+.crm-customers-module .crm-doc-line-editor th {
+    background: #f5f8fb;
+    color: #405468;
+    font-weight: 600;
+}
+
+.crm-customers-module .crm-doc-line-editor input,
+.crm-customers-module .crm-doc-line-editor textarea,
+.crm-customers-module .crm-doc-line-editor select {
+    width: 100%;
+    border: 1px solid #d4dde5;
+    border-radius: 4px;
+    padding: 6px;
+    box-sizing: border-box;
+    font-size: 12px;
+}
+
+.crm-customers-module .crm-doc-line-editor .line-total-cell {
+    min-width: 90px;
+    font-weight: 600;
+    color: #2f455c;
+}
+
+.crm-customers-module .crm-doc-line-editor .is-disabled {
+    opacity: 0.55;
+    background: #f1f4f7;
+}
+
+.crm-customers-module .crm-doc-totals {
+    margin-top: 10px;
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #55697d;
+}
+
 .crm-customers-module .crm-contact-card {
     background: white;
     border: 1px solid #e0e0e0;
@@ -755,6 +912,42 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
 
 .crm-customers-module .btn-back-to-list {
     margin-bottom: 15px;
+}
+
+.crm-customers-module .crm-empty-state {
+    background: #f7f9fc;
+    border: 1px solid #d7e0e8;
+    border-radius: 8px;
+    padding: 34px 24px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.crm-customers-module .crm-empty-state-icon {
+    color: #8a97a3;
+    font-size: 42px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.crm-customers-module .crm-empty-state h4 {
+    margin: 0 0 10px 0;
+    color: #2f3f4f;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.crm-customers-module .crm-empty-state p {
+    margin: 0 0 18px 0;
+    color: #667585;
+    font-size: 14px;
+}
+
+.crm-customers-module .crm-empty-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 @media (max-width: 768px) {
@@ -781,14 +974,19 @@ jQuery(document).ready(function($) {
     // =========================
     // TAB-WECHSEL
     // =========================
+    function activateCustomerTab(tabId) {
+        var $tabButton = $('.crm-customers-tab-btn[data-tab="' + tabId + '"]');
+
+        $('.crm-customers-tab-btn').removeClass('active');
+        $('.crm-customers-tab-content').removeClass('active').hide();
+
+        $tabButton.show().addClass('active');
+        $('#' + tabId).addClass('active').show();
+    }
+
     $('.crm-customers-tab-btn').on('click', function() {
         var tabId = $(this).data('tab');
-        
-        $('.crm-customers-tab-btn').removeClass('active');
-        $(this).addClass('active');
-        
-        $('.crm-customers-tab-content').removeClass('active');
-        $('#' + tabId).addClass('active');
+        activateCustomerTab(tabId);
     });
     
     // =========================
@@ -881,7 +1079,7 @@ jQuery(document).ready(function($) {
     $('#btn-add-new-customer').on('click', function() {
         resetCustomerForm();
         $('#customer-form-title').text('<?php _e('Neuer Kunde', 'cpsmartcrm'); ?>');
-        $('.crm-customers-tab-btn[data-tab="customers-form"]').show().click();
+        activateCustomerTab('customers-form');
     });
     
     // =========================
@@ -898,7 +1096,7 @@ jQuery(document).ready(function($) {
     // =========================
     function loadCustomerData(customerId) {
         $('#customer-form-title').text('<?php _e('Kunde bearbeiten', 'cpsmartcrm'); ?>');
-        $('.crm-customers-tab-btn[data-tab="customers-form"]').show().click();
+        activateCustomerTab('customers-form');
         
         $.ajax({
             url: crmAjax.ajaxurl,
@@ -1020,9 +1218,7 @@ jQuery(document).ready(function($) {
     $('#btn-reset-customer-form').on('click', resetCustomerForm);
     
     $('#btn-cancel-customer-form').on('click', function() {
-        if ($('.crm-customers-tab-btn[data-tab="customers-list"]').length) {
-            $('.crm-customers-tab-btn[data-tab="customers-list"]').click();
-        }
+        activateCustomerTab('customers-list');
         $('.crm-customers-tab-btn[data-tab="customers-form"]').hide();
     });
     
@@ -1036,7 +1232,7 @@ jQuery(document).ready(function($) {
         
         $('#selected-customer-id-docs').val(selectedCustomerId);
         $('#customer-docs-badge').text(selectedCustomerName);
-        $('.crm-customers-tab-btn[data-tab="customers-docs"]').show().click();
+        activateCustomerTab('customers-docs');
         
         loadCustomerDocuments(selectedCustomerId);
     });
@@ -1056,15 +1252,20 @@ jQuery(document).ready(function($) {
                 if (response.success && response.data) {
                     var docs = response.data;
                     
-                    renderDocuments(docs.quotations || [], '#docs-quotes-list');
-                    renderDocuments(docs.invoices || [], '#docs-invoices-list');
-                    renderDocuments(docs.proforma || [], '#docs-proforma-list');
+                    renderDocuments(docs.quotations || [], '#docs-quotes-list', 'quotation');
+                    renderDocuments(docs.invoices || [], '#docs-invoices-list', 'invoice');
+                    renderDocuments(docs.proforma || [], '#docs-proforma-list', 'proforma');
+                } else {
+                    $('#docs-quotes-list, #docs-invoices-list, #docs-proforma-list').html('<div style="color:red;padding:10px;">Fehler: ' + (response.data?.message || 'Unbekannt') + '</div>');
                 }
+            },
+            error: function(xhr, status, error) {
+                $('#docs-quotes-list, #docs-invoices-list, #docs-proforma-list').html('<div style="color:red;padding:10px;">AJAX-Fehler: ' + error + '</div>');
             }
         });
     }
     
-    function renderDocuments(docs, targetSelector) {
+    function renderDocuments(docs, targetSelector, docType) {
         var html = '';
         
         if (docs.length > 0) {
@@ -1090,7 +1291,37 @@ jQuery(document).ready(function($) {
             
             html += '</tbody></table>';
         } else {
-            html = '<div class="crm-alert" style="background:#e3f2fd;padding:15px;border-left:4px solid #2196F3;color:#1976D2;"><?php _e('Keine Dokumente vorhanden', 'cpsmartcrm'); ?></div>';
+            var iconClass = 'dashicons-media-document';
+            var title = '<?php _e('Noch keine Dokumente für diesen Kunden', 'cpsmartcrm'); ?>';
+            var text = '<?php _e('Erstelle jetzt dein erstes Dokument.', 'cpsmartcrm'); ?>';
+            var buttonId = '';
+            var buttonLabel = '';
+
+            if (docType === 'quotation') {
+                title = '<?php _e('Noch keine Angebote für diesen Kunden', 'cpsmartcrm'); ?>';
+                text = '<?php _e('Erstelle jetzt dein erstes Angebot!', 'cpsmartcrm'); ?>';
+                buttonId = 'btn-add-quotation-from-empty';
+                buttonLabel = '<?php _e('Angebot erstellen', 'cpsmartcrm'); ?>';
+            } else if (docType === 'invoice') {
+                title = '<?php _e('Noch keine Rechnungen für diesen Kunden', 'cpsmartcrm'); ?>';
+                text = '<?php _e('Erstelle jetzt deine erste Rechnung!', 'cpsmartcrm'); ?>';
+                buttonId = 'btn-add-invoice-from-empty';
+                buttonLabel = '<?php _e('Rechnung erstellen', 'cpsmartcrm'); ?>';
+            } else if (docType === 'proforma') {
+                title = '<?php _e('Noch keine Proforma für diesen Kunden', 'cpsmartcrm'); ?>';
+                text = '<?php _e('Erstelle jetzt deine erste Proforma!', 'cpsmartcrm'); ?>';
+                buttonId = 'btn-add-proforma-from-empty';
+                buttonLabel = '<?php _e('Proforma erstellen', 'cpsmartcrm'); ?>';
+            }
+
+            html += '<div class="crm-empty-state">';
+            html += '<i class="dashicons ' + iconClass + ' crm-empty-state-icon"></i>';
+            html += '<h4>' + title + '</h4>';
+            html += '<p>' + text + '</p>';
+            html += '<div class="crm-empty-actions">';
+            html += '<button type="button" class="crm-btn crm-btn-secondary" id="' + buttonId + '">' + buttonLabel + '</button>';
+            html += '</div>';
+            html += '</div>';
         }
         
         $(targetSelector).html(html);
@@ -1107,7 +1338,7 @@ jQuery(document).ready(function($) {
         $('#selected-customer-id-contacts').val(selectedCustomerId);
         $('#contact-fk-kunde').val(selectedCustomerId);
         $('#customer-contacts-badge').text(selectedCustomerName);
-        $('.crm-customers-tab-btn[data-tab="customers-contacts"]').show().click();
+        activateCustomerTab('customers-contacts');
         
         loadCustomerContacts(selectedCustomerId);
     });
@@ -1126,7 +1357,12 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success && response.data) {
                     renderContacts(response.data);
+                } else {
+                    $('#contacts-list-container').html('<div style="color:red;padding:10px;">Fehler: ' + (response.data?.message || 'Unbekannt') + '</div>');
                 }
+            },
+            error: function(xhr, status, error) {
+                $('#contacts-list-container').html('<div style="color:red;padding:10px;">AJAX-Fehler: ' + error + '</div>');
             }
         });
     }
@@ -1144,7 +1380,14 @@ jQuery(document).ready(function($) {
                 html += '</div>';
             });
         } else {
-            html = '<div class="crm-alert" style="background:#e3f2fd;padding:15px;border-left:4px solid #2196F3;color:#1976D2;"><?php _e('Keine Kontakte vorhanden', 'cpsmartcrm'); ?></div>';
+            html = '<div class="crm-empty-state">';
+            html += '<i class="dashicons dashicons-id crm-empty-state-icon"></i>';
+            html += '<h4><?php _e('Noch keine Kontakte für diesen Kunden', 'cpsmartcrm'); ?></h4>';
+            html += '<p><?php _e('Füge Ansprechpartner hinzu, um Kontaktdaten zu verwalten!', 'cpsmartcrm'); ?></p>';
+            html += '<div class="crm-empty-actions">';
+            html += '<button type="button" class="crm-btn crm-btn-secondary" id="btn-add-contact-from-empty"><?php _e('Kontakt hinzufügen', 'cpsmartcrm'); ?></button>';
+            html += '</div>';
+            html += '</div>';
         }
         
         $('#contacts-list-container').html(html);
@@ -1153,7 +1396,7 @@ jQuery(document).ready(function($) {
     // =========================
     // KONTAKT HINZUFÜGEN
     // =========================
-    $('#btn-add-contact').on('click', function() {
+    $(document).on('click', '#btn-add-contact, #btn-add-contact-from-empty', function() {
         if ($('#form-contact-save').length) $('#form-contact-save')[0].reset();
         $('#contact-id').val('0');
         $('#contact-fk-kunde').val(selectedCustomerId);
@@ -1201,33 +1444,214 @@ jQuery(document).ready(function($) {
     // =========================
     // DOKUMENT FORMULARE
     // =========================
+
+    function formatMoney(value) {
+        return (parseFloat(value || 0).toFixed(2)) + ' €';
+    }
+
+    function getDiscountMode(formType) {
+        return $('input[name="' + formType + '-discount-mode"]:checked').val() || 'percent';
+    }
+
+    function applyLineTypeState($row) {
+        const lineType = parseInt($row.find('.line-type').val() || '2', 10);
+        const $qty = $row.find('.line-qty');
+        const $price = $row.find('.line-price');
+        const $discount = $row.find('.line-discount');
+        const $vat = $row.find('.line-vat');
+
+        const setDisabled = function($input, disabled) {
+            $input.prop('disabled', disabled);
+            $input.toggleClass('is-disabled', disabled);
+        };
+
+        if (lineType === 3) {
+            setDisabled($qty, true);
+            setDisabled($price, true);
+            setDisabled($discount, true);
+            setDisabled($vat, true);
+            $qty.val('0');
+            $price.val('0');
+            $discount.val('0');
+            $vat.val('0');
+        } else if (lineType === 4) {
+            setDisabled($qty, false);
+            setDisabled($price, false);
+            setDisabled($discount, true);
+            setDisabled($vat, true);
+            if (!$qty.val() || parseFloat($qty.val()) <= 0) {
+                $qty.val('1');
+            }
+            $discount.val('0');
+            $vat.val('0');
+        } else {
+            setDisabled($qty, false);
+            setDisabled($price, false);
+            setDisabled($discount, false);
+            setDisabled($vat, false);
+            if (!$qty.val() || parseFloat($qty.val()) <= 0) {
+                $qty.val('1');
+            }
+        }
+    }
+
+    function buildLineRow(formType, vatDefault) {
+        return '<tr>' +
+            '<td><select class="doc-line-input line-type"><option value="2">Standard</option><option value="3">Beschreibung</option><option value="4">Rückerstattung</option></select></td>' +
+            '<td><textarea class="doc-line-input line-description" rows="1" placeholder="Leistungsbeschreibung"></textarea></td>' +
+            '<td><input type="number" class="doc-line-input line-qty" step="0.01" min="0" value="1"></td>' +
+            '<td><input type="number" class="doc-line-input line-price" step="0.01" min="0" value="0.00"></td>' +
+            '<td><input type="number" class="doc-line-input line-discount" step="0.01" min="0" value="0"></td>' +
+            '<td><input type="number" class="doc-line-input line-vat" step="0.01" min="0" value="' + vatDefault + '"></td>' +
+            '<td class="line-total-cell">0.00 €</td>' +
+            '<td><button type="button" class="crm-btn crm-btn-secondary crm-btn-sm btn-remove-doc-line">×</button></td>' +
+            '</tr>';
+    }
+
+    function addDocumentLine(formType, vatDefault) {
+        const $row = $(buildLineRow(formType, vatDefault));
+        $('#' + formType + '-lines-body').append($row);
+        applyLineTypeState($row);
+        recalculateDocument(formType);
+    }
+
+    function recalculateDocument(formType) {
+        let net = 0;
+        let tax = 0;
+
+        $('#' + formType + '-lines-body tr').each(function() {
+            const lineType = parseInt($(this).find('.line-type').val() || '2', 10);
+            const qty = parseFloat($(this).find('.line-qty').val()) || 0;
+            const price = parseFloat($(this).find('.line-price').val()) || 0;
+            const discount = parseFloat($(this).find('.line-discount').val()) || 0;
+            const vat = parseFloat($(this).find('.line-vat').val()) || 0;
+
+            let lineNet = 0;
+            let lineTax = 0;
+            let lineGross = 0;
+
+            if (lineType !== 3) {
+                const lineBase = qty * price;
+                const discountMode = getDiscountMode(formType);
+                let discountValue = 0;
+
+                if (discountMode === 'fixed') {
+                    discountValue = Math.min(lineBase, Math.max(0, discount));
+                } else {
+                    discountValue = lineBase * Math.max(0, discount) / 100;
+                }
+
+                lineNet = Math.max(0, lineBase - discountValue);
+                lineTax = (lineType === 4) ? 0 : lineNet * (vat / 100);
+                lineGross = lineNet + lineTax;
+
+                if (lineType === 4) {
+                    lineNet = -lineNet;
+                    lineTax = 0;
+                    lineGross = -lineGross;
+                }
+            }
+
+            net += lineNet;
+            tax += lineTax;
+
+            $(this).find('.line-total-cell').text(formatMoney(lineGross));
+        });
+
+        const gross = net + tax;
+        $('#' + formType + '-total-net').text(formatMoney(net));
+        $('#' + formType + '-total-tax').text(formatMoney(tax));
+        $('#' + formType + '-total-gross').text(formatMoney(gross));
+    }
+
+    function collectDocumentLines(formType) {
+        const lines = [];
+        $('#' + formType + '-lines-body tr').each(function() {
+            const lineType = parseInt($(this).find('.line-type').val() || '2', 10);
+            const description = ($(this).find('.line-description').val() || '').trim();
+            const qty = parseFloat($(this).find('.line-qty').val()) || 0;
+            const price = parseFloat($(this).find('.line-price').val()) || 0;
+            const discount = parseFloat($(this).find('.line-discount').val()) || 0;
+            const vat = parseFloat($(this).find('.line-vat').val()) || 0;
+
+            if (!description) {
+                return;
+            }
+
+            lines.push({
+                line_type: lineType,
+                description: description,
+                quantity: qty,
+                unit_price: price,
+                discount_value: discount,
+                vat_percent: vat
+            });
+        });
+        return lines;
+    }
+
+    $(document).on('click', '#btn-add-quotation-line', function() { addDocumentLine('quotation', 19); });
+    $(document).on('click', '#btn-add-invoice-line', function() { addDocumentLine('invoice', 19); });
+    $(document).on('change', '#quotation-lines-body .line-type', function() { applyLineTypeState($(this).closest('tr')); recalculateDocument('quotation'); });
+    $(document).on('change', '#invoice-lines-body .line-type', function() { applyLineTypeState($(this).closest('tr')); recalculateDocument('invoice'); });
+    $(document).on('change', 'input[name="quotation-discount-mode"]', function() { recalculateDocument('quotation'); });
+    $(document).on('change', 'input[name="invoice-discount-mode"]', function() { recalculateDocument('invoice'); });
+    $(document).on('input', '#quotation-lines-body .doc-line-input', function() { recalculateDocument('quotation'); });
+    $(document).on('input', '#invoice-lines-body .doc-line-input', function() { recalculateDocument('invoice'); });
+    $(document).on('click', '#quotation-lines-body .btn-remove-doc-line', function() {
+        $(this).closest('tr').remove();
+        if (!$('#quotation-lines-body tr').length) addDocumentLine('quotation', 19);
+        recalculateDocument('quotation');
+    });
+    $(document).on('click', '#invoice-lines-body .btn-remove-doc-line', function() {
+        $(this).closest('tr').remove();
+        if (!$('#invoice-lines-body tr').length) addDocumentLine('invoice', 19);
+        recalculateDocument('invoice');
+    });
     
-    // Toggle Quotation Form
-    $('#btn-add-quotation').on('click', function() {
+    // Toggle Quotation Form 
+    $(document).on('click', '#btn-add-quotation, #btn-add-quotation-from-empty', function() {
         const $form = $('#form-add-quotation');
         if ($form.is(':visible')) {
             $form.slideUp(200);
         } else {
             $('#form-add-invoice').slideUp(200);
+            $('#form-add-proforma').slideUp(200);
             $form.slideDown(200);
+            if (!$('#quotation-lines-body tr').length) addDocumentLine('quotation', 19);
             $form.find('input[name="quotation-date"]').focus();
         }
     });
     
     // Toggle Invoice Form
-    $('#btn-add-invoice').on('click', function() {
+    $(document).on('click', '#btn-add-invoice, #btn-add-invoice-from-empty', function() {
         const $form = $('#form-add-invoice');
         if ($form.is(':visible')) {
             $form.slideUp(200);
         } else {
             $('#form-add-quotation').slideUp(200);
+            $('#form-add-proforma').slideUp(200);
             $form.slideDown(200);
+            if (!$('#invoice-lines-body tr').length) addDocumentLine('invoice', 19);
             $form.find('input[name="invoice-date"]').focus();
+        }
+    });
+
+    // Toggle Proforma Form
+    $(document).on('click', '#btn-add-proforma, #btn-add-proforma-from-empty', function() {
+        const $form = $('#form-add-proforma');
+        if ($form.is(':visible')) {
+            $form.slideUp(200);
+        } else {
+            $('#form-add-quotation').slideUp(200);
+            $('#form-add-invoice').slideUp(200);
+            $form.slideDown(200);
+            $form.find('input[name="proforma-date"]').focus();
         }
     });
     
     // Cancel Document Form
-    $('.btn-cancel-doc-form').on('click', function() {
+    $(document).on('click', '.btn-cancel-doc-form', function() {
         $(this).closest('form').slideUp(200);
     });
     
@@ -1241,23 +1665,32 @@ jQuery(document).ready(function($) {
             return;
         }
         
+        const lines = collectDocumentLines('quotation');
+        if (!lines.length) {
+            alert('❌ Bitte mindestens eine Positionszeile hinzufügen.');
+            return;
+        }
+
         $.ajax({
             url: crmAjax.ajaxurl,
             type: 'POST',
             data: {
                 action: 'crm_create_quotation',
-                nonce: $('input[name="nonce"]').val(),
+                nonce: $('#form-add-quotation input[name="nonce"]').val(),
                 customer_id: customerId,
                 date: $('input[name="quotation-date"]').val(),
                 due_date: $('input[name="quotation-due-date"]').val(),
                 subject: $('input[name="quotation-subject"]').val(),
-                amount: $('input[name="quotation-amount"]').val(),
-                notes: $('textarea[name="quotation-notes"]').val()
+                notes: $('textarea[name="quotation-notes"]').val(),
+                discount_mode: getDiscountMode('quotation'),
+                line_items: JSON.stringify(lines)
             },
             success: function(response) {
                 if (response.success) {
                     alert('✅ Angebot erstellt!');
                     $('#form-add-quotation')[0].reset();
+                    $('#quotation-lines-body').empty();
+                    addDocumentLine('quotation', 19);
                     $('#form-add-quotation').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
@@ -1277,26 +1710,70 @@ jQuery(document).ready(function($) {
             return;
         }
         
+        const lines = collectDocumentLines('invoice');
+        if (!lines.length) {
+            alert('❌ Bitte mindestens eine Rechnungszeile hinzufügen.');
+            return;
+        }
+
         $.ajax({
             url: crmAjax.ajaxurl,
             type: 'POST',
             data: {
                 action: 'crm_create_invoice',
-                nonce: $('input[name="nonce"]').val(),
+                nonce: $('#form-add-invoice input[name="nonce"]').val(),
                 customer_id: customerId,
                 date: $('input[name="invoice-date"]').val(),
                 due_date: $('input[name="invoice-due-date"]').val(),
                 subject: $('input[name="invoice-subject"]').val(),
-                netto: $('input[name="invoice-netto"]').val(),
-                mwst_percent: $('input[name="invoice-mwst"]').val(),
                 payment_method: $('select[name="invoice-payment-method"]').val(),
-                notes: $('textarea[name="invoice-notes"]').val()
+                notes: $('textarea[name="invoice-notes"]').val(),
+                discount_mode: getDiscountMode('invoice'),
+                line_items: JSON.stringify(lines)
             },
             success: function(response) {
                 if (response.success) {
                     alert('✅ Rechnung erstellt!');
                     $('#form-add-invoice')[0].reset();
+                    $('#invoice-lines-body').empty();
+                    addDocumentLine('invoice', 19);
                     $('#form-add-invoice').slideUp(200);
+                    loadCustomerDocuments(customerId);
+                } else {
+                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                }
+            }
+        });
+    });
+
+    // Submit Proforma Form
+    $('#form-add-proforma').on('submit', function(e) {
+        e.preventDefault();
+
+        const customerId = $('#selected-customer-id-docs').val();
+        if (!customerId) {
+            alert('❌ Fehler: Kein Kunde ausgewählt');
+            return;
+        }
+
+        $.ajax({
+            url: crmAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'crm_create_proforma',
+                nonce: $('#form-add-proforma input[name="nonce"]').val(),
+                customer_id: customerId,
+                date: $('input[name="proforma-date"]').val(),
+                due_date: $('input[name="proforma-due-date"]').val(),
+                subject: $('input[name="proforma-subject"]').val(),
+                amount: $('input[name="proforma-amount"]').val(),
+                notes: $('textarea[name="proforma-notes"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('✅ Proforma erstellt!');
+                    $('#form-add-proforma')[0].reset();
+                    $('#form-add-proforma').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
                     alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
