@@ -189,6 +189,9 @@ function WPsCRM_upload_beleg($file, $args = array()) {
     if (!current_user_can('manage_crm')) {
         return new WP_Error('unauthorized', __('Sie haben keine Berechtigung für diese Aktion', 'cpsmartcrm'));
     }
+    if (function_exists('wpscrm_user_can') && !current_user_can('manage_options') && !wpscrm_user_can(get_current_user_id(), 'can_edit_documents')) {
+        return new WP_Error('forbidden', __('Keine Berechtigung zum Hochladen von Belegen', 'cpsmartcrm'));
+    }
     
     // Datei validieren
     if (empty($file) || $file['size'] === 0) {
@@ -295,6 +298,17 @@ function WPsCRM_delete_beleg($beleg_id) {
     // Berechtigungen
     if (!current_user_can('manage_crm')) {
         return new WP_Error('unauthorized', __('Keine Berechtigung', 'cpsmartcrm'));
+    }
+
+    if (function_exists('wpscrm_user_can') && !current_user_can('manage_options') && !wpscrm_user_can(get_current_user_id(), 'can_edit_documents')) {
+        return new WP_Error('forbidden', __('Keine Berechtigung', 'cpsmartcrm'));
+    }
+
+    if (function_exists('wpscrm_user_can') && !current_user_can('manage_options') && !wpscrm_user_can(get_current_user_id(), 'can_view_all_documents')) {
+        $owner_id = (int)$wpdb->get_var($wpdb->prepare("SELECT uploaded_by FROM {$b_table} WHERE id = %d", $beleg_id));
+        if ($owner_id !== (int)get_current_user_id()) {
+            return new WP_Error('forbidden_own', __('Sie dürfen nur eigene Belege löschen', 'cpsmartcrm'));
+        }
     }
     
     $updated = $wpdb->update(

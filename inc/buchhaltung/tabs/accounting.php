@@ -16,6 +16,9 @@ $wpscrm_user_id = get_current_user_id();
 $wpscrm_is_admin = current_user_can('manage_options');
 $can_view_accounting = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_view_accounting');
 $can_edit_accounting = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_edit_accounting');
+$can_view_all_accounting = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_view_all_accounting');
+$is_own_accounting_scope = !$can_view_all_accounting;
+$can_manage_manual_accounting = $can_edit_accounting;
 
 if (!$can_view_accounting) {
 	wp_die(__('Du hast keine Berechtigung für diesen Buchhaltungsbereich.', 'cpsmartcrm'));
@@ -74,7 +77,7 @@ $action_error = '';
 
 // Handle new expense entry
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_expense') {
-    if (!$can_edit_accounting) {
+    if (!$can_manage_manual_accounting) {
         $action_error = __('Du hast keine Berechtigung zum Bearbeiten der Buchhaltung.', 'cpsmartcrm');
     } elseif (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_expense_action')) {
         $action_error = __('Sicherheitsüberprüfung fehlgeschlagen.', 'cpsmartcrm');
@@ -104,8 +107,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'imposta' => $expense_tax,
                     'totale' => $expense_gross,
                     'created_at' => current_time('mysql'),
+                    'created_by' => $wpscrm_user_id,
                 ),
-                array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s')
+                array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s', '%d')
             );
 
             if ($result) {
@@ -119,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle new manual income entry
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_income') {
-    if (!$can_edit_accounting) {
+    if (!$can_manage_manual_accounting) {
         $action_error = __('Du hast keine Berechtigung zum Bearbeiten der Buchhaltung.', 'cpsmartcrm');
     } elseif (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_income_action')) {
         $action_error = __('Sicherheitsüberprüfung fehlgeschlagen.', 'cpsmartcrm');
@@ -147,8 +151,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'imposta' => $income_tax,
                     'totale' => $income_gross,
                     'created_at' => current_time('mysql'),
+                    'created_by' => $wpscrm_user_id,
                 ),
-                array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s')
+                array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s', '%d')
             );
 
             if ($result) {
@@ -160,30 +165,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Get available months (invoices, manual incomes, expenses)
-$available_months = $wpdb->get_results(
-    "SELECT DISTINCT period FROM (
-        SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$d_table} WHERE tipo = 2
-        UNION
-        SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$i_table}
-        UNION
-        SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$e_table}
-    ) p
-    ORDER BY period DESC
-    LIMIT 36"
-);
+// Scope-Filter für Rechnungen (eigene vs alle)
+$invoice_owner_filter = '';
+$invoice_owner_filter_alias = '';
+$invoice_owner_params = array();
+if ($is_own_accounting_scope) {
+    $invoice_owner_filter = " AND (fk_utenti_age = %d OR fk_utenti_ins = %d)";
+    $invoice_owner_filter_alias = " AND (d.fk_utenti_age = %d OR d.fk_utenti_ins = %d)";
+    $invoice_owner_params = array($wpscrm_user_id, $wpscrm_user_id);
+}
+
+$manual_owner_filter = '';
+$manual_owner_params = array();
+if ($is_own_accounting_scope) {
+    $manual_owner_filter = ' AND created_by = %d';
+    $manual_owner_params = array($wpscrm_user_id);
+}
+
+// Get available months
+if ($is_own_accounting_scope) {
+    $available_months = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT DISTINCT period FROM (
+                SELECT DATE_FORMAT(data, '%%Y-%%m') as period FROM {$d_table} WHERE tipo = 2 {$invoice_owner_filter}
+                UNION
+                SELECT DATE_FORMAT(data, '%%Y-%%m') as period FROM {$i_table} WHERE created_by = %d
+                UNION
+                SELECT DATE_FORMAT(data, '%%Y-%%m') as period FROM {$e_table} WHERE created_by = %d
+            ) p
+            ORDER BY period DESC
+            LIMIT 36",
+            ...array_merge($invoice_owner_params, array($wpscrm_user_id, $wpscrm_user_id))
+        )
+    );
+} else {
+    $available_months = $wpdb->get_results(
+        "SELECT DISTINCT period FROM (
+            SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$d_table} WHERE tipo = 2
+            UNION
+            SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$i_table}
+            UNION
+            SELECT DATE_FORMAT(data, '%Y-%m') as period FROM {$e_table}
+        ) p
+        ORDER BY period DESC
+        LIMIT 36"
+    );
+}
 
 // Calculate revenue for current period (CRM invoices only)
-$revenue_data = $wpdb->get_row($wpdb->prepare(
-    "SELECT 
+$revenue_query = "SELECT 
         COUNT(*) as count,
         COALESCE(SUM(totale_imponibile), 0) as paid_net,
         COALESCE(SUM(totale_imposta), 0) as paid_tax,
         COALESCE(SUM(totale), 0) as paid_total
      FROM {$d_table}
-     WHERE tipo = 2 AND pagato = 1 AND DATE_FORMAT(data, '%%Y-%%m') = %s",
-    $period_str
-));
+     WHERE tipo = 2 AND pagato = 1 AND DATE_FORMAT(data, '%%Y-%%m') = %s{$invoice_owner_filter}";
+$revenue_params = array_merge(array($period_str), $invoice_owner_params);
+$revenue_data = $wpdb->get_row($wpdb->prepare($revenue_query, ...$revenue_params));
 
 // Calculate manual incomes for current period
 $manual_income_data = $wpdb->get_row($wpdb->prepare(
@@ -192,12 +230,10 @@ $manual_income_data = $wpdb->get_row($wpdb->prepare(
         COALESCE(SUM(imposta), 0) as tax,
         COALESCE(SUM(totale), 0) as total
      FROM {$i_table}
-     WHERE DATE_FORMAT(data, '%%Y-%%m') = %s",
-    $period_str
+     WHERE DATE_FORMAT(data, '%%Y-%%m') = %s{$manual_owner_filter}",
+    ...array_merge(array($period_str), $manual_owner_params)
 ));
 
-// Calculate income breakdown by source (for revenue sources box)
-// Only show integration sources (eCommerce, etc.), not CRM internal categories
 $income_by_source = $wpdb->get_results($wpdb->prepare(
     "SELECT 
         kategoria as source,
@@ -206,11 +242,13 @@ $income_by_source = $wpdb->get_results($wpdb->prepare(
         COALESCE(SUM(imposta), 0) as tax,
         COALESCE(SUM(totale), 0) as total
      FROM {$i_table}
-     WHERE DATE_FORMAT(data, '%%Y-%%m') = %s
+     WHERE DATE_FORMAT(data, '%%Y-%%m') = %s{$manual_owner_filter}
      GROUP BY kategoria
      ORDER BY total DESC",
-    $period_str
+    ...array_merge(array($period_str), $manual_owner_params)
 ), ARRAY_A);
+
+// Calculate income breakdown by source (for revenue sources box)
 
 // Prepare source breakdown - only include integration sources
 $sources_breakdown = array();
@@ -266,8 +304,8 @@ $expenses_data = $wpdb->get_row($wpdb->prepare(
         COALESCE(SUM(imposta), 0) as tax,
         COALESCE(SUM(totale), 0) as total
      FROM {$e_table}
-     WHERE DATE_FORMAT(data, '%%Y-%%m') = %s",
-    $period_str
+     WHERE DATE_FORMAT(data, '%%Y-%%m') = %s{$manual_owner_filter}",
+    ...array_merge(array($period_str), $manual_owner_params)
 ));
 
 $total_expenses_net = (float)($expenses_data->net ?? 0);
@@ -281,24 +319,23 @@ $profit_loss = $total_revenue - $total_expenses;
 
 // Get lists of incomes and expenses for current period
 $incomes_list = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$i_table} WHERE DATE_FORMAT(data, '%%Y-%%m') = %s ORDER BY data DESC",
-    $period_str
+    "SELECT * FROM {$i_table} WHERE DATE_FORMAT(data, '%%Y-%%m') = %s{$manual_owner_filter} ORDER BY data DESC",
+    ...array_merge(array($period_str), $manual_owner_params)
 ));
 
 $expenses_list = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$e_table} WHERE DATE_FORMAT(data, '%%Y-%%m') = %s ORDER BY data DESC",
-    $period_str
+    "SELECT * FROM {$e_table} WHERE DATE_FORMAT(data, '%%Y-%%m') = %s{$manual_owner_filter} ORDER BY data DESC",
+    ...array_merge(array($period_str), $manual_owner_params)
 ));
 
 // Get invoices for current period
-$invoices_list = $wpdb->get_results($wpdb->prepare(
-    "SELECT d.*, k.firmenname, k.name, k.nachname 
+$invoice_list_query = "SELECT d.*, k.firmenname, k.name, k.nachname 
      FROM {$d_table} d
      LEFT JOIN {$k_table} k ON d.id_cliente = k.id
-     WHERE d.tipo = 2 AND d.pagato = 1 AND DATE_FORMAT(d.data, '%%Y-%%m') = %s 
-     ORDER BY d.data DESC",
-    $period_str
-));
+     WHERE d.tipo = 2 AND d.pagato = 1 AND DATE_FORMAT(d.data, '%%Y-%%m') = %s{$invoice_owner_filter_alias}
+     ORDER BY d.data DESC";
+$invoice_list_params = array_merge(array($period_str), $invoice_owner_params);
+$invoices_list = $wpdb->get_results($wpdb->prepare($invoice_list_query, ...$invoice_list_params));
 
 // Combine all transactions into one array
 $all_transactions = array();
@@ -437,6 +474,12 @@ document.getElementById('month_picker').addEventListener('change', function() {
     </div>
 <?php endif; ?>
 
+<?php if ($is_own_accounting_scope) : ?>
+    <div class="notice notice-warning" style="margin-bottom: 20px;">
+        <p><?php _e('Eingeschränkter Modus aktiv: Du siehst nur eigene Datensätze (Rechnungen + manuelle Buchungen).', 'cpsmartcrm'); ?></p>
+    </div>
+<?php endif; ?>
+
 <!-- Key Financial Metrics -->
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
     <div class="card" style="padding: 16px; border-left: 4px solid #0073aa;">
@@ -515,9 +558,11 @@ document.getElementById('month_picker').addEventListener('change', function() {
             </tr>
         </table>
 
-        <button type="button" class="button button-secondary" id="toggle_income_form" style="margin-top: 12px; width: 100%;">
-            <?php _e('+ Manuelle Einnahme', 'cpsmartcrm'); ?>
-        </button>
+        <?php if ($can_manage_manual_accounting) : ?>
+            <button type="button" class="button button-secondary" id="toggle_income_form" style="margin-top: 12px; width: 100%;">
+                <?php _e('+ Manuelle Einnahme', 'cpsmartcrm'); ?>
+            </button>
+        <?php endif; ?>
         <p style="margin-top: 8px; font-size: 12px; color: #666;">
             <?php _e('Alle Einnahmequellen werden summiert.', 'cpsmartcrm'); ?>
         </p>
@@ -557,9 +602,11 @@ document.getElementById('month_picker').addEventListener('change', function() {
             </tr>
         </table>
 
-        <button type="button" class="button button-secondary" id="toggle_expense_form" style="margin-top: 12px; width: 100%;">
-            <?php _e('+ Neue Ausgabe', 'cpsmartcrm'); ?>
-        </button>
+        <?php if ($can_manage_manual_accounting) : ?>
+            <button type="button" class="button button-secondary" id="toggle_expense_form" style="margin-top: 12px; width: 100%;">
+                <?php _e('+ Neue Ausgabe', 'cpsmartcrm'); ?>
+            </button>
+        <?php endif; ?>
     </div>
 
     <!-- Revenue Sources Breakdown -->
@@ -619,6 +666,7 @@ document.getElementById('month_picker').addEventListener('change', function() {
     </div>
 </div>
 
+<?php if ($can_manage_manual_accounting) : ?>
 <!-- New Income Form Modal -->
 <div id="income_modal" class="buch-modal-overlay" style="display: none;">
     <div class="buch-modal-content">
@@ -742,6 +790,7 @@ document.getElementById('month_picker').addEventListener('change', function() {
         </form>
     </div>
 </div>
+<?php endif; ?>
 
 <!-- Alle Transaktionen (Einnahmen & Ausgaben) chronologisch -->
 <style>
@@ -1046,13 +1095,19 @@ function buchHideModal(id) {
     if (el) el.style.display = 'none';
 }
 
-document.getElementById('toggle_income_form').addEventListener('click', function() {
-    buchShowModal('income_modal');
-});
+var incomeBtn = document.getElementById('toggle_income_form');
+if (incomeBtn) {
+    incomeBtn.addEventListener('click', function() {
+        buchShowModal('income_modal');
+    });
+}
 
-document.getElementById('toggle_expense_form').addEventListener('click', function() {
-    buchShowModal('expense_modal');
-});
+var expenseBtn = document.getElementById('toggle_expense_form');
+if (expenseBtn) {
+    expenseBtn.addEventListener('click', function() {
+        buchShowModal('expense_modal');
+    });
+}
 
 document.querySelectorAll('[data-close-modal]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {

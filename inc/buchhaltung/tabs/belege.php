@@ -14,6 +14,8 @@ $wpscrm_user_id = get_current_user_id();
 $wpscrm_is_admin = current_user_can('manage_options');
 $can_view_documents = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_view_documents');
 $can_edit_documents = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_edit_documents');
+$can_view_all_documents = $wpscrm_is_admin || !function_exists('wpscrm_user_can') || wpscrm_user_can($wpscrm_user_id, 'can_view_all_documents');
+$documents_own_scope = !$can_view_all_documents;
 
 if (!$can_view_documents) {
 	wp_die(__('Du hast keine Berechtigung für den Belege-Bereich.', 'cpsmartcrm'));
@@ -66,7 +68,8 @@ $offset = ($page - 1) * $items_per_page;
 // Handle file download
 if ($action === 'download' && $beleg_id > 0) {
     $beleg = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$b_table} WHERE id = %d", $beleg_id));
-    if ($beleg && file_exists($beleg->file_path)) {
+    $allowed_to_download = $beleg && (!$documents_own_scope || (int)$beleg->uploaded_by === (int)$wpscrm_user_id);
+    if ($allowed_to_download && file_exists($beleg->file_path)) {
         header('Content-Type: ' . $beleg->file_mime);
         header('Content-Disposition: attachment; filename="' . basename($beleg->filename) . '"');
         header('Content-Length: ' . $beleg->file_size);
@@ -79,6 +82,14 @@ if ($action === 'download' && $beleg_id > 0) {
 if ($action === 'delete' && $beleg_id > 0 && check_admin_referer('delete_beleg_' . $beleg_id)) {
     if (!$can_edit_documents) {
         echo '<div class="notice notice-error is-dismissible"><p>' . __('Keine Berechtigung zum Löschen von Belegen.', 'cpsmartcrm') . '</p></div>';
+    } elseif ($documents_own_scope) {
+        $beleg_owner = (int)$wpdb->get_var($wpdb->prepare("SELECT uploaded_by FROM {$b_table} WHERE id = %d", $beleg_id));
+        if ($beleg_owner !== (int)$wpscrm_user_id) {
+            echo '<div class="notice notice-error is-dismissible"><p>' . __('Du darfst nur eigene Belege löschen.', 'cpsmartcrm') . '</p></div>';
+        } else {
+            WPsCRM_delete_beleg($beleg_id);
+            echo '<div class="notice notice-success is-dismissible"><p>' . __('Beleg gelöscht.', 'cpsmartcrm') . '</p></div>';
+        }
     } else {
         WPsCRM_delete_beleg($beleg_id);
         echo '<div class="notice notice-success is-dismissible"><p>' . __('Beleg gelöscht.', 'cpsmartcrm') . '</p></div>';
@@ -120,8 +131,9 @@ if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
                             'imposta' => $trans_tax,
                             'totale' => $trans_gross,
                             'created_at' => current_time('mysql'),
+                            'created_by' => $wpscrm_user_id,
                         ),
-                        array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s')
+                        array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s', '%d')
                     );
                     if ($result) {
                         $new_transaction_id = $wpdb->insert_id;
@@ -138,8 +150,9 @@ if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
                             'imposta' => $trans_tax,
                             'totale' => $trans_gross,
                             'created_at' => current_time('mysql'),
+                            'created_by' => $wpscrm_user_id,
                         ),
-                        array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s')
+                        array('%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s', '%d')
                     );
                     if ($result) {
                         $new_transaction_id = $wpdb->insert_id;
@@ -322,6 +335,10 @@ if (isset($_POST['upload_beleg']) && check_admin_referer('belege_upload')) {
 
     <?php if (!$can_edit_documents) : ?>
         <div class="notice notice-warning"><p><?php _e('Du hast nur Leserechte für Belege. Upload, Bearbeiten und Löschen sind deaktiviert.', 'cpsmartcrm'); ?></p></div>
+    <?php endif; ?>
+
+    <?php if ($documents_own_scope) : ?>
+        <div class="notice notice-info"><p><?php _e('Eingeschränkter Modus: Du siehst und verwaltest nur eigene Belege.', 'cpsmartcrm'); ?></p></div>
     <?php endif; ?>
     
     <form method="post" enctype="multipart/form-data">
@@ -510,8 +527,21 @@ function toggleTransactionFields() {
 <?php
 // Statistiken abrufen
 $stats = WPsCRM_get_belege_statistics($date_from ?: null, $date_to ?: null);
-$total_belege = $wpdb->get_var("SELECT COUNT(*) FROM {$b_table} WHERE deleted = 0");
-$total_size = $wpdb->get_var("SELECT SUM(file_size) FROM {$b_table} WHERE deleted = 0");
+if ($documents_own_scope) {
+    $stats = $wpdb->get_results($wpdb->prepare(
+        "SELECT kategorie, COUNT(*) as anzahl, SUM(file_size) as total_size
+         FROM {$b_table}
+         WHERE deleted = 0 AND uploaded_by = %d
+         GROUP BY kategorie
+         ORDER BY anzahl DESC",
+        $wpscrm_user_id
+    ));
+    $total_belege = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$b_table} WHERE deleted = 0 AND uploaded_by = %d", $wpscrm_user_id));
+    $total_size = (int)$wpdb->get_var($wpdb->prepare("SELECT SUM(file_size) FROM {$b_table} WHERE deleted = 0 AND uploaded_by = %d", $wpscrm_user_id));
+} else {
+    $total_belege = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$b_table} WHERE deleted = 0");
+    $total_size = (int)$wpdb->get_var("SELECT SUM(file_size) FROM {$b_table} WHERE deleted = 0");
+}
 ?>
 
 <!-- STATISTIKEN -->
@@ -582,6 +612,11 @@ $total_size = $wpdb->get_var("SELECT SUM(file_size) FROM {$b_table} WHERE delete
 $where = "deleted = 0";
 $where_args = array();
 
+if ($documents_own_scope) {
+    $where .= " AND uploaded_by = %d";
+    $where_args[] = $wpscrm_user_id;
+}
+
 if (!empty($search)) {
     $where .= " AND (belegnummer LIKE %s OR beschreibung LIKE %s)";
     $search_term = '%' . $wpdb->esc_like($search) . '%';
@@ -650,11 +685,13 @@ if (!empty($belege)) {
                    style="padding: 4px 8px; background: #f0f0f0; color: #0073aa; text-decoration: none; border-radius: 3px; font-size: 12px; margin-right: 5px; display: inline-block;">
                     ⬇️ <?php _e('Download', 'cpsmartcrm'); ?>
                 </a>
-                <a href="<?php echo wp_nonce_url('?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=delete&beleg_id=' . $beleg->id, 'delete_beleg_' . $beleg->id); ?>" 
-                   onclick="return confirm('<?php _e('Beleg wirklich löschen?', 'cpsmartcrm'); ?>')" 
-                   style="padding: 4px 8px; background: #f8d7da; color: #dc3545; text-decoration: none; border-radius: 3px; font-size: 12px; display: inline-block;">
-                    🗑️ <?php _e('Löschen', 'cpsmartcrm'); ?>
-                </a>
+                <?php if ($can_edit_documents && (!$documents_own_scope || (int)$beleg->uploaded_by === (int)$wpscrm_user_id)) : ?>
+                    <a href="<?php echo wp_nonce_url('?page=smart-crm&p=buchhaltung/index.php&accounting_tab=belege&action=delete&beleg_id=' . $beleg->id, 'delete_beleg_' . $beleg->id); ?>" 
+                       onclick="return confirm('<?php _e('Beleg wirklich löschen?', 'cpsmartcrm'); ?>')" 
+                       style="padding: 4px 8px; background: #f8d7da; color: #dc3545; text-decoration: none; border-radius: 3px; font-size: 12px; display: inline-block;">
+                        🗑️ <?php _e('Löschen', 'cpsmartcrm'); ?>
+                    </a>
+                <?php endif; ?>
             </td>
         </tr>
         <?php endforeach; ?>

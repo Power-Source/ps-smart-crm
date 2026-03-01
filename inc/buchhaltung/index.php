@@ -29,7 +29,7 @@ $available_tabs = array(
         'icon' => 'glyphicon glyphicon-dashboard',
         'file' => 'tabs/dashboard.php',
         'capability' => 'manage_crm',
-        'permission_key' => 'can_view_accounting',
+        'permission_key' => 'can_view_all_accounting',
     ),
     'accounting' => array(
         'label' => __('Buchhaltung', 'cpsmartcrm'),
@@ -64,7 +64,7 @@ $available_tabs = array(
         'icon' => 'glyphicon glyphicon-stats',
         'file' => 'tabs/statistics.php',
         'capability' => 'manage_crm',
-        'permission_key' => 'can_view_accounting',
+        'permission_key' => 'can_view_all_accounting',
     ),
 );
 

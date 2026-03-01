@@ -218,10 +218,12 @@ function WPsCRM_crm_install() {
   `imposta` float(9,2) unsigned NOT NULL,
   `totale` float(9,2) unsigned NOT NULL,
   `created_at` datetime NOT NULL,
+  `created_by` int(10) unsigned NOT NULL DEFAULT '0',
   `updated_at` datetime NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `data` (`data`),
-  KEY `kategoria` (`kategoria`)
+  KEY `kategoria` (`kategoria`),
+  KEY `created_by` (`created_by`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
 
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."incomes` (
@@ -234,10 +236,12 @@ function WPsCRM_crm_install() {
   `imposta` float(9,2) unsigned NOT NULL,
   `totale` float(9,2) unsigned NOT NULL,
   `created_at` datetime NOT NULL,
+  `created_by` int(10) unsigned NOT NULL DEFAULT '0',
   `updated_at` datetime NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `data` (`data`),
-  KEY `kategoria` (`kategoria`)
+  KEY `kategoria` (`kategoria`),
+  KEY `created_by` (`created_by`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
 
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."belege` (
@@ -508,8 +512,59 @@ function WPsCRM_update_db_check() {
     if ( get_option( 'WPsCRM_upgrade_taxonomies' ) == false ) {
         WPsCRM_upgrade_taxonomies();
     }
+  WPsCRM_migrate_accounting_created_by();
 }
 add_action( 'plugins_loaded', 'WPsCRM_update_db_check',13 );
+
+/**
+ * Einmalige Migration: created_by in incomes/expenses hinzufügen und backfillen.
+ */
+function WPsCRM_migrate_accounting_created_by() {
+  if ( get_option( 'WPsCRM_migration_created_by_done' ) ) {
+    return;
+  }
+
+  global $wpdb;
+  $expenses_table = WPsCRM_TABLE . 'expenses';
+  $incomes_table  = WPsCRM_TABLE . 'incomes';
+  $belege_table   = WPsCRM_TABLE . 'belege';
+
+  $expenses_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$expenses_table}'" );
+  $incomes_exists  = $wpdb->get_var( "SHOW TABLES LIKE '{$incomes_table}'" );
+
+  if ( $expenses_exists ) {
+    $has_col = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$expenses_table} LIKE %s", 'created_by' ) );
+    if ( ! $has_col ) {
+      $wpdb->query( "ALTER TABLE {$expenses_table} ADD COLUMN `created_by` int(10) unsigned NOT NULL DEFAULT '0' AFTER `created_at`" );
+    }
+    $has_idx = $wpdb->get_var( "SHOW INDEX FROM {$expenses_table} WHERE Key_name = 'created_by'" );
+    if ( ! $has_idx ) {
+      $wpdb->query( "ALTER TABLE {$expenses_table} ADD KEY `created_by` (`created_by`)" );
+    }
+  }
+
+  if ( $incomes_exists ) {
+    $has_col = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$incomes_table} LIKE %s", 'created_by' ) );
+    if ( ! $has_col ) {
+      $wpdb->query( "ALTER TABLE {$incomes_table} ADD COLUMN `created_by` int(10) unsigned NOT NULL DEFAULT '0' AFTER `created_at`" );
+    }
+    $has_idx = $wpdb->get_var( "SHOW INDEX FROM {$incomes_table} WHERE Key_name = 'created_by'" );
+    if ( ! $has_idx ) {
+      $wpdb->query( "ALTER TABLE {$incomes_table} ADD KEY `created_by` (`created_by`)" );
+    }
+  }
+
+  // Backfill: Wenn Belege mit Transaktionen verknüpft sind, Owner übernehmen.
+  $belege_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$belege_table}'" );
+  if ( $belege_exists && $expenses_exists ) {
+    $wpdb->query( "UPDATE {$expenses_table} e INNER JOIN {$belege_table} b ON b.fk_expenses = e.id SET e.created_by = b.uploaded_by WHERE e.created_by = 0 AND b.deleted = 0" );
+  }
+  if ( $belege_exists && $incomes_exists ) {
+    $wpdb->query( "UPDATE {$incomes_table} i INNER JOIN {$belege_table} b ON b.fk_incomes = i.id SET i.created_by = b.uploaded_by WHERE i.created_by = 0 AND b.deleted = 0" );
+  }
+
+  update_option( 'WPsCRM_migration_created_by_done', 1 );
+}
 
 
 add_action( 'plugins_loaded', 'WPsCRM_create_kunde',11 );

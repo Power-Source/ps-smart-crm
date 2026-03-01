@@ -27,8 +27,10 @@ $default_caps = array(
 	'wp_role' => '',
 	'can_view_accounting' => 0,
 	'can_edit_accounting' => 0,
+	'can_view_all_accounting' => 0,
 	'can_view_documents' => 0,
 	'can_edit_documents' => 0,
+	'can_view_all_documents' => 0,
 	'can_view_customers' => 0,
 	'can_edit_customers' => 0,
 );
@@ -40,8 +42,10 @@ if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_
 				'wp_role' => sanitize_key( $_POST['wp_role'] ?? '' ),
 				'can_view_accounting' => isset( $_POST['can_view_accounting'] ) ? 1 : 0,
 				'can_edit_accounting' => isset( $_POST['can_edit_accounting'] ) ? 1 : 0,
+				'can_view_all_accounting' => isset( $_POST['can_view_all_accounting'] ) ? 1 : 0,
 				'can_view_documents' => isset( $_POST['can_view_documents'] ) ? 1 : 0,
 				'can_edit_documents' => isset( $_POST['can_edit_documents'] ) ? 1 : 0,
+				'can_view_all_documents' => isset( $_POST['can_view_all_documents'] ) ? 1 : 0,
 				'can_view_customers' => isset( $_POST['can_view_customers'] ) ? 1 : 0,
 				'can_edit_customers' => isset( $_POST['can_edit_customers'] ) ? 1 : 0,
 			);
@@ -74,8 +78,10 @@ if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_
 					'wp_role' => sanitize_key( $_POST['wp_role'] ?? '' ),
 					'can_view_accounting' => isset( $_POST['can_view_accounting'] ) ? 1 : 0,
 					'can_edit_accounting' => isset( $_POST['can_edit_accounting'] ) ? 1 : 0,
+					'can_view_all_accounting' => isset( $_POST['can_view_all_accounting'] ) ? 1 : 0,
 					'can_view_documents' => isset( $_POST['can_view_documents'] ) ? 1 : 0,
 					'can_edit_documents' => isset( $_POST['can_edit_documents'] ) ? 1 : 0,
+					'can_view_all_documents' => isset( $_POST['can_view_all_documents'] ) ? 1 : 0,
 					'can_view_customers' => isset( $_POST['can_view_customers'] ) ? 1 : 0,
 					'can_edit_customers' => isset( $_POST['can_edit_customers'] ) ? 1 : 0,
 				);
@@ -185,6 +191,10 @@ if ( $edit_role ) {
 .badge-system { background: #d63638; color: #fff; }
 .badge-contact { background: #00a32a; color: #fff; }
 .permissions-grid { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 14px; background: #f6f7f7; padding: 12px; border: 1px solid #e3e5e8; }
+.permissions-help { margin-bottom: 10px; padding: 10px 12px; border: 1px solid #dcdcde; border-radius: 4px; background: #fff; }
+.permissions-help p { margin: 0 0 8px; color: #2c3338; }
+.permissions-help ul { margin: 0; padding-left: 18px; color: #50575e; }
+.permissions-help li { margin: 3px 0; }
 .role-users-box { padding: 18px; }
 .role-users-box ul { margin: 8px 0 0; padding-left: 20px; }
 .inline-list { display: inline-flex; flex-wrap: wrap; gap: 6px; }
@@ -275,16 +285,27 @@ if ( $edit_role ) {
 
 				<div class="form-row full-row">
 					<label><?php esc_html_e( 'Rechte', 'cpsmartcrm' ); ?></label>
+					<div class="permissions-help">
+						<p><strong><?php esc_html_e( 'Kurz erklärt:', 'cpsmartcrm' ); ?></strong> <?php esc_html_e( 'So greifen die Häkchen:', 'cpsmartcrm' ); ?></p>
+						<ul>
+							<li><?php esc_html_e( 'Anzeigen = nur lesen, nichts ändern.', 'cpsmartcrm' ); ?></li>
+							<li><?php esc_html_e( 'Bearbeiten = erstellen, ändern, löschen (je nach Bereich).', 'cpsmartcrm' ); ?></li>
+							<li><?php esc_html_e( 'Alle Datensätze sehen = nicht nur eigene, sondern alles.', 'cpsmartcrm' ); ?></li>
+							<li><?php esc_html_e( 'Ohne Alle-Datensätze siehst du nur deine eigenen Einträge.', 'cpsmartcrm' ); ?></li>
+						</ul>
+					</div>
 					<div class="permissions-grid">
 						<div>
 							<strong><?php esc_html_e( 'Buchhaltung', 'cpsmartcrm' ); ?></strong><br>
 							<label><input type="checkbox" name="can_view_accounting" value="1" <?php checked( $edit_caps['can_view_accounting'], 1 ); ?> /> <?php esc_html_e( 'Anzeigen', 'cpsmartcrm' ); ?></label><br>
 							<label><input type="checkbox" name="can_edit_accounting" value="1" <?php checked( $edit_caps['can_edit_accounting'], 1 ); ?> /> <?php esc_html_e( 'Bearbeiten', 'cpsmartcrm' ); ?></label>
+							<br><label><input type="checkbox" name="can_view_all_accounting" value="1" <?php checked( $edit_caps['can_view_all_accounting'], 1 ); ?> /> <?php esc_html_e( 'Alle Datensätze sehen', 'cpsmartcrm' ); ?></label>
 						</div>
 						<div>
 							<strong><?php esc_html_e( 'Dokumente', 'cpsmartcrm' ); ?></strong><br>
 							<label><input type="checkbox" name="can_view_documents" value="1" <?php checked( $edit_caps['can_view_documents'], 1 ); ?> /> <?php esc_html_e( 'Anzeigen', 'cpsmartcrm' ); ?></label><br>
 							<label><input type="checkbox" name="can_edit_documents" value="1" <?php checked( $edit_caps['can_edit_documents'], 1 ); ?> /> <?php esc_html_e( 'Bearbeiten/Löschen', 'cpsmartcrm' ); ?></label>
+							<br><label><input type="checkbox" name="can_view_all_documents" value="1" <?php checked( $edit_caps['can_view_all_documents'], 1 ); ?> /> <?php esc_html_e( 'Alle Datensätze sehen', 'cpsmartcrm' ); ?></label>
 						</div>
 						<div>
 							<strong><?php esc_html_e( 'Kunden', 'cpsmartcrm' ); ?></strong><br>
@@ -383,7 +404,9 @@ if ( $edit_role ) {
 						<td>
 							<?php if ( ! empty( $caps['wp_role'] ) ) : ?><span class="inline-pill">WP: <?php echo esc_html( $caps['wp_role'] ); ?></span><?php endif; ?>
 							<?php if ( ! empty( $caps['can_view_accounting'] ) || ! empty( $caps['can_edit_accounting'] ) ) : ?><span class="inline-pill">💼 <?php echo ! empty( $caps['can_edit_accounting'] ) ? 'Edit' : 'View'; ?></span><?php endif; ?>
+							<?php if ( ! empty( $caps['can_view_all_accounting'] ) ) : ?><span class="inline-pill">💼 All</span><?php endif; ?>
 							<?php if ( ! empty( $caps['can_view_documents'] ) || ! empty( $caps['can_edit_documents'] ) ) : ?><span class="inline-pill">📄 <?php echo ! empty( $caps['can_edit_documents'] ) ? 'Edit' : 'View'; ?></span><?php endif; ?>
+							<?php if ( ! empty( $caps['can_view_all_documents'] ) ) : ?><span class="inline-pill">📄 All</span><?php endif; ?>
 							<?php if ( ! empty( $caps['can_view_customers'] ) || ! empty( $caps['can_edit_customers'] ) ) : ?><span class="inline-pill">👥 <?php echo ! empty( $caps['can_edit_customers'] ) ? 'Edit' : 'View'; ?></span><?php endif; ?>
 						</td>
 						<td>
