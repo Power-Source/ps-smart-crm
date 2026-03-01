@@ -71,6 +71,8 @@ $current_month = (int)substr($period_from, 5, 2);
 
 // Get business settings
 $is_kleinunternehmer = WPsCRM_is_kleinunternehmer();
+$bus_options = get_option('CRM_business_settings', array());
+$business_type = isset($bus_options['business_type']) ? $bus_options['business_type'] : 'standard';
 $tax_rates = WPsCRM_get_tax_rates();
 $acc_options = get_option('CRM_accounting_settings', array());
 
@@ -802,6 +804,45 @@ foreach ($income_by_source as $source) {
 </div>
 
 <!-- Einnahmen & Ausgaben Übersicht -->
+<!-- Business Type Info Card -->
+<?php if ($business_type === 'kleinunternehmer') : ?>
+    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+        <p style="margin: 0; font-weight: 600; color: #856404;">
+            <span style="font-size: 16px;">§19</span> <?php _e('Kleinunternehmer nach UStG aktiv', 'cpsmartcrm'); ?>
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #856404;">
+            <?php _e('Steuersätze sind deaktiviert. Keine Umsatzsteuer wird berechnet/angezeigt.', 'cpsmartcrm'); ?>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=smartcrm_settings&tab=CRM_business_settings')); ?>" style="color: #856404; text-decoration: underline;">
+                <?php _e('Ändern →', 'cpsmartcrm'); ?>
+            </a>
+        </p>
+    </div>
+<?php elseif ($business_type === 'freiberufler') : ?>
+    <div style="background: #cfe2ff; border-left: 4px solid #0d6efd; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+        <p style="margin: 0; font-weight: 600; color: #084298;">
+            <span style="font-size: 16px;">👨‍💼</span> <?php _e('Freiberufler/Künstler', 'cpsmartcrm'); ?>
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #084298;">
+            <?php _e('Einnahme-Überschuss-Rechnung (EÜR). Umsatzsteuer optional.', 'cpsmartcrm'); ?>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=smartcrm_settings&tab=CRM_business_settings')); ?>" style="color: #084298; text-decoration: underline;">
+                <?php _e('Ändern →', 'cpsmartcrm'); ?>
+            </a>
+        </p>
+    </div>
+<?php else : ?>
+    <div style="background: #d1ecf1; border-left: 4px solid #0c5460; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+        <p style="margin: 0; font-weight: 600; color: #0c5460;">
+            <span style="font-size: 16px;">🏢</span> <?php _e('Standard Unternehmer (mit USt-ID)', 'cpsmartcrm'); ?>
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #0c5460;">
+            <?php _e('Volle Umsatzsteuer-Besteuerung mit allen Steuersätzen verfügbar.', 'cpsmartcrm'); ?>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=smartcrm_settings&tab=CRM_business_settings')); ?>" style="color: #0c5460; text-decoration: underline;">
+                <?php _e('Ändern →', 'cpsmartcrm'); ?>
+            </a>
+        </p>
+    </div>
+<?php endif; ?>
+
 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
 
     <!-- Einnahmen Section -->
@@ -826,7 +867,10 @@ foreach ($income_by_source as $source) {
             </tr>
             <?php if (!$is_kleinunternehmer) : ?>
             <tr style="border-bottom: 1px solid #ddd;">
-                <td style="padding: 8px;"><?php _e('Umsatzsteuer:', 'cpsmartcrm'); ?></td>
+                <td style="padding: 8px;">
+                    <?php _e('Umsatzsteuer (USt):', 'cpsmartcrm'); ?>
+                    <br><small style="color: #666;"><?php _e('Auf Einnahmen', 'cpsmartcrm'); ?></small>
+                </td>
                 <td style="text-align: right; padding: 8px;">
                     <?php echo esc_html(WPsCRM_format_currency($total_revenue_tax)); ?>
                 </td>
@@ -880,13 +924,35 @@ foreach ($income_by_source as $source) {
                                    required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
                         </div>
                         <div>
-                            <label for="income_tax_rate"><small><?php _e('Steuersatz', 'cpsmartcrm'); ?></small></label>
+                            <label for="income_tax_rate">
+                                <small><?php _e('Umsatzsteuer (USt)', 'cpsmartcrm'); ?></small>
+                                <?php if ($is_kleinunternehmer) : ?>
+                                    <small style="color: #d63638; display: block; margin-top: 2px;">
+                                        <?php _e('⚠️ Als Kleinunternehmer keine USt ausweisen', 'cpsmartcrm'); ?>
+                                    </small>
+                                <?php endif; ?>
+                            </label>
                             <select id="income_tax_rate" name="income_tax_rate" 
-                                    style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-                                <option value="0">0%</option>
-                                <option value="7">7%</option>
-                                <option value="19" selected>19%</option>
+                                    style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                                    <?php echo $is_kleinunternehmer ? 'disabled' : ''; ?>>
+                                <?php if ($is_kleinunternehmer) : ?>
+                                    <option value="0" selected>0% (Kleinunternehmer §19 UStG)</option>
+                                <?php else : ?>
+                                    <?php foreach ($tax_rates as $rate) : ?>
+                                        <option value="<?php echo esc_attr($rate['percentage']); ?>" 
+                                                <?php selected($rate['percentage'], 19); ?>>
+                                            <?php echo esc_html($rate['percentage']); ?>% - <?php echo esc_html($rate['label']); ?>
+                                            <?php if (!empty($rate['account'])) : ?>
+                                                (SKR04: <?php echo esc_html($rate['account']); ?>)
+                                            <?php endif; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                    <option value="0" data-info="ige">0% - Innergemeinschaftl. Lieferung (IGE)</option>
+                                <?php endif; ?>
                             </select>
+                            <?php if ($is_kleinunternehmer) : ?>
+                                <input type="hidden" name="income_tax_rate" value="0" />
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -927,7 +993,10 @@ foreach ($income_by_source as $source) {
                 </td>
             </tr>
             <tr style="border-bottom: 1px solid #ddd;">
-                <td style="padding: 8px;"><?php _e('Vorsteuer:', 'cpsmartcrm'); ?></td>
+                <td style="padding: 8px;">
+                    <?php _e('Vorsteuer (VSt):', 'cpsmartcrm'); ?>
+                    <br><small style="color: #666;"><?php _e('Aus Ausgaben abziehbar', 'cpsmartcrm'); ?></small>
+                </td>
                 <td style="text-align: right; padding: 8px;">
                     <?php echo esc_html(WPsCRM_format_currency($total_expenses_tax)); ?>
                 </td>
@@ -980,12 +1049,25 @@ foreach ($income_by_source as $source) {
                                    required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
                         </div>
                         <div>
-                            <label for="expense_tax_rate"><small><?php _e('Steuersatz', 'cpsmartcrm'); ?></small></label>
+                            <label for="expense_tax_rate">
+                                <small><?php _e('Vorsteuer (VSt)', 'cpsmartcrm'); ?></small>
+                                <small style="color: #666; display: block; margin-top: 2px;">
+                                    <?php _e('Abziehbare Vorsteuer aus Ausgaben', 'cpsmartcrm'); ?>
+                                </small>
+                            </label>
                             <select id="expense_tax_rate" name="expense_tax_rate" 
                                     style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-                                <option value="0">0%</option>
-                                <option value="7">7%</option>
-                                <option value="19" selected>19%</option>
+                                <?php foreach ($tax_rates as $rate) : ?>
+                                    <option value="<?php echo esc_attr($rate['percentage']); ?>" 
+                                            <?php selected($rate['percentage'], 19); ?>>
+                                        <?php echo esc_html($rate['percentage']); ?>% - <?php echo esc_html($rate['label']); ?>
+                                        <?php if (!empty($rate['account'])) : ?>
+                                            (SKR04: <?php echo esc_html($rate['account']); ?>)
+                                        <?php endif; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                                <option value="0" data-info="reverse">0% - Reverse Charge (§13b UStG)</option>
+                                <option value="0" data-info="ige">0% - Innergemeinschaftlicher Erwerb</option>
                             </select>
                         </div>
                     </div>
@@ -1519,10 +1601,26 @@ foreach ($income_by_source as $source) {
                 </div>
                 <div class="crm-transaction-summary-item">
                     <div class="crm-transaction-summary-label">
-                        <?php _e('USt.-Zahllast', 'cpsmartcrm'); ?>
+                        <?php _e('USt-Zahllast', 'cpsmartcrm'); ?>
+                        <br><small style="color: #666; font-weight: normal;">
+                            <?php _e('(Umsatzsteuer − Vorsteuer)', 'cpsmartcrm'); ?>
+                        </small>
                     </div>
-                    <div class="crm-transaction-summary-value" style="color: #1976d2;">
-                        <?php echo !$is_kleinunternehmer ? esc_html(WPsCRM_format_currency($total_revenue_tax - $total_expenses_tax)) : '−'; ?>
+                    <div class="crm-transaction-summary-value" style="color: <?php echo ($total_revenue_tax - $total_expenses_tax) > 0 ? '#c62828' : '#2e7d32'; ?>;">
+                        <?php if (!$is_kleinunternehmer) : ?>
+                            <?php 
+                            $zahllast = $total_revenue_tax - $total_expenses_tax;
+                            echo esc_html(WPsCRM_format_currency($zahllast)); 
+                            ?>
+                            <?php if ($zahllast > 0) : ?>
+                                <br><small style="color: #c62828; font-weight: normal;"><?php _e('An Finanzamt', 'cpsmartcrm'); ?></small>
+                            <?php elseif ($zahllast < 0) : ?>
+                                <br><small style="color: #2e7d32; font-weight: normal;"><?php _e('Vom Finanzamt', 'cpsmartcrm'); ?></small>
+                            <?php endif; ?>
+                        <?php else : ?>
+                            <span style="color: #999;">−</span>
+                            <br><small style="color: #999; font-weight: normal;"><?php _e('Kleinunternehmer', 'cpsmartcrm'); ?></small>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

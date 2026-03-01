@@ -120,9 +120,11 @@ if (isset($_POST['save_accounting_settings']) && check_admin_referer('accounting
 
 if (empty($acc_options['tax_rates'])) {
     $acc_options['tax_rates'] = array(
-        array('label' => __('Regulär (19%)', 'cpsmartcrm'), 'percentage' => 19, 'account' => '1600'),
-        array('label' => __('Ermäßigt (7%)', 'cpsmartcrm'), 'percentage' => 7, 'account' => '1601'),
-        array('label' => __('Null (0%)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1602'),
+        array('label' => __('Regulär (19%)', 'cpsmartcrm'), 'percentage' => 19, 'account' => '1776'),
+        array('label' => __('Ermäßigt (7%)', 'cpsmartcrm'), 'percentage' => 7, 'account' => '1771'),
+        array('label' => __('Null (0%)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1000'),
+        array('label' => __('Reverse Charge §13b', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1407'),
+        array('label' => __('Innergemeinschaftl. (IGE)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1404'),
     );
 }
 
@@ -175,15 +177,27 @@ $is_kleinunternehmer = isset($bus_options['crm_kleinunternehmer']) && $bus_optio
         
         <h3><?php _e('Steuersätze', 'cpsmartcrm'); ?></h3>
         <p style="color: #666; font-size: 13px;">
-            <?php _e('Definiere die Steuersätze, die in Deinen Rechnungen verwendet werden. Für Kleinunternehmer sind diese informativ.', 'cpsmartcrm'); ?>
+            <?php _e('Definiere die Steuersätze nach deutschem Recht. SKR04-Konten für korrekte Buchführung.', 'cpsmartcrm'); ?>
+            <br>
+            <strong><?php _e('Wichtig:', 'cpsmartcrm'); ?></strong> 
+            <?php _e('Für Kleinunternehmer sind diese informativ - sie können keine Umsatzsteuer erheben.', 'cpsmartcrm'); ?>
         </p>
+        
+        <?php if ($is_kleinunternehmer) : ?>
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
+                <p style="margin: 0; color: #856404; font-size: 13px;">
+                    <strong>ℹ️ <?php _e('Aktuell: Kleinunternehmer', 'cpsmartcrm'); ?></strong><br>
+                    <?php _e('Steuersätze sind auf 0% begrenzt, da Sie keine Umsatzsteuer berechnen dürfen.', 'cpsmartcrm'); ?>
+                </p>
+            </div>
+        <?php endif; ?>
 
         <table class="widefat" style="margin: 12px 0;">
             <thead>
                 <tr style="background: #f8f8f8;">
-                    <th style="padding: 10px;">Bezeichnung</th>
-                    <th style="padding: 10px; width: 120px;">Prozentsatz (%)</th>
-                    <th style="padding: 10px; width: 150px;">Konto (SKR04)</th>
+                    <th style="padding: 10px;"><?php _e('Bezeichnung', 'cpsmartcrm'); ?></th>
+                    <th style="padding: 10px; width: 120px;"><?php _e('Prozentsatz (%)', 'cpsmartcrm'); ?></th>
+                    <th style="padding: 10px; width: 150px;"><?php _e('Konto (SKR04)', 'cpsmartcrm'); ?></th>
                     <th style="padding: 10px; width: 50px;"></th>
                 </tr>
             </thead>
@@ -214,6 +228,44 @@ $is_kleinunternehmer = isset($bus_options['crm_kleinunternehmer']) && $bus_optio
                 <?php _e('+ Steuersatz hinzufügen', 'cpsmartcrm'); ?>
             </button>
         </p>
+
+        <!-- SKR04 Referenz Box -->
+        <div style="background: #e7f3ff; border-left: 4px solid #0073aa; padding: 15px; margin: 20px 0; border-radius: 4px;">
+            <h4 style="margin: 0 0 10px 0; color: #0073aa;">
+                📚 <?php _e('SKR04 Kontenrahmen - Wichtige Konten', 'cpsmartcrm'); ?>
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 12px;">
+                <div>
+                    <strong><?php _e('Umsatzsteuer (Einnahmen):', 'cpsmartcrm'); ?></strong><br>
+                    • 1776 - USt 19%<br>
+                    • 1771 - USt 7% (ermäßigt)<br>
+                    • 1773 - USt 5,5% (Land-/Forstwirtschaft)<br>
+                    • 1000 - Kasse/Bank (0%)
+                </div>
+                <div>
+                    <strong><?php _e('Vorsteuer (Ausgaben):', 'cpsmartcrm'); ?></strong><br>
+                    • 1406 - VSt 19%<br>
+                    • 1401 - VSt 7% (ermäßigt)<br>
+                    • 1404 - VSt innergemeinschaftl. Erwerb<br>
+                    • 1407 - VSt bei Reverse Charge (§13b)
+                </div>
+                <div>
+                    <strong><?php _e('Erlöskonten:', 'cpsmartcrm'); ?></strong><br>
+                    • 4400 - Erlöse 19%<br>
+                    • 4300 - Erlöse 7%<br>
+                    • 4120 - Erlöse im Ausland (0%)
+                </div>
+                <div>
+                    <strong><?php _e('Sonderregelungen:', 'cpsmartcrm'); ?></strong><br>
+                    • 1783 - Steuerfreie innergemeinschaftl. Lieferungen<br>
+                    • 1787 - Reverse Charge (§13b UStG)<br>
+                    • 1789 - Kleinunternehmer (§19 UStG)
+                </div>
+            </div>
+            <p style="margin: 10px 0 0 0; font-size: 11px; color: #666;">
+                <?php _e('Hinweis: Kontenrahmen sollten mit Ihrem Steuerberater abgestimmt werden.', 'cpsmartcrm'); ?>
+            </p>
+        </div>
 
         <hr style="margin: 20px 0;" />
 

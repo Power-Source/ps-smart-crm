@@ -263,6 +263,68 @@ class CRM_Options_Settings{
         ?>
         <div id="pages" class="col-md-12">
             <div id="pages-title"><h4 class="page-header" style="text-align:center"><?php _e('Geschäftliche Hauptdaten', 'wp-smart-crm-invoices-pro') ?><small style="font-size:small"> - <?php _e('Mit diesen Informationen wird bei der Plugin-Aktivierung Kontakt Nr. 1 (zur Selbsterledigung) erstellt und in Dokumenten (Rechnungen, Kostenvoranschläge usw.) verwendet.', 'wp-smart-crm-invoices-pro') ?></small></h4></div>
+            
+            <!-- Betriebstyp Auswahl (Auto-Konfiguration) -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 15px 0; color: white;">
+                    🏢 <?php _e('1. Betriebstyp auswählen', 'cpsmartcrm'); ?>
+                </h4>
+                <p style="margin: 0 0 15px 0; opacity: 0.95;">
+                    <?php _e('Das System wird automatisch konfiguriert. Änderungen sind später möglich.', 'cpsmartcrm'); ?>
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+                    <!-- Kleinunternehmer -->
+                    <label style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: all 0.3s;">
+                        <input type="radio" name="CRM_business_settings[business_type]" value="kleinunternehmer" 
+                               id="radio_kleinunternehmer"
+                               <?php checked(isset($options['business_type']) && $options['business_type'] === 'kleinunternehmer', true); ?>
+                               onchange="updateBusinessType(this)" style="margin-right: 8px;">
+                        <strong style="display: block; margin-top: 5px;">
+                            § 19 Kleinunternehmer
+                        </strong>
+                        <small style="display: block; margin-top: 5px; opacity: 0.9;">
+                            Umsatz &lt; 22.500€<br>
+                            Keine USt-ID nötig
+                        </small>
+                    </label>
+                    
+                    <!-- Standard Unternehmer -->
+                    <label style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: all 0.3s;">
+                        <input type="radio" name="CRM_business_settings[business_type]" value="standard" 
+                               id="radio_standard"
+                               <?php checked(isset($options['business_type']) && $options['business_type'] === 'standard', true); ?>
+                               onchange="updateBusinessType(this)" style="margin-right: 8px;">
+                        <strong style="display: block; margin-top: 5px;">
+                            Standard (mit USt-ID)
+                        </strong>
+                        <small style="display: block; margin-top: 5px; opacity: 0.9;">
+                            Umsatz ab 22.500€<br>
+                            Umsatzsteuer-ID erforderlich
+                        </small>
+                    </label>
+                    
+                    <!-- Freiberufler / Künstler -->
+                    <label style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: all 0.3s;">
+                        <input type="radio" name="CRM_business_settings[business_type]" value="freiberufler" 
+                               id="radio_freiberufler"
+                               <?php checked(isset($options['business_type']) && $options['business_type'] === 'freiberufler', true); ?>
+                               onchange="updateBusinessType(this)" style="margin-right: 8px;">
+                        <strong style="display: block; margin-top: 5px;">
+                            Freiberufler/Künstler
+                        </strong>
+                        <small style="display: block; margin-top: 5px; opacity: 0.9;">
+                            USt-Befreiung möglich<br>
+                            Einnahmen-Überschuss-Rechnung
+                        </small>
+                    </label>
+                </div>
+                
+                <div id="business_type_notice" style="margin-top: 12px; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 4px; font-size: 12px;">
+                    <!-- Wird dynamisch gefüllt -->
+                </div>
+            </div>
+            
             <div id="sortable-handlers">
 		<div class="item xml_mandatory">
 			<label><?php _e('Firmenname', 'wp-smart-crm-invoices-pro') ?> ( <span style="color:red"> * </span> )</label><br />
@@ -382,6 +444,46 @@ class CRM_Options_Settings{
 
 				// Parsley initialisieren
 				$("form").parsley();
+
+				// *** Betriebstyp Auto-Konfiguration ***
+				window.updateBusinessType = function(element) {
+					const businessType = $(element).val();
+					const notices = {
+						kleinunternehmer: '✓ <?php _e("Steuersätze deaktiviert • Keine USt angezeigt • Vereinfachte Buchhaltung", "cpsmartcrm"); ?>',
+						standard: '✓ <?php _e("Volle Umsatzsteuer-Besteuerung • SKR04 Integration • UStVA-Export", "cpsmartcrm"); ?>',
+						freiberufler: '✓ <?php _e("Einnahme-Überschuss-Rechnung • Optionale USt-Befreiung • EÜR-Export", "cpsmartcrm"); ?>'
+					};
+					
+					// Zeige Notice
+					$('#business_type_notice').html(notices[businessType] || '');
+					
+					// Auto-Configure Felder basierend auf Typ
+					if (businessType === 'kleinunternehmer') {
+						// Kleinunternehmer: USt-ID nicht erforderlich
+						$('#crm_kleinunternehmer').prop('checked', true);
+						$('#crm_business_ustid').removeAttr('required').removeAttr('data-parsley-required-message').val('').closest('.item').find('span').hide();
+						$('#crm_business_ustid').addClass('disabled-field').css('color', '#999');
+					} else if (businessType === 'standard') {
+						// Standard: dengan USt-ID
+						$('#crm_kleinunternehmer').prop('checked', false);
+						$('#crm_business_ustid').attr('required', 'required').attr('data-parsley-required-message', "<?php _e('Umsatzsteuer-ID ist erforderlich','cpsmartcrm')?>").removeClass('disabled-field').css('color', 'inherit');
+						$('#crm_business_ustid').closest('.item').find('span').show();
+					} else if (businessType === 'freiberufler') {
+						// Freiberufler: Optional
+						$('#crm_kleinunternehmer').prop('checked', false);
+						$('#crm_business_ustid').removeAttr('required').removeAttr('data-parsley-required-message').removeClass('disabled-field').css('color', 'inherit');
+						$('#crm_business_ustid').closest('.item').find('span').hide();
+					}
+					
+					// Refresh Parsley validation
+					$('form').parsley().validate();
+				}
+
+				// Initial setup beim Laden
+				const currentType = $('input[name="CRM_business_settings[business_type]"]:checked').val();
+				if (currentType) {
+					updateBusinessType($('input[name="CRM_business_settings[business_type]"]:checked'));
+				}
 
 				window.saveBusiness = function(e) {
 					var $form = $("form");

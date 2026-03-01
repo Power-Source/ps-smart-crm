@@ -8,15 +8,31 @@ if (!defined('ABSPATH')) exit;
 
 /**
  * Get configured tax rates from accounting settings
+ * Auto-adjusts for Kleinunternehmer if applicable
  */
 function WPsCRM_get_tax_rates() {
     $acc_options = get_option('CRM_accounting_settings', array());
+    $bus_options = get_option('CRM_business_settings', array());
+    $business_type = isset($bus_options['business_type']) ? $bus_options['business_type'] : 'standard';
+    
     $default_rates = array(
-        array('label' => __('Regulär (19%)', 'cpsmartcrm'), 'percentage' => 19, 'account' => '1600'),
-        array('label' => __('Ermäßigt (7%)', 'cpsmartcrm'), 'percentage' => 7, 'account' => '1601'),
-        array('label' => __('Null (0%)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1602'),
+        array('label' => __('Regulär (19%)', 'cpsmartcrm'), 'percentage' => 19, 'account' => '1776'),
+        array('label' => __('Ermäßigt (7%)', 'cpsmartcrm'), 'percentage' => 7, 'account' => '1771'),
+        array('label' => __('Null (0%)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1000'),
+        array('label' => __('Reverse Charge §13b', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1407'),
+        array('label' => __('Innergemeinschaftl. (IGE)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1404'),
     );
-    return !empty($acc_options['tax_rates']) ? $acc_options['tax_rates'] : $default_rates;
+    
+    $configured_rates = !empty($acc_options['tax_rates']) ? $acc_options['tax_rates'] : $default_rates;
+    
+    // Für Kleinunternehmer: Alle Sätze auf 0% setzen (informativ)
+    if ($business_type === 'kleinunternehmer') {
+        $configured_rates = array(
+            array('label' => __('Keine USt (§19 Kleinunternehmer)', 'cpsmartcrm'), 'percentage' => 0, 'account' => '1000'),
+        );
+    }
+    
+    return $configured_rates;
 }
 
 /**
