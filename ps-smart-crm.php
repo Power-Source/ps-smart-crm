@@ -121,6 +121,11 @@ if (file_exists(__DIR__ . '/inc/buchhaltung/modules/accounting-period-filters.ph
     require_once(__DIR__ . '/inc/buchhaltung/modules/accounting-period-filters.php');
 }
 
+// Load Frontend System (Shortcodes for Agent Dashboard & Customer Portal)
+if (file_exists(__DIR__ . '/inc/frontend/init.php')) {
+    require_once(__DIR__ . '/inc/frontend/init.php');
+}
+
 
 
 register_activation_hook( __FILE__, 'WPsCRM_crm_install' );

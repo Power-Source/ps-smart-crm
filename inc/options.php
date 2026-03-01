@@ -16,6 +16,7 @@ class CRM_Options_Settings{
     public $acc_settings ;
     public $adv_settings;
     public $ag_settings;
+    public $frontend_settings;
 	
 	/*
 	 * For easier overriding we declared the keys
@@ -31,6 +32,7 @@ class CRM_Options_Settings{
 	private $acc_settings_key = 'CRM_acc_settings';
 	private $adv_settings_key = 'CRM_adv_settings';
     private $ag_settings_key = 'CRM_ag_settings';
+    private $frontend_settings_key = 'CRM_frontend_settings';
 	private $plugin_options_key = 'smartcrm_settings';
 	private $plugin_settings_tabs = array();
 	
@@ -46,6 +48,7 @@ class CRM_Options_Settings{
 		add_action( 'admin_init', array( &$this, 'register_clients_settings' ) );
 		add_action( 'admin_init', array( &$this, 'register_documents_settings' ) );
 		add_action( 'admin_init', array( &$this, 'register_services_settings' ) ); 
+		add_action('admin_init', array( &$this, 'register_frontend_settings' ) );
 		add_action('admin_init', array( &$this, 'check_woo_addon' ),10 ); 
 		add_action('admin_init', array( &$this, 'check_accountability_addon' ),10 );
 		add_action('admin_init', array( &$this, 'check_advanced_addon' ),10 );
@@ -88,6 +91,7 @@ class CRM_Options_Settings{
 		$this->acc_settings = (array) get_option( $this->acc_settings_key );	
 		$this->adv_settings = (array) get_option( $this->adv_settings_key );  
         $this->ag_settings = (array) get_option( $this->ag_settings_key );
+        $this->frontend_settings = (array) get_option( $this->frontend_settings_key );
 		// Merge with defaults
 		$this->business_settings = array_merge( array(
 		'CRM_business_option' => 'Business value'
@@ -232,6 +236,14 @@ class CRM_Options_Settings{
 		add_settings_section( 'section_agents', __( 'Agenteneinstellungen', 'cpsmartcrm'), array( &$this, 'section_ag_desc' ), $this->ag_settings_key );
 		do_action('WPsCRM_add_ag_settings_fields');
 	}
+	
+	function register_frontend_settings(){
+		$this->plugin_settings_tabs[$this->frontend_settings_key] =  __( 'Frontend', 'cpsmartcrm');
+		register_setting( $this->frontend_settings_key, $this->frontend_settings_key );
+		add_settings_section( 'section_frontend', __( 'Frontend System - Intranet & Kundenzone', 'cpsmartcrm'), array( &$this, 'section_frontend_desc' ), $this->frontend_settings_key );
+		add_settings_field( 'frontend_pages', __( '', 'cpsmartcrm'), array( &$this, 'smartcrm_frontend_pages_setting' ), $this->frontend_settings_key, 'section_frontend' );
+	}
+	
 	/*
 	 * The following methods provide descriptions
 	 * for their respective sections, used as callbacks
@@ -246,6 +258,7 @@ class CRM_Options_Settings{
 	function section_acc_desc() { echo ''; }
 	function section_adv_desc() { echo ''; }
 	function section_ag_desc() { echo ''; }
+	function section_frontend_desc() { echo ''; }
 	/**
 	 * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	 * 
@@ -726,6 +739,91 @@ class CRM_Options_Settings{
 		echo $html;
 		return;
 	}
+	
+	/**
+	 * Frontend Pages Setting
+	 */
+	function smartcrm_frontend_pages_setting(){
+		$options = get_option( $this->frontend_settings_key );
+        ?>
+        <div style="background: white; border-radius: 8px; padding: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                
+                <!-- Intranet Page -->
+                <div>
+                    <h3 style="margin: 0 0 15px 0; color: #333; display: flex; align-items: center;">
+                        <span style="font-size: 24px; margin-right: 10px;">👥</span>
+                        <span><?php _e('Intranet-Seite (Agenten)', 'cpsmartcrm'); ?></span>
+                    </h3>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 13px;">
+                        <?php _e('WordPress-Seite für das Agent-Dashboard. Nur für angemeldete Mitarbeiter sichtbar.', 'cpsmartcrm'); ?>
+                    </p>
+                    
+                    <select name="CRM_frontend_settings[frontend_intranet_page]" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">— <?php _e('Seite auswählen', 'cpsmartcrm'); ?> —</option>
+                        <?php
+                        $pages = get_pages(array('number' => 100));
+                        $selected_intranet = $options['frontend_intranet_page'] ?? '';
+                        foreach ($pages as $page) {
+                            $selected = selected($selected_intranet, $page->ID, false);
+                            echo '<option value="' . esc_attr($page->ID) . '" ' . $selected . '>' . esc_html($page->post_title) . '</option>';
+                        }
+                        ?>
+                    </select>
+                    
+                    <div style="background: #e3f2fd; padding: 12px; border-radius: 4px; margin-top: 12px; border-left: 3px solid #2196F3;">
+                        <small style="color: #1565c0; font-weight: 500;">
+                            <strong>Shortcode:</strong><br>
+                            <code style="background: white; padding: 4px 6px; border-radius: 2px;">
+                                [crm_agent_dashboard]
+                            </code>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Customer Portal Page -->
+                <div>
+                    <h3 style="margin: 0 0 15px 0; color: #333; display: flex; align-items: center;">
+                        <span style="font-size: 24px; margin-right: 10px;">🏢</span>
+                        <span><?php _e('Kundenzone-Seite (Kunden)', 'cpsmartcrm'); ?></span>
+                    </h3>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 13px;">
+                        <?php _e('WordPress-Seite für das Kundenportal. Nur für angemeldete Kunden sichtbar.', 'cpsmartcrm'); ?>
+                    </p>
+                    
+                    <select name="CRM_frontend_settings[frontend_customer_page]" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">— <?php _e('Seite auswählen', 'cpsmartcrm'); ?> —</option>
+                        <?php
+                        $selected_customer = $options['frontend_customer_page'] ?? '';
+                        foreach ($pages as $page) {
+                            $selected = selected($selected_customer, $page->ID, false);
+                            echo '<option value="' . esc_attr($page->ID) . '" ' . $selected . '>' . esc_html($page->post_title) . '</option>';
+                        }
+                        ?>
+                    </select>
+                    
+                    <div style="background: #f3e5f5; padding: 12px; border-radius: 4px; margin-top: 12px; border-left: 3px solid #9c27b0;">
+                        <small style="color: #6a1b9a; font-weight: 500;">
+                            <strong>Shortcode:</strong><br>
+                            <code style="background: white; padding: 4px 6px; border-radius: 2px;">
+                                [crm_customer_portal]
+                            </code>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div style="background: #fff9c4; border: 1px solid #fbc02d; border-radius: 4px; padding: 15px; margin-top: 30px;">
+                <strong style="color: #f57f17;">💡 <?php _e('Hinweis:', 'cpsmartcrm'); ?></strong><br>
+                <small style="color: #333;">
+                    <?php _e('Die ausgewählten Seiten zeigen automatisch den richtigen Inhalt basierend auf den User-Rollen. Agenten sehen das Dashboard, Kunden das Portal. Nicht angemeldete Nutzer werden zum Login fordert.', 'cpsmartcrm'); ?>
+                </small>
+            </div>
+        </div>
+		<?php
+	}
+	
 	/**
 	 * Summary of smartcrm_company_logo
 	 * Select your Company Logo to be used in documents ( invoices, offers etc..)
