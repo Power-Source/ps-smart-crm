@@ -37,6 +37,7 @@
             height: 600,
             pageSize: 50,
             pageSizes: [20, 50, 100],
+            defaultOrder: null,
             sortable: true,
             filterable: true,
             groupable: false,
@@ -110,6 +111,10 @@
                     }
                 }
             };
+
+            if (Array.isArray(this.options.defaultOrder) && this.options.defaultOrder.length) {
+                dtConfig.order = this.options.defaultOrder;
+            }
 
             // AJAX DataSource
             if (this.options.dataSource) {

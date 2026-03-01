@@ -23,6 +23,12 @@ function WPsCRM_display_scheduler_list() {
     
     <label><?php _e('To','cpsmartcrm') ?>:</label>
     <input id="dateTo" type="text" style="width: 200px" />
+
+	<label><?php _e('Source','cpsmartcrm') ?>:</label>
+	<select id="sourceFilter" style="width: 220px; height: 32px;">
+		<option value="all"><?php _e('All sources','cpsmartcrm') ?></option>
+		<option value="terminmanager"><?php _e('Terminmanager','cpsmartcrm') ?></option>
+	</select>
     
     <button id="dateRange" class="button button-primary _flat"><?php _e('Filter','cpsmartcrm') ?></button>
     <button id="btn_reset" class="button button-secondary _flat"><?php _e('Reset filters','cpsmartcrm') ?></button>
@@ -107,6 +113,11 @@ function WPsCRM_display_scheduler_list() {
 		}
 		
 		try {
+			const getSourceFilter = function() {
+				const value = $('#sourceFilter').val();
+				return value ? value : 'all';
+			};
+
 			// Grid-Konfiguration
 			const gridOptions = {
 				currentUser: <?php echo intval($user_id) ?>,
@@ -119,13 +130,27 @@ function WPsCRM_display_scheduler_list() {
 			// Scheduler Grid für Appointments erstellen (tipo_agenda = 2)
 			const appointmentsGrid = PSCRM.createSchedulerGrid('#grid-appointments', {
 				...gridOptions,
-				tipo_agenda: 2
+				tipo_agenda: 2,
+				source: getSourceFilter()
 			});
 			
 			// Scheduler Grid für TODOs erstellen (tipo_agenda = 1)
 			const todosGrid = PSCRM.createSchedulerGrid('#grid-todos', {
 				...gridOptions,
-				tipo_agenda: 1
+				tipo_agenda: 1,
+				source: getSourceFilter()
+			});
+
+			$(document).on('change', '#sourceFilter', function() {
+				const source = getSourceFilter();
+				if (appointmentsGrid && appointmentsGrid.options) {
+					appointmentsGrid.options.source = source;
+					appointmentsGrid.reload();
+				}
+				if (todosGrid && todosGrid.options) {
+					todosGrid.options.source = source;
+					todosGrid.reload();
+				}
 			});
 			
 			// Tab-Wechsel Handler (ohne Bootstrap)

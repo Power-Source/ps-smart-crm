@@ -34,6 +34,7 @@
                 height: 500,
                 pageSize: 50,
                 pageSizes: [20, 50, 100],
+                defaultOrder: [[7, 'asc'], [5, 'desc']],
                 sortable: true,
                 filterable: true,
                 groupable: false,
@@ -70,20 +71,20 @@
                 },
                 {
                     field: 'tipo_agenda',
-                    title: 'Typ',
+                    title: 'Typ ↕',
                     width: '150px'
                 },
                 {
                     field: 'cliente',
-                    title: 'Kunde'
+                    title: 'Kunde ↕'
                 },
                 {
                     field: 'oggetto',
-                    title: 'Objekt'
+                    title: 'Objekt ↕'
                 },
                 {
                     field: 'data_scadenza',
-                    title: 'Ablauf',
+                    title: 'Ablauf ↕',
                     render: function(data, type, row) {
                         if (type === 'display' && data) {
                             return PSCRM.utils.formatDate(new Date(data), PSCRM.config.dateTimeFormat);
@@ -93,7 +94,33 @@
                 },
                 {
                     field: 'destinatari',
-                    title: 'Empfänger'
+                    title: 'Empfänger ↕'
+                },
+                {
+                    field: 'source_label',
+                    title: 'Quelle ↕',
+                    width: '140px',
+                    sortable: true,
+                    filterable: true,
+                    render: function(data, type, row) {
+                        if (type !== 'display') {
+                            return data || '';
+                        }
+
+                        const label = data || 'CRM';
+                        const isTerminmanager = row.source === 'terminmanager';
+                        const styles = isTerminmanager
+                            ? 'background:#e8f4fd;color:#0b5cad;border:1px solid #b9dbfb;'
+                            : 'background:#f3f4f6;color:#374151;border:1px solid #d1d5db;';
+
+                        return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;line-height:1.4;' + styles + '">' +
+                            String(label)
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/"/g, '&quot;') +
+                            '</span>';
+                    }
                 },
                 {
                     field: 'status',
@@ -233,6 +260,10 @@
             // tipo_agenda hinzufügen wenn in options vorhanden
             if (this.options.tipo_agenda) {
                 filterParams.type = this.options.tipo_agenda;
+            }
+
+            if (this.options.source && this.options.source !== 'all') {
+                filterParams.source = this.options.source;
             }
 
             // Datum-Filter hinzufügen wenn gesetzt

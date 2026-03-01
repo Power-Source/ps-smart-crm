@@ -66,32 +66,32 @@
                 },
                 {
                     field: 'firmenname',
-                    title: 'Firmenname',
+                    title: 'Firmenname ↕',
                     width: '150px'
                 },
                 {
                     field: 'adresse',
-                    title: 'Adresse',
+                    title: 'Adresse ↕',
                     width: '150px'
                 },
                 {
                     field: 'cod_fis',
-                    title: 'Steuernummer',
+                    title: 'Steuernummer ↕',
                     width: '100px'
                 },
                 {
                     field: 'p_iva',
-                    title: 'Ust.-ID',
+                    title: 'Ust.-ID ↕',
                     width: '100px'
                 },
                 {
                     field: 'telefono1',
-                    title: 'Telefon',
+                    title: 'Telefon ↕',
                     width: '80px'
                 },
                 {
                     field: 'email',
-                    title: 'Email',
+                    title: 'Email ↕',
                     width: '100px'
                 }
             ];
@@ -100,7 +100,7 @@
             if (this.options.showCategories) {
                 columns.push({
                     field: 'categoria',
-                    title: 'Kategorien',
+                    title: 'Kategorien ↕',
                     width: '100px'
                 });
             }
@@ -108,7 +108,7 @@
             if (this.options.showInterests) {
                 columns.push({
                     field: 'interessi',
-                    title: 'Interessen',
+                    title: 'Interessen ↕',
                     width: '100px'
                 });
             }
@@ -116,7 +116,7 @@
             if (this.options.showOrigin) {
                 columns.push({
                     field: 'provenienza',
-                    title: 'Quelle',
+                    title: 'Quelle ↕',
                     width: '100px'
                 });
             }

@@ -864,6 +864,7 @@ function WPsCRM_get_scheduler() {
     $options = get_option('CRM_general_settings');
     
     $tipo = isset($_REQUEST["type"]) ? intval($_REQUEST["type"]) : null;
+    $source = isset($_REQUEST["source"]) ? sanitize_key(wp_unslash($_REQUEST["source"])) : '';
     $view = isset($_REQUEST["view"]) ? $_REQUEST["view"] : null;
     $client = isset($_REQUEST["self_client"]) ? $_REQUEST["self_client"] : null;
     $current_user = wp_get_current_user();
@@ -892,6 +893,12 @@ function WPsCRM_get_scheduler() {
     if (!$client) {
       $where_parts[] = "a.fk_kunde <> 1";
     }
+
+    // Filter by source
+    if ('terminmanager' === $source) {
+      $like = '%Terminmanager%';
+      $where_parts[] = $wpdb->prepare("(k.provenienza LIKE %s OR a.annotazioni LIKE %s)", $like, $like);
+    }
     
     // User permissions: Show own items or if admin (TEMPORARILY DISABLED FOR DEBUG)
     // if (!$is_admin) {
@@ -902,7 +909,7 @@ function WPsCRM_get_scheduler() {
 
     $sql = "SELECT a.id_agenda, a.fk_kunde, a.fk_utenti_ins, a.oggetto, a.annotazioni, 
                    a.start_date, a.end_date, a.tipo_agenda, a.esito, a.fatto, a.priorita,
-                   k.name, k.nachname, k.firmenname
+             k.name, k.nachname, k.firmenname, k.provenienza
             FROM {$a_table} a
             LEFT JOIN {$k_table} k ON a.fk_kunde = k.ID_kunde
             WHERE {$where}
@@ -964,6 +971,22 @@ function WPsCRM_get_scheduler() {
           $status_label = __('Unbekannt', 'cpsmartcrm');
       }
       
+      $source_label = __('CRM', 'cpsmartcrm');
+      $source_slug  = 'crm';
+      $source_raw   = trim((string) ($r_scheduler->provenienza ?? ''));
+      $notes_raw    = (string) ($r_scheduler->annotazioni ?? '');
+
+      if (
+        stripos($source_raw, 'terminmanager') !== false ||
+        stripos($notes_raw, 'Terminmanager #') !== false
+      ) {
+        $source_label = 'Terminmanager';
+        $source_slug  = 'terminmanager';
+      } elseif ($source_raw !== '') {
+        $source_label = $source_raw;
+        $source_slug  = sanitize_title($source_raw);
+      }
+
       $arr_results[] = array(
         "id_agenda" => $r_scheduler->id_agenda,
         "cliente" => stripslashes($cliente),
@@ -978,6 +1001,8 @@ function WPsCRM_get_scheduler() {
         "tipo_agenda" => $tipo_label,
         "priorita" => $r_scheduler->priorita ?? 0,
         "class" => $rowClass . " " . strtolower(str_replace(" ", "_", $status_label)),
+        "source" => $source_slug,
+        "source_label" => $source_label,
         "destinatari" => "",
         "fk_utenti_ins" => $r_scheduler->fk_utenti_ins
       );

@@ -148,7 +148,7 @@
         
         return [
             {
-                title: '#',
+                title: '# ↕',
                 data: 'numero',
                 width: '80px',
                 render: function(data, type, row) {
@@ -162,7 +162,7 @@
                 }
             },
             {
-                title: 'Datum',
+                title: 'Datum ↕',
                 data: 'data',
                 width: '120px',
                 render: function(data) {
@@ -170,14 +170,14 @@
                 }
             },
             {
-                title: 'Kontakt',
+                title: 'Kontakt ↕',
                 data: 'firmenname',
                 render: function(data, type, row) {
                     return `<a href="${baseUrl}&p=kunde/form.php&ID=${row.fk_kunde}">${data}</a>`;
                 }
             },
             {
-                title: 'Summe',
+                title: 'Summe ↕',
                 data: 'totale',
                 width: '120px',
                 className: 'dt-right',
@@ -186,7 +186,7 @@
                 }
             },
             {
-                title: 'Verfallsdatum',
+                title: 'Verfallsdatum ↕',
                 data: 'scadenza',
                 width: '120px',
                 render: function(data) {
@@ -194,7 +194,7 @@
                 }
             },
             {
-                title: 'Bezahlt',
+                title: 'Bezahlt ↕',
                 data: 'stato',
                 width: '80px',
                 className: 'dt-center',
