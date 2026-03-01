@@ -271,6 +271,59 @@ function WPsCRM_crm_install() {
   KEY `deleted` (`deleted`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
 
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."agent_roles` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `role_slug` varchar(50) NOT NULL,
+  `role_name` varchar(100) NOT NULL,
+  `display_name` varchar(100) NOT NULL,
+  `department` varchar(100) NOT NULL DEFAULT '',
+  `icon` varchar(50) NOT NULL DEFAULT 'dashicons-businessman',
+  `show_in_contact` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT 'Im Frontend als Kontakt anzeigen',
+  `is_system_role` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'Systemrolle (nicht löschbar)',
+  `sort_order` int(10) unsigned NOT NULL DEFAULT '0',
+  `capabilities` text COMMENT 'JSON: zusätzliche Rechte',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `role_slug` (`role_slug`),
+  KEY `show_in_contact` (`show_in_contact`),
+  KEY `sort_order` (`sort_order`)
+) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
+
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."timetracking` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL COMMENT 'Agent User-ID',
+  `fk_kunde` int(10) unsigned DEFAULT NULL COMMENT 'Verknüpfung zu Kunde',
+  `fk_agenda` int(10) unsigned DEFAULT NULL COMMENT 'Verknüpfung zu Termin',
+  `project_name` varchar(200) NOT NULL DEFAULT '',
+  `task_description` text,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime NULL,
+  `duration_minutes` int(10) unsigned NOT NULL DEFAULT '0',
+  `hourly_rate` float(9,2) unsigned NOT NULL DEFAULT '0.00',
+  `total_amount` float(9,2) unsigned NOT NULL DEFAULT '0.00',
+  `is_billable` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `is_billed` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `fk_documenti` int(10) unsigned DEFAULT NULL COMMENT 'Verknüpfte Rechnung',
+  `status` varchar(20) NOT NULL DEFAULT 'running' COMMENT 'running, paused, completed',
+  `break_minutes` int(10) unsigned NOT NULL DEFAULT '0',
+  `location` varchar(100) NOT NULL DEFAULT '',
+  `tags` varchar(255),
+  `notes` text,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NULL,
+  `deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `fk_kunde` (`fk_kunde`),
+  KEY `fk_agenda` (`fk_agenda`),
+  KEY `start_time` (`start_time`),
+  KEY `status` (`status`),
+  KEY `is_billable` (`is_billable`),
+  KEY `is_billed` (`is_billed`),
+  KEY `deleted` (`deleted`)
+) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
+
     //print_r ($sql);//exit;
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	$namefile="error_setup_".date("YmdHi").".txt";
@@ -283,7 +336,86 @@ function WPsCRM_crm_install() {
 
 	if ( $msg =="")
 		update_option( 'WPsCRM_db_version', $WPsCRM_db_version );
+	
+	// Initialize CRM capabilities for admin
+	WPsCRM_init_capabilities();
+	
+	// Install default agent roles
+	WPsCRM_install_default_agent_roles();
 
+}
+
+/**
+ * Installiert Standard-Agent-Rollen beim ersten Setup
+ */
+function WPsCRM_install_default_agent_roles() {
+	global $wpdb;
+	$table = WPsCRM_TABLE . 'agent_roles';
+	
+	// Prüfen ob bereits Rollen existieren
+	$count = $wpdb->get_var( "SELECT COUNT(*) FROM $table" );
+	if ( $count > 0 ) {
+		return; // Bereits installiert
+	}
+	
+	$now = current_time( 'mysql' );
+	$default_roles = array(
+		array(
+			'role_slug' => 'chef',
+			'role_name' => 'Chef',
+			'display_name' => __( 'Geschäftsführung', 'cpsmartcrm' ),
+			'department' => __( 'Management', 'cpsmartcrm' ),
+			'icon' => 'dashicons-businessman',
+			'show_in_contact' => 1,
+			'is_system_role' => 1,
+			'sort_order' => 10,
+		),
+		array(
+			'role_slug' => 'buero',
+			'role_name' => 'Büro',
+			'display_name' => __( 'Büro / Verwaltung', 'cpsmartcrm' ),
+			'department' => __( 'Administration', 'cpsmartcrm' ),
+			'icon' => 'dashicons-building',
+			'show_in_contact' => 1,
+			'is_system_role' => 1,
+			'sort_order' => 20,
+		),
+		array(
+			'role_slug' => 'vertrieb',
+			'role_name' => 'Vertrieb',
+			'display_name' => __( 'Vertrieb / Sales', 'cpsmartcrm' ),
+			'department' => __( 'Vertrieb', 'cpsmartcrm' ),
+			'icon' => 'dashicons-groups',
+			'show_in_contact' => 1,
+			'is_system_role' => 0,
+			'sort_order' => 30,
+		),
+		array(
+			'role_slug' => 'lager',
+			'role_name' => 'Lager & Einkauf',
+			'display_name' => __( 'Lager und Einkauf', 'cpsmartcrm' ),
+			'department' => __( 'Logistik', 'cpsmartcrm' ),
+			'icon' => 'dashicons-store',
+			'show_in_contact' => 1,
+			'is_system_role' => 0,
+			'sort_order' => 40,
+		),
+		array(
+			'role_slug' => 'support',
+			'role_name' => 'Support',
+			'display_name' => __( 'Kundensupport', 'cpsmartcrm' ),
+			'department' => __( 'Service', 'cpsmartcrm' ),
+			'icon' => 'dashicons-sos',
+			'show_in_contact' => 1,
+			'is_system_role' => 0,
+			'sort_order' => 50,
+		),
+	);
+	
+	foreach ( $default_roles as $role ) {
+		$role['created_at'] = $now;
+		$wpdb->insert( $table, $role );
+	}
 }
 
 function WPsCRM_upgrade_taxonomies()
@@ -563,5 +695,21 @@ function WPsCRM_JSVar() {
     <script type="text/javascript">
         var columnsWidth='.json_encode($grids,JSON_UNESCAPED_SLASHES ).';
     </script>';
+	}
+}
+
+/**
+ * Initializes CRM capabilities for administrator role
+ */
+function WPsCRM_init_capabilities() {
+	$admin_role = get_role( 'administrator' );
+	
+	if ( ! $admin_role ) {
+		return;
+	}
+	
+	// Add CRM capability to admin
+	if ( ! $admin_role->has_cap( 'manage_crm' ) ) {
+		$admin_role->add_cap( 'manage_crm' );
 	}
 }

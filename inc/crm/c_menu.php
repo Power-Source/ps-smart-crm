@@ -121,9 +121,9 @@ $current_user = wp_get_current_user();
         <?php } ?>
 	</li>
 <?php
-	if(current_user_can('manage_options') ){
+if(current_user_can('manage_options') ){
 ?>
-    <li role="presentation"  <?php if(strstr($menu,"settings")) {?> class="active" <?php } ?>><a href="#" onclick="return false;"><i class="glyphicon  glyphicon-wrench"></i> <?php _e('Dienstprogramme','cpsmartcrm') ?></a>
+    <li role="presentation"  <?php if(strstr($menu,"settings") || strstr($menu,"agent-roles")) {?> class="active" <?php } ?>><a href="#" onclick="return false;"><i class="glyphicon  glyphicon-wrench"></i> <?php _e('Dienstprogramme','cpsmartcrm') ?></a>
         <ul>
             <li role="presentation" <?php if(strstr($menu,"settings")) {?> class="active" <?php } ?>><a href="<?php echo admin_url('admin.php?page=smartcrm_settings&tab=CRM_documents_settings')?>"><i class="glyphicon glyphicon-cog"></i> <?php _e('EINSTELLUNGEN','cpsmartcrm') ?>&raquo;</a></li>
 			<li role="presentation" ><a href="<?php echo admin_url('admin.php?page=smart-crm&p=register_invoices/form.php')?>"><i class="glyphicon glyphicon-transfer"></i> <?php _e('RECHNUNGEN REGISTRIEREN','cpsmartcrm') ?>&raquo;</a></li>
@@ -139,6 +139,20 @@ $current_user = wp_get_current_user();
         </a>
     </li>
 	<?php } ?>
+
+<!-- Agent-Rollen & Zeiterfassung für CRM Users -->
+<?php if(current_user_can('manage_crm') || current_user_can('manage_options')) { ?>
+	<li role="presentation"  <?php if(strstr($menu,"agent-roles") || strstr($menu,"timetracking")) {?> class="active" <?php } ?>><a href="#" onclick="return false;"><i class="glyphicon glyphicon-tasks"></i> <?php _e('CRM Management','cpsmartcrm') ?></a>
+	    <ul>
+	    	<?php if(current_user_can('manage_options')) { ?>
+	    		<li role="presentation" <?php if(strstr($menu,"agent-roles")) {?> class="active" <?php } ?>><a href="<?php echo admin_url('admin.php?page=smart-crm&p=agent-roles/list.php')?>"><i class="dashicons dashicons-groups"></i> <?php _e('AGENT-ROLLEN','cpsmartcrm') ?>&raquo;</a></li>
+	    	<?php } ?>
+	    	<?php if(current_user_can('manage_crm')) { ?>
+	    		<li role="presentation" <?php if(strstr($menu,"timetracking")) {?> class="active" <?php } ?>><a href="<?php echo admin_url('admin.php?page=smart-crm&p=timetracking/list.php')?>"><i class="dashicons dashicons-clock"></i> <?php _e('ZEITERFASSUNG','cpsmartcrm') ?>&raquo;</a></li>
+	    	<?php } ?>
+	    </ul>
+	</li>
+<?php } ?>
     
     <?php do_action('add_menu_items_b') //add custom menu items through file functions.php of your theme using hook 'add_menu_items_b'?>
 </ul>
