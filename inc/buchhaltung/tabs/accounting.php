@@ -31,10 +31,43 @@ $k_table = WPsCRM_TABLE . 'kunde';
 $i_table = WPsCRM_TABLE . 'incomes';
 $e_table = WPsCRM_TABLE . 'expenses';
 
-// Get current year and month
-$current_year = (int) ($_GET['year'] ?? date('Y'));
-$current_month = str_pad((int) ($_GET['month'] ?? date('m')), 2, '0', STR_PAD_LEFT);
-$period_str = $current_year . '-' . $current_month;
+// ===== NEUE LOGIK: Intelligente Zeitraum-Filterung =====
+
+$period_preset = isset($_GET['period']) ? sanitize_key($_GET['period']) : 'this_month';
+$custom_from = isset($_GET['custom_from']) ? sanitize_text_field($_GET['custom_from']) : '';
+$custom_to = isset($_GET['custom_to']) ? sanitize_text_field($_GET['custom_to']) : '';
+$show_comparison = isset($_GET['compare']) && $_GET['compare'] === '1';
+$compare_type = isset($_GET['compare_type']) ? sanitize_key($_GET['compare_type']) : 'previous';
+
+// Berechne aktuelle Periode
+$current_period = wpscrm_calculate_accounting_period($period_preset, $custom_from, $custom_to);
+$period_from = $current_period['from'];
+$period_to = $current_period['to'];
+$period_label = $current_period['label'];
+
+// Berechne Vergleichsperiode (wenn aktiviert)
+$comparison_period = null;
+$comparison_data = null;
+if ($show_comparison) {
+    $comparison_period = wpscrm_calculate_comparison_period($period_preset, $compare_type);
+    $comparison_data = wpscrm_get_accounting_period_data(
+        $comparison_period['from'],
+        $comparison_period['to'],
+        $is_own_accounting_scope ? $wpscrm_user_id : null
+    );
+}
+
+// Get current period data
+$current_data = wpscrm_get_accounting_period_data(
+    $period_from,
+    $period_to,
+    $is_own_accounting_scope ? $wpscrm_user_id : null
+);
+
+// Alte Variablen für Compatibility (werden aus den neuen Daten gefüllt)
+$period_str = substr($period_from, 0, 7);
+$current_year = (int)substr($period_from, 0, 4);
+$current_month = (int)substr($period_from, 5, 2);
 
 // Get business settings
 $is_kleinunternehmer = WPsCRM_is_kleinunternehmer();
@@ -422,44 +455,87 @@ usort($all_transactions, function($a, $b) {
 }
 </style>
 
-<!-- Period Selection -->
-<form method="get" action="" style="background: #f8f8f8; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
-    <input type="hidden" name="page" value="smart-crm" />
-    <input type="hidden" name="p" value="buchhaltung/index.php" />
-    <input type="hidden" name="accounting_tab" value="accounting" />
+<!-- Period Selection (REDESIGNED) -->
+<div style="background: #f8f8f8; padding: 16px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ddd;">
+    <form method="get" action="">
+        <input type="hidden" name="page" value="smart-crm" />
+        <input type="hidden" name="p" value="buchhaltung/index.php" />
+        <input type="hidden" name="accounting_tab" value="accounting" />
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end;">
-        <div>
-            <label for="year"><strong><?php _e('Zeitraum:', 'cpsmartcrm'); ?></strong></label>
-            <select id="period" name="period" class="widefat" style="display: none;">
-                <?php foreach ($available_months as $m) : ?>
-                    <option value="<?php echo esc_attr($m->period); ?>" <?php selected($period_str, $m->period); ?>>
-                        <?php 
-                        $date = DateTime::createFromFormat('Y-m', $m->period);
-                        echo esc_html($date->format('F Y'));
-                        ?>
+        <h3 style="margin-top: 0; margin-bottom: 16px;"><?php _e('Zeitraum & Vergleich', 'cpsmartcrm'); ?></h3>
+
+        <!-- Zeitdpicker Buttons / Voreinstellungen -->
+        <div style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <?php foreach (wpscrm_get_accounting_period_presets() as $preset_key => $preset_info) : ?>
+                <button type="button" 
+                        class="button <?php echo $period_preset === $preset_key ? 'button-primary' : ''; ?>" 
+                        onclick="setPreset('<?php echo esc_attr($preset_key); ?>')"
+                        style="<?php echo $period_preset === $preset_key ? 'font-weight: bold;' : ''; ?>">
+                    <?php echo esc_html($preset_info['icon'] . ' ' . $preset_info['label']); ?>
+                </button>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Custom Date Range (nur sichtbar wenn "Benutzerdef. Zeitraum" aktiv) -->
+        <div id="custom_range_section" style="display: <?php echo $period_preset === 'custom' ? 'block' : 'none'; ?>; margin-bottom: 16px; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 4px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end;">
+                <div>
+                    <label><strong><?php _e('Von:', 'cpsmartcrm'); ?></strong></label>
+                    <input type="date" name="custom_from" value="<?php echo esc_attr($custom_from ?: $period_from); ?>" 
+                           style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+                <div>
+                    <label><strong><?php _e('Bis:', 'cpsmartcrm'); ?></strong></label>
+                    <input type="date" name="custom_to" value="<?php echo esc_attr($custom_to ?: $period_to); ?>" 
+                           style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
+                </div>
+                <button type="submit" class="button button-primary"><?php _e('Anzeigen', 'cpsmartcrm'); ?></button>
+            </div>
+        </div>
+
+        <!-- Comparison Options -->
+        <div style="display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; padding-top: 12px; border-top: 1px solid #ddd;">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="compare" value="1" <?php checked($show_comparison, true); ?> 
+                       onchange="document.querySelector('form').submit();" />
+                <strong><?php _e('Mit Vorperiode vergleichen', 'cpsmartcrm'); ?></strong>
+            </label>
+
+            <?php if ($show_comparison) : ?>
+                <select name="compare_type" style="padding: 6px; border: 1px solid #ddd; border-radius: 4px;" onchange="document.querySelector('form').submit();">
+                    <option value="previous" <?php selected($compare_type, 'previous'); ?>>
+                        <?php _e('Vergleich: vorherige Periode', 'cpsmartcrm'); ?>
                     </option>
-                <?php endforeach; ?>
-            </select>
-            <input type="month" id="month_picker" value="<?php echo esc_attr($period_str); ?>" 
-                   style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; width: 100%;" />
+                    <option value="year_ago" <?php selected($compare_type, 'year_ago'); ?>>
+                        <?php _e('Vergleich: gleichzeitraum Vorjahr', 'cpsmartcrm'); ?>
+                    </option>
+                </select>
+            <?php endif; ?>
         </div>
-        <div style="text-align: right;">
-            <button type="submit" class="button button-primary">
-                <?php _e('Anzeigen', 'cpsmartcrm'); ?>
-            </button>
-        </div>
-    </div>
-</form>
+    </form>
+</div>
 
 <script>
-document.getElementById('month_picker').addEventListener('change', function() {
-    const parts = this.value.split('-');
-    document.querySelector('input[name="year"]').value = parts[0];
-    document.querySelector('input[name="month"]').value = parts[1];
-    this.form.submit();
-});
+function setPreset(preset) {
+    const form = document.querySelector('form');
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'period';
+    input.value = preset;
+    
+    // Hidden fields für custom bei Bedarf
+    document.querySelector('input[name="custom_from"]').parentElement.parentElement.style.display = 
+        preset === 'custom' ? 'block' : 'none';
+    
+    form.appendChild(input);
+    form.submit();
+}
 </script>
+
+<!-- PDF Export Button -->
+<div style="text-align: right; margin-bottom: 16px;">
+    <?php echo wpscrm_get_pdf_export_button($period_from, $period_to, sprintf(__('Buchhaltungs-Report %s', 'cpsmartcrm'), $period_label)); ?>
+</div>
 
 <!-- Messages -->
 <?php if (!empty($action_message)) : ?>
@@ -473,6 +549,181 @@ document.getElementById('month_picker').addEventListener('change', function() {
         <p><?php echo esc_html($action_error); ?></p>
     </div>
 <?php endif; ?>
+
+<!-- LIVEPROGNOSE SEKTION (DIE MAGIE) -->
+<?php 
+// Ruhle die Liveprognose (unbilled timetracking) innerhalb des selektierten Zeitraums
+$tt_summary = function_exists('wpscrm_get_timetracking_summary')
+    ? wpscrm_get_timetracking_summary($period_from, $period_to)
+    : array();
+
+$unbilled_hours = 0;
+$unbilled_amount = 0;
+foreach ($tt_summary as $agent_row) {
+    $unbilled_hours += round($agent_row->total_minutes / 60, 2);
+    
+    $billing_info = function_exists('wpscrm_get_agent_billing_info')
+        ? wpscrm_get_agent_billing_info($agent_row->user_id)
+        : (object) array('hourly_rate' => 0, 'rate_type' => 'net');
+    
+    $agent_hours = round($agent_row->total_minutes / 60, 2);
+    $agent_amount = ('gross' === $billing_info->rate_type)
+        ? $agent_hours * $billing_info->hourly_rate
+        : $agent_hours * $billing_info->hourly_rate * 1.19;
+    
+    $unbilled_amount += $agent_amount;
+}
+
+// Get pending billing drafts
+$billing_table = WPsCRM_TABLE . 'billing_drafts';
+$draft_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM $billing_table WHERE status = 'draft'");
+$drafts_total = (float)$wpdb->get_var("SELECT COALESCE(SUM(amount_gross), 0) FROM $billing_table WHERE status = 'draft'");
+?>
+
+<?php if (count($tt_summary) > 0 || $draft_count > 0) : ?>
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 20px; margin-bottom: 20px; color: #fff;">
+    <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 18px;">
+        ⚡ <?php esc_html_e('Liveprognose: Unbilled Revenue', 'cpsmartcrm'); ?>
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px;">
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">
+                <?php esc_html_e('Offene Arbeitszeiten', 'cpsmartcrm'); ?>
+            </div>
+            <div style="font-size: 24px; font-weight: bold;">
+                <?php echo esc_html(round($unbilled_hours, 2)); ?> h
+            </div>
+            <div style="font-size: 11px; opacity: 0.8; margin-top: 4px;">
+                <?php esc_html_e('noch nicht erfasst', 'cpsmartcrm'); ?>
+            </div>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px;">
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">
+                <?php esc_html_e('Geschätzter Betrag', 'cpsmartcrm'); ?>
+            </div>
+            <div style="font-size: 24px; font-weight: bold;">
+                € <?php echo esc_html(number_format($unbilled_amount, 2, ',', '.')); ?>
+            </div>
+            <div style="font-size: 11px; opacity: 0.8; margin-top: 4px;">
+                <?php esc_html_e('brutto', 'cpsmartcrm'); ?>
+            </div>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px;">
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">
+                <?php esc_html_e('Abrechnungsentwürfe', 'cpsmartcrm'); ?>
+            </div>
+            <div style="font-size: 24px; font-weight: bold;">
+                <?php echo esc_html($draft_count); ?> (€ <?php echo esc_html(number_format($drafts_total, 2, ',', '.')); ?>)
+            </div>
+            <div style="font-size: 11px; opacity: 0.8; margin-top: 4px;">
+                <?php printf(esc_html__('ausstehende Buchung', 'cpsmartcrm')); ?>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+        <a href="admin.php?page=smart-crm&p=buchhaltung/index.php&accounting_tab=abrechnung" 
+           style="color: #fff; text-decoration: none; font-weight: bold; display: inline-flex; gap: 6px; align-items: center;">
+            → <?php esc_html_e('Zur Abrechnung & Verwaltung', 'cpsmartcrm'); ?>
+        </a>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Vergleichssektion (wenn aktiv) -->
+<?php if ($show_comparison && $comparison_data) : ?>
+    <?php $comparison = wpscrm_compare_accounting_periods($current_data, $comparison_data); ?>
+    <div style="background: #f0f8ff; border: 2px solid #0073aa; border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+        <h4 style="margin-top: 0;"><?php _e('📊 Vergleich mit Vorperiode', 'cpsmartcrm'); ?></h4>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="padding: 12px; background: #fff; border-radius: 4px; border-left: 4px solid #0073aa;">
+                <small style="color: #666;"><?php _e('Einnahmen-Veränderung', 'cpsmartcrm'); ?></small><br />
+                <strong><?php echo wpscrm_format_percentage_change(
+                    $comparison['changes']['income']['percent'],
+                    $comparison['changes']['income']['direction']
+                ); ?></strong><br />
+                <small style="color: #999;">
+                    <?php echo esc_html(WPsCRM_format_currency($comparison['changes']['income']['absolute'])); ?>
+                </small>
+            </div>
+            
+            <div style="padding: 12px; background: #fff; border-radius: 4px; border-left: 4px solid #ff6b00;">
+                <small style="color: #666;"><?php _e('Ausgaben-Veränderung', 'cpsmartcrm'); ?></small><br />
+                <strong><?php echo wpscrm_format_percentage_change(
+                    $comparison['changes']['expenses']['percent'],
+                    $comparison['changes']['expenses']['direction']
+                ); ?></strong><br />
+                <small style="color: #999;">
+                    <?php echo esc_html(WPsCRM_format_currency($comparison['changes']['expenses']['absolute'])); ?>
+                </small>
+            </div>
+            
+            <div style="padding: 12px; background: #fff; border-radius: 4px; border-left: 4px solid #46b450;">
+                <small style="color: #666;"><?php _e('Gewinn-Veränderung', 'cpsmartcrm'); ?></small><br />
+                <strong><?php echo wpscrm_format_percentage_change(
+                    $comparison['changes']['profit']['percent'],
+                    $comparison['changes']['profit']['direction']
+                ); ?></strong><br />
+                <small style="color: #999;">
+                    <?php echo esc_html(WPsCRM_format_currency($comparison['changes']['profit']['absolute'])); ?>
+                </small>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+<!-- Mapping der neuen Daten zu alten Variablen für Compatibility -->
+<?php
+// Aus $current_data extrahieren
+$total_invoices_count = $current_data['income']['invoices_count'];
+$total_revenue_net = $current_data['income']['total_net'];
+$total_revenue_tax = $current_data['income']['total_tax'];
+$total_revenue = $current_data['income']['total_gross'];
+$total_expenses_net = $current_data['expenses']['net'];
+$total_expenses_tax = $current_data['expenses']['tax'];
+$total_expenses = $current_data['expenses']['gross'];
+$profit_loss_net = $current_data['summary']['profit_net'];
+$profit_loss_tax = $total_revenue_tax - $total_expenses_tax;
+$profit_loss = $current_data['summary']['profit_gross'];
+
+// Expenses data
+$expenses_data = (object) array(
+    'count' => $current_data['expenses']['count'],
+    'net' => $current_data['expenses']['net'],
+    'tax' => $current_data['expenses']['tax'],
+    'gross' => $current_data['expenses']['gross'],
+);
+
+// Income by source (aus Kategorien)
+$global_wpdb = $wpdb;
+$income_by_source = $global_wpdb->get_results($global_wpdb->prepare(
+    "SELECT 
+        kategoria as source,
+        COUNT(*) as count,
+        COALESCE(SUM(imponibile), 0) as net,
+        COALESCE(SUM(imposta), 0) as tax,
+        COALESCE(SUM(totale), 0) as total
+     FROM " . WPsCRM_TABLE . "incomes
+     WHERE data BETWEEN %s AND %s
+     GROUP BY kategoria
+     ORDER BY total DESC",
+    $period_from,
+    $period_to
+), ARRAY_A);
+
+// Rechnungsquelle Übersicht (vereinfacht)
+$sources_breakdown = array(
+    'CRM' => array(
+        'count' => $current_data['income']['invoices_count'],
+        'net' => $current_data['income']['invoices_net'],
+        'total' => $current_data['income']['invoices_gross'],
+    ),
+);
+?>
 
 <?php if ($is_own_accounting_scope) : ?>
     <div class="notice notice-warning" style="margin-bottom: 20px;">

@@ -62,6 +62,14 @@ $recent_invoices = $wpdb->get_results(
 
 <p><?php _e('Zentrale Übersicht für Einnahmen, Rechnungen und Buchungen.', 'cpsmartcrm'); ?></p>
 
+<?php 
+// Smart Financial Alerts anzeigen
+if (function_exists('wpscrm_check_financial_alerts')) {
+    $alerts = wpscrm_check_financial_alerts($is_own_accounting_scope ? $wpscrm_user_id : null);
+    echo wpscrm_render_financial_alerts($alerts);
+}
+?>
+
 <?php if ($is_kleinunternehmer) : ?>
     <div style="background: #fff3cd; padding: 12px; border-radius: 4px; margin-bottom: 16px; border: 1px solid #ffc107;">
         <strong>ℹ️ <?php _e('Status: Kleinunternehmer nach §19 UStG', 'cpsmartcrm'); ?></strong><br />

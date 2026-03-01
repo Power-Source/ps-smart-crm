@@ -25,6 +25,19 @@ require_once dirname(__FILE__) . '/helpers.php';
 // Load timetracking integration module
 require_once dirname(__FILE__) . '/modules/timetracking-integration.php';
 
+// Load accounting period filters module
+require_once dirname(__FILE__) . '/modules/accounting-period-filters.php';
+
+// Load chart and analytics modules
+require_once dirname(__FILE__) . '/modules/accounting-charts.php';
+require_once dirname(__FILE__) . '/modules/cashflow-analytics.php';
+
+// Load PDF export module
+require_once dirname(__FILE__) . '/modules/accounting-pdf-export.php';
+
+// Load smart financial alerts module
+require_once dirname(__FILE__) . '/modules/smart-financial-alerts.php';
+
 // Available tabs
 $available_tabs = array(
     'dashboard' => array(
@@ -68,6 +81,13 @@ $available_tabs = array(
         'file' => 'tabs/integrations.php',
         'capability' => 'manage_crm',
         'permission_key' => 'can_edit_accounting',
+    ),
+    'analytics' => array(
+        'label' => __('Analytics', 'cpsmartcrm'),
+        'icon' => 'glyphicon glyphicon-stats',
+        'file' => 'tabs/analytics.php',
+        'capability' => 'manage_crm',
+        'permission_key' => 'can_view_accounting',
     ),
     'statistics' => array(
         'label' => __('Statistik', 'cpsmartcrm'),
