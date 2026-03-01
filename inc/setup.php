@@ -347,6 +347,9 @@ function WPsCRM_crm_install() {
 	// Install default agent roles
 	WPsCRM_install_default_agent_roles();
 
+  // Standard: Seitenadmin automatisch als Chef setzen (wenn noch keine Rolle vorhanden)
+  WPsCRM_assign_site_admin_as_chef();
+
 }
 
 /**
@@ -420,6 +423,90 @@ function WPsCRM_install_default_agent_roles() {
 		$role['created_at'] = $now;
 		$wpdb->insert( $table, $role );
 	}
+}
+
+/**
+ * Setzt den jeweiligen Seitenadmin (admin_email) als Chef, falls noch keine CRM-Rolle vorhanden ist.
+ * Multisite-schonend: nimmt den Admin der aktuellen Site und überschreibt niemals bestehende Rollen.
+ */
+function WPsCRM_assign_site_admin_as_chef() {
+  global $wpdb;
+
+  $table = WPsCRM_TABLE . 'agent_roles';
+  $chef_exists = (int) $wpdb->get_var( $wpdb->prepare(
+    "SELECT COUNT(*) FROM {$table} WHERE role_slug = %s",
+    'chef'
+  ) );
+
+  if ( ! $chef_exists ) {
+    return;
+  }
+
+  $admin_email = get_option( 'admin_email' );
+  if ( empty( $admin_email ) ) {
+    return;
+  }
+
+  $site_admin_user = get_user_by( 'email', $admin_email );
+  if ( ! ( $site_admin_user instanceof WP_User ) ) {
+    return;
+  }
+
+  if ( ! user_can( $site_admin_user->ID, 'manage_options' ) ) {
+    return;
+  }
+
+  $current_role = get_user_meta( $site_admin_user->ID, '_crm_agent_role', true );
+  if ( ! empty( $current_role ) ) {
+    return;
+  }
+
+  if ( function_exists( 'wpscrm_apply_role_permissions' ) ) {
+    wpscrm_apply_role_permissions( $site_admin_user->ID, 'chef' );
+  } else {
+    update_user_meta( $site_admin_user->ID, '_crm_agent_role', 'chef' );
+  }
+}
+
+/**
+ * Stellt sicher, dass es nur genau einen Chef gibt.
+ * Bei Mehrfachzuweisung bleibt bevorzugt der Seitenadmin (admin_email), sonst der erste gefundene Chef.
+ */
+function WPsCRM_enforce_single_chef_assignment() {
+  if ( ! function_exists( 'wpscrm_remove_role_permissions' ) ) {
+    return;
+  }
+
+  $chef_user_ids = get_users( array(
+    'fields' => 'ID',
+    'meta_key' => '_crm_agent_role',
+    'meta_value' => 'chef',
+  ) );
+
+  if ( count( $chef_user_ids ) <= 1 ) {
+    return;
+  }
+
+  $keep_user_id = 0;
+  $admin_email = get_option( 'admin_email' );
+  if ( ! empty( $admin_email ) ) {
+    $admin_user = get_user_by( 'email', $admin_email );
+    if ( $admin_user instanceof WP_User && in_array( (int) $admin_user->ID, array_map( 'intval', $chef_user_ids ), true ) ) {
+      $keep_user_id = (int) $admin_user->ID;
+    }
+  }
+
+  if ( ! $keep_user_id ) {
+    $keep_user_id = (int) reset( $chef_user_ids );
+  }
+
+  foreach ( $chef_user_ids as $chef_user_id ) {
+    $chef_user_id = (int) $chef_user_id;
+    if ( $chef_user_id === $keep_user_id ) {
+      continue;
+    }
+    wpscrm_remove_role_permissions( $chef_user_id, 'chef' );
+  }
 }
 
 function WPsCRM_upgrade_taxonomies()
@@ -513,6 +600,8 @@ function WPsCRM_update_db_check() {
         WPsCRM_upgrade_taxonomies();
     }
   WPsCRM_migrate_accounting_created_by();
+	WPsCRM_assign_site_admin_as_chef();
+  WPsCRM_enforce_single_chef_assignment();
 }
 add_action( 'plugins_loaded', 'WPsCRM_update_db_check',13 );
 

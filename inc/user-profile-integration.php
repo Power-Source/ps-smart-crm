@@ -16,10 +16,75 @@ function wpscrm_get_agent_role_by_slug( $role_slug ) {
 	return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE role_slug = %s", $role_slug ) );
 }
 
+function wpscrm_get_chef_user_ids() {
+	return get_users( array(
+		'fields' => 'ID',
+		'meta_key' => '_crm_agent_role',
+		'meta_value' => 'chef',
+	) );
+}
+
+function wpscrm_get_site_admin_user_id() {
+	$admin_email = get_option( 'admin_email' );
+	if ( empty( $admin_email ) ) {
+		return 0;
+	}
+
+	$admin_user = get_user_by( 'email', $admin_email );
+	if ( ! ( $admin_user instanceof WP_User ) ) {
+		return 0;
+	}
+
+	return (int) $admin_user->ID;
+}
+
+function wpscrm_can_manage_chef_role( $actor_user_id = 0 ) {
+	$actor_user_id = (int) $actor_user_id;
+	if ( ! $actor_user_id ) {
+		$actor_user_id = get_current_user_id();
+	}
+	if ( ! $actor_user_id ) {
+		return false;
+	}
+
+	$current_role = get_user_meta( $actor_user_id, '_crm_agent_role', true );
+	if ( 'chef' === $current_role ) {
+		return true;
+	}
+
+	$chef_user_ids = wpscrm_get_chef_user_ids();
+	if ( empty( $chef_user_ids ) ) {
+		return (int) wpscrm_get_site_admin_user_id() === $actor_user_id;
+	}
+
+	return false;
+}
+
 function wpscrm_apply_role_permissions( $user_id, $role_slug ) {
 	$role = wpscrm_get_agent_role_by_slug( $role_slug );
 	if ( ! $role ) {
 		return false;
+	}
+
+	// Chef darf nur einmal vergeben sein
+	if ( 'chef' === $role_slug ) {
+		$existing_chef_ids = get_users( array(
+			'fields' => 'ID',
+			'meta_key' => '_crm_agent_role',
+			'meta_value' => 'chef',
+		) );
+
+		foreach ( $existing_chef_ids as $existing_chef_id ) {
+			if ( (int) $existing_chef_id === (int) $user_id ) {
+				continue;
+			}
+
+			if ( function_exists( 'wpscrm_remove_role_permissions' ) ) {
+				wpscrm_remove_role_permissions( (int) $existing_chef_id, 'chef' );
+			} else {
+				delete_user_meta( (int) $existing_chef_id, '_crm_agent_role' );
+			}
+		}
 	}
 
 	$caps = json_decode( $role->capabilities, true );
@@ -115,6 +180,11 @@ function wpscrm_save_user_agent_role_field( $user_id ) {
 	}
 
 	$role_slug = sanitize_key( $_POST['crm_agent_role'] );
+	$current_target_role = get_user_meta( $user_id, '_crm_agent_role', true );
+	if ( ( 'chef' === $role_slug || 'chef' === $current_target_role ) && ! wpscrm_can_manage_chef_role( get_current_user_id() ) ) {
+		return false;
+	}
+
 	if ( empty( $role_slug ) ) {
 		wpscrm_remove_role_permissions( $user_id );
 		return true;

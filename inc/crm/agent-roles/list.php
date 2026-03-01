@@ -35,11 +35,22 @@ $default_caps = array(
 	'can_edit_customers' => 0,
 );
 
+$current_user_id = get_current_user_id();
+$current_user_can_manage_chef = function_exists( 'wpscrm_can_manage_chef_role' )
+	? wpscrm_can_manage_chef_role( $current_user_id )
+	: ( 'chef' === get_user_meta( $current_user_id, '_crm_agent_role', true ) );
+
 if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'crm_agent_roles' ) ) {
 	switch ( sanitize_key( $_POST['action'] ) ) {
 		case 'add':
+				$new_role_slug = sanitize_key( $_POST['role_slug'] ?? '' );
+				if ( 'chef' === $new_role_slug && ! $current_user_can_manage_chef ) {
+					echo '<div class="alert alert-danger">' . esc_html__( 'Nur der aktuelle Chef darf die Chef-Rolle anlegen oder bearbeiten.', 'cpsmartcrm' ) . '</div>';
+					break;
+				}
+
 			$caps = array(
-				'wp_role' => sanitize_key( $_POST['wp_role'] ?? '' ),
+					'wp_role' => ( 'chef' === $new_role_slug ) ? '' : sanitize_key( $_POST['wp_role'] ?? '' ),
 				'can_view_accounting' => isset( $_POST['can_view_accounting'] ) ? 1 : 0,
 				'can_edit_accounting' => isset( $_POST['can_edit_accounting'] ) ? 1 : 0,
 				'can_view_all_accounting' => isset( $_POST['can_view_all_accounting'] ) ? 1 : 0,
@@ -53,7 +64,7 @@ if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_
 			$wpdb->insert(
 				$table,
 				array(
-					'role_slug' => sanitize_key( $_POST['role_slug'] ?? '' ),
+						'role_slug' => $new_role_slug,
 					'role_name' => sanitize_text_field( $_POST['role_name'] ?? '' ),
 					'display_name' => sanitize_text_field( $_POST['display_name'] ?? '' ),
 					'department' => sanitize_text_field( $_POST['department'] ?? '' ),
@@ -74,8 +85,15 @@ if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_
 			$role_id = absint( $_POST['role_id'] ?? 0 );
 			$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
 			if ( $role ) {
+					$updated_role_slug = sanitize_key( $_POST['role_slug'] ?? '' );
+					$is_chef_role = ( 'chef' === $role->role_slug || 'chef' === $updated_role_slug );
+					if ( $is_chef_role && ! $current_user_can_manage_chef ) {
+						echo '<div class="alert alert-danger">' . esc_html__( 'Nur der aktuelle Chef darf die Chef-Rolle bearbeiten oder übergeben.', 'cpsmartcrm' ) . '</div>';
+						break;
+					}
+
 				$caps = array(
-					'wp_role' => sanitize_key( $_POST['wp_role'] ?? '' ),
+						'wp_role' => $is_chef_role ? '' : sanitize_key( $_POST['wp_role'] ?? '' ),
 					'can_view_accounting' => isset( $_POST['can_view_accounting'] ) ? 1 : 0,
 					'can_edit_accounting' => isset( $_POST['can_edit_accounting'] ) ? 1 : 0,
 					'can_view_all_accounting' => isset( $_POST['can_view_all_accounting'] ) ? 1 : 0,
@@ -89,7 +107,7 @@ if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_
 				$wpdb->update(
 					$table,
 					array(
-						'role_slug' => sanitize_key( $_POST['role_slug'] ?? '' ),
+							'role_slug' => $updated_role_slug,
 						'role_name' => sanitize_text_field( $_POST['role_name'] ?? '' ),
 						'display_name' => sanitize_text_field( $_POST['display_name'] ?? '' ),
 						'department' => sanitize_text_field( $_POST['department'] ?? '' ),
@@ -124,6 +142,17 @@ if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_
 			$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
 			if ( $role ) {
 				$selected_users = isset( $_POST['role_users'] ) ? array_map( 'absint', (array) $_POST['role_users'] ) : array();
+
+					if ( 'chef' === $role->role_slug && ! $current_user_can_manage_chef ) {
+						echo '<div class="alert alert-danger">' . esc_html__( 'Nur der aktuelle Chef darf die Chef-Rolle übergeben.', 'cpsmartcrm' ) . '</div>';
+						break;
+					}
+
+					if ( 'chef' === $role->role_slug && 1 !== count( $selected_users ) ) {
+						echo '<div class="alert alert-danger">' . esc_html__( 'Für Chef muss genau ein Benutzer ausgewählt sein.', 'cpsmartcrm' ) . '</div>';
+						break;
+					}
+
 				$all_users = get_users( array( 'fields' => 'ID' ) );
 
 				foreach ( $all_users as $user_id ) {
@@ -173,6 +202,9 @@ if ( $edit_role ) {
 		}
 	}
 }
+
+$is_editing_chef = $edit_role && 'chef' === $edit_role->role_slug;
+$chef_edit_locked = $is_editing_chef && ! $current_user_can_manage_chef;
 ?>
 
 <style>
@@ -228,6 +260,13 @@ if ( $edit_role ) {
 			<?php endif; ?>
 
 			<div class="form-grid">
+				<?php if ( $chef_edit_locked ) : ?>
+					<div class="form-row full-row">
+						<div class="notice notice-warning inline" style="margin:0;">
+							<p><?php esc_html_e( 'Die Chef-Rolle darf nur vom aktuellen Chef bearbeitet und übergeben werden.', 'cpsmartcrm' ); ?></p>
+						</div>
+					</div>
+				<?php endif; ?>
 				<div class="form-row">
 					<label><?php esc_html_e( 'Rollen-Slug (eindeutig)', 'cpsmartcrm' ); ?> *</label>
 					<input type="text" name="role_slug" pattern="[a-z0-9_-]+" required value="<?php echo esc_attr( $edit_role ? $edit_role->role_slug : '' ); ?>" <?php echo ( $edit_role && (int) $edit_role->is_system_role ) ? 'readonly' : ''; ?> />
@@ -262,7 +301,7 @@ if ( $edit_role ) {
 
 				<div class="form-row">
 					<label><?php esc_html_e( 'WordPress-Rolle (optional)', 'cpsmartcrm' ); ?></label>
-					<select name="wp_role">
+					<select name="wp_role" <?php disabled( $is_editing_chef ); ?>>
 						<option value=""><?php esc_html_e( '— Keine zusätzliche WP-Rolle —', 'cpsmartcrm' ); ?></option>
 						<?php
 						global $wp_roles;
@@ -271,7 +310,11 @@ if ( $edit_role ) {
 						}
 						?>
 					</select>
-					<small><?php esc_html_e( 'Wird bei Benutzerzuweisung automatisch gesetzt.', 'cpsmartcrm' ); ?></small>
+					<?php if ( $is_editing_chef ) : ?>
+						<small><?php esc_html_e( 'Chef betrifft nur CRM-Rechte, keine WP-Rollenzuweisung.', 'cpsmartcrm' ); ?></small>
+					<?php else : ?>
+						<small><?php esc_html_e( 'Wird bei Benutzerzuweisung automatisch gesetzt.', 'cpsmartcrm' ); ?></small>
+					<?php endif; ?>
 				</div>
 
 				<div class="form-row full-row">
@@ -316,7 +359,9 @@ if ( $edit_role ) {
 				</div>
 
 				<div class="form-row full-row">
-					<button type="submit" class="button button-primary"><?php echo $edit_role ? esc_html__( 'Rolle aktualisieren', 'cpsmartcrm' ) : esc_html__( 'Rolle erstellen', 'cpsmartcrm' ); ?></button>
+					<?php if ( ! $chef_edit_locked ) : ?>
+						<button type="submit" class="button button-primary"><?php echo $edit_role ? esc_html__( 'Rolle aktualisieren', 'cpsmartcrm' ) : esc_html__( 'Rolle erstellen', 'cpsmartcrm' ); ?></button>
+					<?php endif; ?>
 					<?php if ( $edit_role ) : ?>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php' ) ); ?>" class="button"><?php esc_html_e( 'Abbrechen', 'cpsmartcrm' ); ?></a>
 					<?php endif; ?>
@@ -325,9 +370,12 @@ if ( $edit_role ) {
 		</form>
 	</div>
 
-	<?php if ( $edit_role ) : ?>
+	<?php if ( $edit_role && ! $chef_edit_locked ) : ?>
 		<div class="role-users-box">
 			<h3 style="margin-top:0;"><?php esc_html_e( 'Benutzer dieser Rolle verwalten', 'cpsmartcrm' ); ?></h3>
+			<?php if ( $is_editing_chef ) : ?>
+				<p style="margin:8px 0 12px;color:#8a6d00;"><strong><?php esc_html_e( 'Hinweis:', 'cpsmartcrm' ); ?></strong> <?php esc_html_e( 'Wenn du einen anderen Benutzer als Chef speicherst, verliert der bisherige Chef diese Rolle sofort.', 'cpsmartcrm' ); ?></p>
+			<?php endif; ?>
 			<form method="post">
 				<?php wp_nonce_field( 'crm_agent_roles' ); ?>
 				<input type="hidden" name="action" value="assign_users" />
@@ -353,6 +401,10 @@ if ( $edit_role ) {
 				</div>
 				<p style="margin-top:12px;"><button type="submit" class="button button-primary"><?php esc_html_e( 'Benutzer speichern', 'cpsmartcrm' ); ?></button></p>
 			</form>
+		</div>
+	<?php elseif ( $edit_role && $is_editing_chef ) : ?>
+		<div class="role-users-box">
+			<p style="margin:0;color:#b32d2e;"><?php esc_html_e( 'Nur der aktuelle Chef darf die Chef-Rolle an andere Benutzer übergeben.', 'cpsmartcrm' ); ?></p>
 		</div>
 	<?php endif; ?>
 
@@ -414,7 +466,11 @@ if ( $edit_role ) {
 							<?php if ( (int) $role->show_in_contact ) : ?><span class="badge badge-contact"><?php esc_html_e( 'Kontakt', 'cpsmartcrm' ); ?></span><?php endif; ?>
 						</td>
 						<td>
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php&edit=' . $role->id ) ); ?>" class="button button-small"><?php esc_html_e( 'Bearbeiten', 'cpsmartcrm' ); ?></a>
+							<?php if ( 'chef' !== $role->role_slug || $current_user_can_manage_chef ) : ?>
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php&edit=' . $role->id ) ); ?>" class="button button-small"><?php esc_html_e( 'Bearbeiten', 'cpsmartcrm' ); ?></a>
+							<?php else : ?>
+								<button type="button" class="button button-small" disabled><?php esc_html_e( 'Nur Chef', 'cpsmartcrm' ); ?></button>
+							<?php endif; ?>
 							<?php if ( ! (int) $role->is_system_role ) : ?>
 								<form method="post" style="display:inline;" onsubmit="return confirm('<?php echo esc_js( __( 'Wirklich löschen?', 'cpsmartcrm' ) ); ?>');">
 									<?php wp_nonce_field( 'crm_agent_roles' ); ?>
