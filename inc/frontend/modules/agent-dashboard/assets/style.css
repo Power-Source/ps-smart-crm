@@ -32,6 +32,104 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* ========================================
+   CRM BUTTON STYLES
+   ======================================== */
+.crm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.crm-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.crm-btn-primary {
+    background: #2196F3;
+    color: white;
+}
+
+.crm-btn-primary:hover {
+    background: #1976D2;
+}
+
+.crm-btn-success {
+    background: #4CAF50;
+    color: white;
+}
+
+.crm-btn-success:hover {
+    background: #388E3C;
+}
+
+.crm-btn-warning {
+    background: #FF9800;
+    color: white;
+}
+
+.crm-btn-warning:hover {
+    background: #F57C00;
+}
+
+.crm-btn-info {
+    background: #00BCD4;
+    color: white;
+}
+
+.crm-btn-info:hover {
+    background: #0097A7;
+}
+
+.crm-btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.crm-btn-secondary:hover {
+    background: #bdbdbd;
+}
+
+.crm-btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.crm-dashboard-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.crm-card-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.crm-card-header h3 {
+    margin: 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.crm-card-body {
+    /* Body styles */
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .crm-agent-dashboard {
@@ -42,3 +140,4 @@
         padding: 15px !important;
     }
 }
+

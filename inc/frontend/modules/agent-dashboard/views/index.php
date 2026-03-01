@@ -50,6 +50,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             
         </div>
 
+        <!-- Kundenverwaltung (Full Width) -->
+        <?php include __DIR__ . '/customers.php'; ?>
+
         <?php 
         // PM Inbox Container - wenn PM aktiv ist
         $pm_integration = null;

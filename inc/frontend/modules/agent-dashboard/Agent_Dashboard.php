@@ -27,11 +27,19 @@ class WPsCRM_Agent_Dashboard extends WPsCRM_Module_Base {
 		// Load AJAX Handlers
 		require_once $this->base_path . '/handlers.php';
 		
-		// Register AJAX actions
+		// Register AJAX actions - Timetracking & Tasks
 		add_action( 'wp_ajax_crm_agent_get_stats', 'wpscrm_agent_dashboard_get_stats' );
 		add_action( 'wp_ajax_crm_agent_get_active_tracking', 'wpscrm_agent_dashboard_get_active_tracking' );
 		add_action( 'wp_ajax_crm_agent_timetracking_toggle', 'wpscrm_agent_dashboard_timetracking_toggle' );
 		add_action( 'wp_ajax_crm_toggle_task', 'wpscrm_agent_dashboard_toggle_task' );
+		
+		// Register AJAX actions - Kundenmanagement
+		add_action( 'wp_ajax_crm_get_agent_customers', 'wpscrm_agent_dashboard_get_customers' );
+		add_action( 'wp_ajax_crm_get_customer_data', 'wpscrm_agent_dashboard_get_customer_data' );
+		add_action( 'wp_ajax_crm_frontend_save_customer', 'wpscrm_agent_dashboard_save_customer' );
+		add_action( 'wp_ajax_crm_get_customer_documents', 'wpscrm_agent_dashboard_get_customer_documents' );
+		add_action( 'wp_ajax_crm_get_customer_contacts', 'wpscrm_agent_dashboard_get_customer_contacts' );
+		add_action( 'wp_ajax_crm_frontend_save_contact', 'wpscrm_agent_dashboard_save_contact' );
 	}
 	
 	/**
