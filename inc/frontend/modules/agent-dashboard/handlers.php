@@ -649,3 +649,272 @@ function wpscrm_agent_dashboard_save_contact() {
         ) );
     }
 }
+
+/**
+ * AJAX Handler: Create Todo
+ */
+function wpscrm_agent_dashboard_create_todo() {
+    check_ajax_referer( 'crm_task_management', 'nonce' );
+    
+    $user_id = get_current_user_id();
+    if ( ! $user_id ) {
+        wp_send_json_error( array( 'message' => 'Nicht authentifiziert' ) );
+    }
+    
+    global $wpdb;
+    $agenda_table = WPsCRM_TABLE . 'agenda';
+    
+    $subject = sanitize_text_field( $_POST['subject'] ?? '' );
+    $start_date = sanitize_text_field( $_POST['start_date'] ?? '' );
+    $end_date = sanitize_text_field( $_POST['end_date'] ?? '' );
+    $priority = intval( $_POST['priority'] ?? 2 );
+    $notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
+    
+    if ( empty( $subject ) || empty( $start_date ) ) {
+        wp_send_json_error( array( 'message' => 'Betreff und Startdatum erforderlich' ) );
+    }
+    
+    // Validate dates
+    if ( ! strtotime( $start_date ) || ! strtotime( $end_date ) ) {
+        wp_send_json_error( array( 'message' => 'Ungültige Datumsangabe' ) );
+    }
+    
+    $importante = ( $priority === 3 ) ? 'Si' : 'No';
+    $urgente = ( $priority === 3 ) ? 'Si' : 'No';
+    
+    $data = array(
+        'tipo_agenda'      => 1,  // 1 = Todo
+        'oggetto'          => $subject,
+        'data_agenda'      => date( 'Y-m-d', strtotime( $start_date ) ),
+        'start_date'       => date( 'Y-m-d', strtotime( $start_date ) ),
+        'end_date'         => date( 'Y-m-d', strtotime( $end_date ) ),
+        'annotazioni'      => $notes,
+        'priorita'         => $priority,
+        'importante'       => $importante,
+        'urgente'          => $urgente,
+        'fatto'            => 1,  // 1 = Todo, 2 = Completed
+        'fk_utenti_des'    => $user_id,
+        'fk_utenti_ins'    => $user_id,
+        'data_inserimento' => current_time( 'mysql' ),
+    );
+    
+    $result = $wpdb->insert( $agenda_table, $data );
+    
+    if ( ! $result ) {
+        wp_send_json_error( array( 'message' => 'Fehler beim Erstellen des Todos' ) );
+    }
+    
+    wp_send_json_success( array(
+        'message' => 'Todo erstellt',
+        'task_id' => $wpdb->insert_id
+    ) );
+}
+add_action( 'wp_ajax_crm_create_todo', 'wpscrm_agent_dashboard_create_todo' );
+
+/**
+ * AJAX Handler: Create Appointment
+ */
+function wpscrm_agent_dashboard_create_appointment() {
+    check_ajax_referer( 'crm_task_management', 'nonce' );
+    
+    $user_id = get_current_user_id();
+    if ( ! $user_id ) {
+        wp_send_json_error( array( 'message' => 'Nicht authentifiziert' ) );
+    }
+    
+    global $wpdb;
+    $agenda_table = WPsCRM_TABLE . 'agenda';
+    
+    $subject = sanitize_text_field( $_POST['subject'] ?? '' );
+    $date = sanitize_text_field( $_POST['date'] ?? '' );
+    $time = sanitize_text_field( $_POST['time'] ?? '' );
+    $priority = intval( $_POST['priority'] ?? 2 );
+    $notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
+    
+    if ( empty( $subject ) || empty( $date ) || empty( $time ) ) {
+        wp_send_json_error( array( 'message' => 'Betreff, Datum und Uhrzeit erforderlich' ) );
+    }
+    
+    // Validate date and time
+    if ( ! strtotime( $date ) || ! strtotime( $time ) ) {
+        wp_send_json_error( array( 'message' => 'Ungültige Datumsangabe oder Uhrzeit' ) );
+    }
+    
+    $importante = ( $priority === 3 ) ? 'Si' : 'No';
+    $urgente = ( $priority === 3 ) ? 'Si' : 'No';
+    
+    $data = array(
+        'tipo_agenda'      => 2,  // 2 = Appointment
+        'oggetto'          => $subject,
+        'data_agenda'      => date( 'Y-m-d', strtotime( $date ) ),
+        'start_date'       => date( 'Y-m-d', strtotime( $date ) ),
+        'end_date'         => date( 'Y-m-d', strtotime( $date ) ),
+        'ora_agenda'       => date( 'H:i:s', strtotime( $time ) ),
+        'annotazioni'      => $notes,
+        'priorita'         => $priority,
+        'importante'       => $importante,
+        'urgente'          => $urgente,
+        'fatto'            => 1,  // 1 = Scheduled, 2 = Completed
+        'fk_utenti_des'    => $user_id,
+        'fk_utenti_ins'    => $user_id,
+        'data_inserimento' => current_time( 'mysql' ),
+    );
+    
+    $result = $wpdb->insert( $agenda_table, $data );
+    
+    if ( ! $result ) {
+        wp_send_json_error( array( 'message' => 'Fehler beim Erstellen des Termins' ) );
+    }
+    
+    wp_send_json_success( array(
+        'message' => 'Termin erstellt',
+        'task_id' => $wpdb->insert_id
+    ) );
+}
+add_action( 'wp_ajax_crm_create_appointment', 'wpscrm_agent_dashboard_create_appointment' );
+
+/**
+ * AJAX Handler: Create Quotation (Angebot)
+ */
+function wpscrm_agent_dashboard_create_quotation() {
+    check_ajax_referer( 'crm_customer_management', 'nonce' );
+    
+    $user_id = get_current_user_id();
+    if ( ! $user_id ) {
+        wp_send_json_error( array( 'message' => 'Nicht authentifiziert' ) );
+    }
+    
+    global $wpdb;
+    $dokumente_table = WPsCRM_TABLE . 'dokumente';
+    $kunde_table = WPsCRM_TABLE . 'kunde';
+    
+    $customer_id = intval( $_POST['customer_id'] ?? 0 );
+    $date = sanitize_text_field( $_POST['date'] ?? '' );
+    $due_date = sanitize_text_field( $_POST['due_date'] ?? '' );
+    $subject = sanitize_text_field( $_POST['subject'] ?? '' );
+    $amount = floatval( $_POST['amount'] ?? 0 );
+    $notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
+    
+    if ( ! $customer_id || empty( $date ) || empty( $due_date ) || empty( $subject ) ) {
+        wp_send_json_error( array( 'message' => 'Erforderliche Felder fehlen' ) );
+    }
+    
+    // Verify customer ownership
+    $customer_check = $wpdb->get_var( $wpdb->prepare(
+        "SELECT ID_kunde FROM {$kunde_table} WHERE ID_kunde = %d AND agente = %d AND eliminato = 0",
+        $customer_id,
+        $user_id
+    ) );
+    
+    if ( ! $customer_check ) {
+        wp_send_json_error( array( 'message' => 'Kein Zugriff auf diesen Kunden' ) );
+    }
+    
+    // Validate dates
+    if ( ! strtotime( $date ) || ! strtotime( $due_date ) ) {
+        wp_send_json_error( array( 'message' => 'Ungültige Datumsangabe' ) );
+    }
+    
+    $data = array(
+        'tipo'               => 1,  // 1 = Quotation/Angebot
+        'data'               => date( 'Y-m-d', strtotime( $date ) ),
+        'data_scadenza'      => date( 'Y-m-d', strtotime( $due_date ) ),
+        'oggetto'            => $subject,
+        'fk_kunde'           => $customer_id,
+        'fk_utenti_ins'      => $user_id,
+        'totale_imponibile'  => $amount,
+        'totale_imposta'     => 0,
+        'totale'             => $amount,
+        'annotazioni'        => $notes,
+        'data_inserimento'   => current_time( 'mysql' ),
+    );
+    
+    $result = $wpdb->insert( $dokumente_table, $data );
+    
+    if ( ! $result ) {
+        wp_send_json_error( array( 'message' => 'Fehler beim Erstellen des Angebots' ) );
+    }
+    
+    wp_send_json_success( array(
+        'message' => 'Angebot erstellt',
+        'document_id' => $wpdb->insert_id
+    ) );
+}
+add_action( 'wp_ajax_crm_create_quotation', 'wpscrm_agent_dashboard_create_quotation' );
+
+/**
+ * AJAX Handler: Create Invoice (Rechnung)
+ */
+function wpscrm_agent_dashboard_create_invoice() {
+    check_ajax_referer( 'crm_customer_management', 'nonce' );
+    
+    $user_id = get_current_user_id();
+    if ( ! $user_id ) {
+        wp_send_json_error( array( 'message' => 'Nicht authentifiziert' ) );
+    }
+    
+    global $wpdb;
+    $dokumente_table = WPsCRM_TABLE . 'dokumente';
+    $kunde_table = WPsCRM_TABLE . 'kunde';
+    
+    $customer_id = intval( $_POST['customer_id'] ?? 0 );
+    $date = sanitize_text_field( $_POST['date'] ?? '' );
+    $due_date = sanitize_text_field( $_POST['due_date'] ?? '' );
+    $subject = sanitize_text_field( $_POST['subject'] ?? '' );
+    $netto = floatval( $_POST['netto'] ?? 0 );
+    $mwst_percent = floatval( $_POST['mwst_percent'] ?? 19 );
+    $payment_method = sanitize_text_field( $_POST['payment_method'] ?? '' );
+    $notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
+    
+    if ( ! $customer_id || empty( $date ) || empty( $due_date ) || empty( $subject ) ) {
+        wp_send_json_error( array( 'message' => 'Erforderliche Felder fehlen' ) );
+    }
+    
+    // Verify customer ownership
+    $customer_check = $wpdb->get_var( $wpdb->prepare(
+        "SELECT ID_kunde FROM {$kunde_table} WHERE ID_kunde = %d AND agente = %d AND eliminato = 0",
+        $customer_id,
+        $user_id
+    ) );
+    
+    if ( ! $customer_check ) {
+        wp_send_json_error( array( 'message' => 'Kein Zugriff auf diesen Kunden' ) );
+    }
+    
+    // Validate dates
+    if ( ! strtotime( $date ) || ! strtotime( $due_date ) ) {
+        wp_send_json_error( array( 'message' => 'Ungültige Datumsangabe' ) );
+    }
+    
+    // Calculate tax
+    $tax_amount = $netto * ( $mwst_percent / 100 );
+    $gross = $netto + $tax_amount;
+    
+    $data = array(
+        'tipo'               => 2,  // 2 = Invoice/Rechnung
+        'data'               => date( 'Y-m-d', strtotime( $date ) ),
+        'data_scadenza'      => date( 'Y-m-d', strtotime( $due_date ) ),
+        'oggetto'            => $subject,
+        'fk_kunde'           => $customer_id,
+        'fk_utenti_ins'      => $user_id,
+        'totale_imponibile'  => $netto,
+        'totale_imposta'     => $tax_amount,
+        'totale'             => $gross,
+        'modalita_pagamento' => $payment_method,
+        'annotazioni'        => $notes,
+        'data_inserimento'   => current_time( 'mysql' ),
+    );
+    
+    $result = $wpdb->insert( $dokumente_table, $data );
+    
+    if ( ! $result ) {
+        wp_send_json_error( array( 'message' => 'Fehler beim Erstellen der Rechnung' ) );
+    }
+    
+    wp_send_json_success( array(
+        'message' => 'Rechnung erstellt',
+        'document_id' => $wpdb->insert_id
+    ) );
+}
+add_action( 'wp_ajax_crm_create_invoice', 'wpscrm_agent_dashboard_create_invoice' );
+

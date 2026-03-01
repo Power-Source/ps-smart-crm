@@ -87,8 +87,8 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
                         
                         <div class="crm-form-row">
                             <div class="crm-form-group">
-                                <label><?php _e('Datum', 'cpsmartcrm'); ?></label>
-                                <input type="text" name="einstiegsdatum" id="einstiegsdatum" class="crm-input crm-datepicker" value="<?php echo date('d.m.Y'); ?>">
+                                <label><?php _e('Datum Erstkontakt', 'cpsmartcrm'); ?></label>
+                                <input type="text" name="einstiegsdatum" id="einstiegsdatum" class="crm-input crm-datepicker" value="<?php echo date('d.m.Y'); ?>"
                             </div>
                             <div class="crm-form-group">
                                 <label><?php _e('Land', 'cpsmartcrm'); ?> <span class="required">*</span></label>
@@ -304,10 +304,101 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
             <div class="crm-customers-tab-content" id="customers-docs">
                 <input type="hidden" id="selected-customer-id-docs" value="0">
                 
-                <button type="button" class="crm-btn crm-btn-secondary btn-back-to-list">
-                    <i class="dashicons dashicons-arrow-left-alt"></i>
-                    <?php _e('Zurück zur Liste', 'cpsmartcrm'); ?>
-                </button>
+                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                    <button type="button" class="crm-btn crm-btn-secondary btn-back-to-list">
+                        <i class="dashicons dashicons-arrow-left-alt"></i>
+                        <?php _e('Zurück zur Liste', 'cpsmartcrm'); ?>
+                    </button>
+                    <button type="button" class="crm-btn crm-btn-success" id="btn-add-quotation">
+                        <i class="dashicons dashicons-plus"></i>
+                        📋 <?php _e('Neues Angebot', 'cpsmartcrm'); ?>
+                    </button>
+                    <button type="button" class="crm-btn crm-btn-success" id="btn-add-invoice">
+                        <i class="dashicons dashicons-plus"></i>
+                        💰 <?php _e('Neue Rechnung', 'cpsmartcrm'); ?>
+                    </button>
+                </div>
+
+                <!-- Quotation Form (Hidden) -->
+                <form id="form-add-quotation" style="display: none; background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <h4><?php _e('Neues Angebot', 'cpsmartcrm'); ?></h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Datum</label>
+                            <input type="date" name="quotation-date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" value="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Gültig bis</label>
+                            <input type="date" name="quotation-due-date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Betreff/Beschreibung</label>
+                        <input type="text" name="quotation-subject" placeholder="z.B. Angebot für Projektarbeit..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Gesamtbetrag</label>
+                        <input type="number" name="quotation-amount" step="0.01" placeholder="0.00" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Notizen</label>
+                        <textarea name="quotation-notes" placeholder="Zusätzliche Informationen..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; min-height: 60px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="crm-btn crm-btn-sm crm-btn-success" style="cursor: pointer;">✅ Speichern</button>
+                        <button type="button" class="crm-btn crm-btn-sm crm-btn-secondary btn-cancel-doc-form" style="cursor: pointer;">Abbrechen</button>
+                    </div>
+                    <input type="hidden" name="nonce" value="<?php echo $nonce_customer; ?>">
+                </form>
+
+                <!-- Invoice Form (Hidden) -->
+                <form id="form-add-invoice" style="display: none; background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <h4><?php _e('Neue Rechnung', 'cpsmartcrm'); ?></h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Rechnungsdatum</label>
+                            <input type="date" name="invoice-date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" value="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Fälligkeitsdatum</label>
+                            <input type="date" name="invoice-due-date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Betreff</label>
+                        <input type="text" name="invoice-subject" placeholder="z.B. Rechnung für Leistungen im September..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Nettobetrag</label>
+                            <input type="number" name="invoice-netto" step="0.01" placeholder="0.00" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" required>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">MwSt. %</label>
+                            <input type="number" name="invoice-mwst" step="0.01" value="19" placeholder="19" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Zahlungsart</label>
+                        <select name="invoice-payment-method" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                            <option value="">-- Bitte wählen --</option>
+                            <option value="Banküberweisung">Banküberweisung</option>
+                            <option value="Kreditkarte">Kreditkarte</option>
+                            <option value="Lastschrift">Lastschrift</option>
+                            <option value="Barzahlung">Barzahlung</option>
+                            <option value="PayPal">PayPal</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;">Notizen</label>
+                        <textarea name="invoice-notes" placeholder="Zusätzliche Informationen, Zahlungsbedingungen..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; min-height: 60px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="crm-btn crm-btn-sm crm-btn-success" style="cursor: pointer;">✅ Speichern</button>
+                        <button type="button" class="crm-btn crm-btn-sm crm-btn-secondary btn-cancel-doc-form" style="cursor: pointer;">Abbrechen</button>
+                    </div>
+                    <input type="hidden" name="nonce" value="<?php echo $nonce_customer; ?>">
+                </form>
 
                 <div class="crm-docs-container" style="margin-top:20px;">
                     <h4><?php _e('Angebote', 'cpsmartcrm'); ?> (Preventivi)</h4>
@@ -965,13 +1056,9 @@ jQuery(document).ready(function($) {
                 if (response.success && response.data) {
                     var docs = response.data;
                     
-                    var quotes = docs.filter(function(d){ return d.tipo == 1; });
-                    var invoices = docs.filter(function(d){ return d.tipo == 2; });
-                    var proforma = docs.filter(function(d){ return d.tipo == 3; });
-                    
-                    renderDocuments(quotes, '#docs-quotes-list');
-                    renderDocuments(invoices, '#docs-invoices-list');
-                    renderDocuments(proforma, '#docs-proforma-list');
+                    renderDocuments(docs.quotations || [], '#docs-quotes-list');
+                    renderDocuments(docs.invoices || [], '#docs-invoices-list');
+                    renderDocuments(docs.proforma || [], '#docs-proforma-list');
                 }
             }
         });
@@ -1112,16 +1199,133 @@ jQuery(document).ready(function($) {
     });
     
     // =========================
+    // DOKUMENT FORMULARE
+    // =========================
+    
+    // Toggle Quotation Form
+    $('#btn-add-quotation').on('click', function() {
+        const $form = $('#form-add-quotation');
+        if ($form.is(':visible')) {
+            $form.slideUp(200);
+        } else {
+            $('#form-add-invoice').slideUp(200);
+            $form.slideDown(200);
+            $form.find('input[name="quotation-date"]').focus();
+        }
+    });
+    
+    // Toggle Invoice Form
+    $('#btn-add-invoice').on('click', function() {
+        const $form = $('#form-add-invoice');
+        if ($form.is(':visible')) {
+            $form.slideUp(200);
+        } else {
+            $('#form-add-quotation').slideUp(200);
+            $form.slideDown(200);
+            $form.find('input[name="invoice-date"]').focus();
+        }
+    });
+    
+    // Cancel Document Form
+    $('.btn-cancel-doc-form').on('click', function() {
+        $(this).closest('form').slideUp(200);
+    });
+    
+    // Submit Quotation Form
+    $('#form-add-quotation').on('submit', function(e) {
+        e.preventDefault();
+        
+        const customerId = $('#selected-customer-id-docs').val();
+        if (!customerId) {
+            alert('❌ Fehler: Kein Kunde ausgewählt');
+            return;
+        }
+        
+        $.ajax({
+            url: crmAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'crm_create_quotation',
+                nonce: $('input[name="nonce"]').val(),
+                customer_id: customerId,
+                date: $('input[name="quotation-date"]').val(),
+                due_date: $('input[name="quotation-due-date"]').val(),
+                subject: $('input[name="quotation-subject"]').val(),
+                amount: $('input[name="quotation-amount"]').val(),
+                notes: $('textarea[name="quotation-notes"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('✅ Angebot erstellt!');
+                    $('#form-add-quotation')[0].reset();
+                    $('#form-add-quotation').slideUp(200);
+                    loadCustomerDocuments(customerId);
+                } else {
+                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                }
+            }
+        });
+    });
+    
+    // Submit Invoice Form
+    $('#form-add-invoice').on('submit', function(e) {
+        e.preventDefault();
+        
+        const customerId = $('#selected-customer-id-docs').val();
+        if (!customerId) {
+            alert('❌ Fehler: Kein Kunde ausgewählt');
+            return;
+        }
+        
+        $.ajax({
+            url: crmAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'crm_create_invoice',
+                nonce: $('input[name="nonce"]').val(),
+                customer_id: customerId,
+                date: $('input[name="invoice-date"]').val(),
+                due_date: $('input[name="invoice-due-date"]').val(),
+                subject: $('input[name="invoice-subject"]').val(),
+                netto: $('input[name="invoice-netto"]').val(),
+                mwst_percent: $('input[name="invoice-mwst"]').val(),
+                payment_method: $('select[name="invoice-payment-method"]').val(),
+                notes: $('textarea[name="invoice-notes"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('✅ Rechnung erstellt!');
+                    $('#form-add-invoice')[0].reset();
+                    $('#form-add-invoice').slideUp(200);
+                    loadCustomerDocuments(customerId);
+                } else {
+                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                }
+            }
+        });
+    });
+    
+    // =========================
     // DATEPICKER (jQuery UI)
     // =========================
-    if (typeof $.fn.datepicker !== 'undefined') {
-        $('.crm-datepicker').datepicker({
-            dateFormat: 'dd.mm.yy',
-            changeMonth: true,
-            changeYear: true,
-            yearRange: '1900:+10'
-        });
+    function initDatepickers() {
+        if (typeof $.fn.datepicker !== 'undefined') {
+            $('.crm-datepicker').not('.hasDatepicker').datepicker({
+                dateFormat: 'dd.mm.yy',
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '1900:+10'
+            });
+        }
     }
+    initDatepickers();
+    
+    // Re-init datepickers wenn Tabs angezeigt werden
+    $(document).on('click', '.crm-customers-tab-btn', function() {
+        setTimeout(function() {
+            initDatepickers();
+        }, 100);
+    });
     
     // =========================
     // SELECT2 (wenn verfügbar)
