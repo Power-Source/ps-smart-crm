@@ -2478,9 +2478,9 @@ function WPsCRM_get_customer_pk($table) {
 
 // Get unique values from a customer field (categoria, provenienza, interessi) for SELECT2 dropdowns
 // This loads actual database values instead of relying on Post taxonomies
-// Load customer category/interest/origin terms from WordPress taxonomies
+// Load customer category/interest/origin terms from ClassicPress taxonomies
 function WPsCRM_get_customer_field_values($field_name) {
-  // Map field names to WordPress taxonomy names
+  // Map field names to ClassicPress taxonomy names
   $taxonomy_map = array(
     'categoria' => 'WPsCRM_customersCat',
     'provenienza' => 'WPsCRM_customersProv',
@@ -2506,11 +2506,11 @@ function WPsCRM_get_customer_field_values($field_name) {
   return $terms;
 }
 
-// Load customer's assigned terms for a specific field from WordPress taxonomy
+// Load customer's assigned terms for a specific field from ClassicPress taxonomy
 function WPsCRM_get_customer_assigned_terms($customer_id, $field_name) {
   global $wpdb;
   
-  // Map field names to WordPress taxonomy names
+  // Map field names to ClassicPress taxonomy names
   $taxonomy_map = array(
     'categoria' => 'WPsCRM_customersCat',
     'provenienza' => 'WPsCRM_customersProv',
@@ -2546,7 +2546,7 @@ function WPsCRM_get_customer_assigned_terms($customer_id, $field_name) {
 }
 
 /**
- * Ensure all values in array are WordPress terms
+ * Ensure all values in array are ClassicPress terms
  * If a value looks like text (not numeric), create it as a new term
  * Returns comma-separated string of term IDs
  */
@@ -2608,7 +2608,7 @@ function WPsCRM_ensure_terms_exist($values, $taxonomy) {
 }
 
 /**
- * Save customer values to WordPress Taxonomies
+ * Save customer values to ClassicPress Taxonomies
  * Handles saving of categoria, provenienza, and interessi to term_relationships
  */
 function WPsCRM_save_customer_taxonomies($customer_id, $fields) {
@@ -2852,7 +2852,7 @@ function WPsCRM_save_client() {
     }
     $ID_ret = $ID ? $ID : $wpdb->insert_id;
 
-    // NOTE: We do NOT use WordPress taxonomies for customer data
+    // NOTE: We do NOT use ClassicPress taxonomies for customer data
     // Taxonomies are stored in the database columns (categoria, provenienza, interessi)
     // The form loads these values from the database columns, not from taxonomies
 
