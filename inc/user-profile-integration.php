@@ -219,6 +219,164 @@ function wpscrm_get_user_target_minutes_for_date( $user_id, $date_ymd ) {
 	return max( 0, $duration );
 }
 
+/**
+ * Get all active agents from the agents table
+ * @return array Agent objects with role info
+ */
+function wpscrm_get_all_agents( $status = 'active' ) {
+	global $wpdb;
+	
+	$agents_table = WPsCRM_TABLE . 'agents';
+	$roles_table = WPsCRM_TABLE . 'agent_roles';
+	
+	$query = "
+		SELECT 
+			a.id as agent_id,
+			a.user_id,
+			a.role_id,
+			a.status,
+			r.role_slug,
+			r.role_name,
+			r.display_name as role_display_name,
+			u.ID,
+			u.user_login,
+			u.user_email,
+			u.display_name
+		FROM $agents_table a
+		INNER JOIN $roles_table r ON a.role_id = r.id
+		INNER JOIN {$wpdb->users} u ON a.user_id = u.ID
+	";
+	
+	if ( $status ) {
+		$query .= $wpdb->prepare( " WHERE a.status = %s", $status );
+	}
+	
+	$query .= " ORDER BY r.sort_order ASC, u.display_name ASC";
+	
+	return $wpdb->get_results( $query );
+}
+
+/**
+ * Get agent by user_id
+ */
+function wpscrm_get_agent_by_user_id( $user_id ) {
+	global $wpdb;
+	
+	$agents_table = WPsCRM_TABLE . 'agents';
+	$roles_table = WPsCRM_TABLE . 'agent_roles';
+	
+	$query = $wpdb->prepare(
+		"
+		SELECT 
+			a.*,
+			r.role_slug,
+			r.role_name,
+			r.display_name as role_display_name
+		FROM $agents_table a
+		LEFT JOIN $roles_table r ON a.role_id = r.id
+		WHERE a.user_id = %d
+		",
+		$user_id
+	);
+	
+	return $wpdb->get_row( $query );
+}
+
+/**
+ * Create new agent
+ */
+function wpscrm_create_agent( $user_id, $role_id, $status = 'active' ) {
+	global $wpdb;
+	
+	// Check if user is already an agent
+	$existing = wpscrm_get_agent_by_user_id( $user_id );
+	if ( $existing ) {
+		return new WP_Error( 'agent_exists', __( 'User ist bereits ein Agent.', 'cpsmartcrm' ) );
+	}
+	
+	// Verify role exists
+	$role = $wpdb->get_row( $wpdb->prepare(
+		"SELECT id FROM " . WPsCRM_TABLE . "agent_roles WHERE id = %d",
+		$role_id
+	) );
+	
+	if ( ! $role ) {
+		return new WP_Error( 'role_not_found', __( 'Rolle nicht gefunden.', 'cpsmartcrm' ) );
+	}
+	
+	$agents_table = WPsCRM_TABLE . 'agents';
+	$result = $wpdb->insert(
+		$agents_table,
+		array(
+			'user_id' => (int) $user_id,
+			'role_id' => (int) $role_id,
+			'status' => $status,
+			'joined_at' => current_time( 'mysql' ),
+		),
+		array( '%d', '%d', '%s', '%s' )
+	);
+	
+	if ( ! $result ) {
+		return new WP_Error( 'insert_failed', __( 'Fehler beim Erstellen des Agenten.', 'cpsmartcrm' ) );
+	}
+	
+	return $wpdb->insert_id;
+}
+
+/**
+ * Update agent
+ */
+function wpscrm_update_agent( $agent_id, $data ) {
+	global $wpdb;
+	
+	$agents_table = WPsCRM_TABLE . 'agents';
+	
+	$update_data = array();
+	$format = array();
+	
+	if ( isset( $data['role_id'] ) ) {
+		$update_data['role_id'] = (int) $data['role_id'];
+		$format[] = '%d';
+	}
+	
+	if ( isset( $data['status'] ) && in_array( $data['status'], array( 'active', 'inactive', 'archived' ), true ) ) {
+		$update_data['status'] = $data['status'];
+		$format[] = '%s';
+	}
+	
+	if ( empty( $update_data ) ) {
+		return false;
+	}
+	
+	$update_data['updated_at'] = current_time( 'mysql' );
+	$format[] = '%s';
+	
+	return $wpdb->update(
+		$agents_table,
+		$update_data,
+		array( 'id' => (int) $agent_id ),
+		$format,
+		array( '%d' )
+	);
+}
+
+/**
+ * Delete agent (move to archived status)
+ */
+function wpscrm_delete_agent( $agent_id ) {
+	global $wpdb;
+	
+	$agents_table = WPsCRM_TABLE . 'agents';
+	
+	return $wpdb->update(
+		$agents_table,
+		array( 'status' => 'archived', 'updated_at' => current_time( 'mysql' ) ),
+		array( 'id' => (int) $agent_id ),
+		array( '%s', '%s' ),
+		array( '%d' )
+	);
+}
+
 function wpscrm_show_user_agent_role_field( $user ) {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return;

@@ -294,6 +294,20 @@ function WPsCRM_crm_install() {
   KEY `sort_order` (`sort_order`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
 
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."agents` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL COMMENT 'WordPress User-ID',
+  `role_id` int(10) unsigned NOT NULL COMMENT 'FK zu agent_roles',
+  `status` enum('active','inactive','archived') NOT NULL DEFAULT 'active' COMMENT 'Agent-Status im CRM',
+  `joined_at` datetime NOT NULL COMMENT 'Beitrittsdatum',
+  `updated_at` datetime NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  KEY `role_id` (`role_id`),
+  KEY `status` (`status`),
+  CONSTRAINT `fk_agent_role` FOREIGN KEY (`role_id`) REFERENCES `".WPsCRM_SETUP_TABLE."agent_roles` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB ".$charset_collate." AUTO_INCREMENT=1;";
+
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."timetracking` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL COMMENT 'Agent User-ID',
@@ -810,6 +824,16 @@ function smart_crm_menu(){
         ''
         );
 
+    // Agenten-Verwaltung
+    add_submenu_page(
+        'smart-crm',
+        __('CP SMART CRM Agenten', 'cpsmartcrm'),
+        __('Agenten', 'cpsmartcrm'),
+        'manage_options',
+        'admin.php?page=smart-crm&p=agents/list.php',
+        ''
+        );
+
     // Zeiterfassung Übersicht
     add_submenu_page(
         'smart-crm',
@@ -867,3 +891,108 @@ function WPsCRM_init_capabilities() {
 		$admin_role->add_cap( 'manage_crm' );
 	}
 }
+
+/**
+ * Initialize standard agent roles if not present
+ */
+function WPsCRM_init_standard_agent_roles() {
+	global $wpdb;
+	
+	$table = WPsCRM_TABLE . 'agent_roles';
+	
+	// Standard roles to seed
+	$standard_roles = array(
+		array(
+			'role_slug' => 'chef',
+			'role_name' => __( 'Chef', 'cpsmartcrm' ),
+			'display_name' => __( 'Chef', 'cpsmartcrm' ),
+			'department' => __( 'Management', 'cpsmartcrm' ),
+			'icon' => 'dashicons-businessman',
+			'show_in_contact' => 1,
+			'is_system_role' => 1,
+			'sort_order' => 10,
+		),
+		array(
+			'role_slug' => 'vertrieb',
+			'role_name' => __( 'Vertrieb', 'cpsmartcrm' ),
+			'display_name' => __( 'Vertrieb', 'cpsmartcrm' ),
+			'department' => __( 'Sales', 'cpsmartcrm' ),
+			'icon' => 'dashicons-megaphone',
+			'show_in_contact' => 1,
+			'is_system_role' => 0,
+			'sort_order' => 20,
+		),
+		array(
+			'role_slug' => 'support',
+			'role_name' => __( 'Support', 'cpsmartcrm' ),
+			'display_name' => __( 'Support', 'cpsmartcrm' ),
+			'department' => __( 'Customer Service', 'cpsmartcrm' ),
+			'icon' => 'dashicons-email',
+			'show_in_contact' => 1,
+			'is_system_role' => 0,
+			'sort_order' => 30,
+		),
+		array(
+			'role_slug' => 'buchhaltung',
+			'role_name' => __( 'Buchhaltung', 'cpsmartcrm' ),
+			'display_name' => __( 'Buchhaltung', 'cpsmartcrm' ),
+			'department' => __( 'Accounting', 'cpsmartcrm' ),
+			'icon' => 'dashicons-clipboard',
+			'show_in_contact' => 0,
+			'is_system_role' => 0,
+			'sort_order' => 40,
+		),
+		array(
+			'role_slug' => 'projektleiter',
+			'role_name' => __( 'Projektleiter', 'cpsmartcrm' ),
+			'display_name' => __( 'Projektleiter', 'cpsmartcrm' ),
+			'department' => __( 'Projects', 'cpsmartcrm' ),
+			'icon' => 'dashicons-admin-users',
+			'show_in_contact' => 1,
+			'is_system_role' => 0,
+			'sort_order' => 50,
+		),
+	);
+	
+	foreach ( $standard_roles as $role_data ) {
+		// Check if role already exists
+		$exists = $wpdb->get_var( $wpdb->prepare(
+			"SELECT id FROM $table WHERE role_slug = %s",
+			$role_data['role_slug']
+		) );
+		
+		if ( ! $exists ) {
+			$capabilities = array(
+				'wp_role' => '',
+				'can_view_accounting' => 'buchhaltung' === $role_data['role_slug'] ? 1 : 0,
+				'can_edit_accounting' => 'chef' === $role_data['role_slug'] ? 1 : 0,
+				'can_view_all_accounting' => 'chef' === $role_data['role_slug'] ? 1 : 0,
+				'can_view_documents' => 1,
+				'can_edit_documents' => 'chef' === $role_data['role_slug'] || 'projektleiter' === $role_data['role_slug'] ? 1 : 0,
+				'can_view_all_documents' => 1,
+				'can_view_customers' => 1,
+				'can_edit_customers' => 'vertrieb' === $role_data['role_slug'] || 'chef' === $role_data['role_slug'] ? 1 : 0,
+			);
+			
+			$wpdb->insert(
+				$table,
+				array(
+					'role_slug' => $role_data['role_slug'],
+					'role_name' => $role_data['role_name'],
+					'display_name' => $role_data['display_name'],
+					'department' => $role_data['department'],
+					'icon' => $role_data['icon'],
+					'show_in_contact' => $role_data['show_in_contact'],
+					'is_system_role' => $role_data['is_system_role'],
+					'sort_order' => $role_data['sort_order'],
+					'capabilities' => wp_json_encode( $capabilities ),
+					'created_at' => current_time( 'mysql' ),
+				),
+				array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s' )
+			);
+		}
+	}
+}
+
+// Hook to initialize on activation
+add_action( 'admin_init', 'WPsCRM_init_standard_agent_roles' );

@@ -70,16 +70,27 @@ $customer_filter = isset( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] 
 $status_filter = isset( $_GET['status'] ) ? sanitize_text_field( $_GET['status'] ) : '';
 $edit_user_id = isset( $_REQUEST['edit_user_id'] ) ? absint( $_REQUEST['edit_user_id'] ) : 0;
 
-$crm_users = get_users( array(
-	'meta_query' => array(
-		array(
-			'key' => '_crm_agent_role',
-			'compare' => 'EXISTS',
-		),
-	),
-	'orderby' => 'display_name',
-	'order' => 'ASC',
-) );
+// Get all agents from agents table
+$agents_table = WPsCRM_TABLE . 'agents';
+$roles_table = WPsCRM_TABLE . 'agent_roles';
+
+$crm_users_query = "
+	SELECT 
+		a.id as agent_id,
+		a.user_id,
+		a.role_id,
+		r.role_name,
+		u.ID,
+		u.display_name,
+		u.user_email
+	FROM $agents_table a
+	INNER JOIN $roles_table r ON a.role_id = r.id
+	INNER JOIN {$wpdb->users} u ON a.user_id = u.ID
+	WHERE a.status = 'active'
+	ORDER BY u.display_name ASC
+";
+
+$crm_users = $wpdb->get_results( $crm_users_query );
 
 $crm_user_ids = wp_list_pluck( $crm_users, 'ID' );
 if ( ! $edit_user_id ) {
@@ -372,16 +383,9 @@ $customers = $wpdb->get_results( "SELECT ID_kunde, name, nachname FROM " . WPsCR
 				<label for="edit_user_id"><?php _e( 'Agent / Dienstleister', 'cpsmartcrm' ); ?></label>
 				<select id="edit_user_id" name="edit_user_id" <?php disabled( ! $can_manage_all_worktimes ); ?>>
 					<?php foreach ( $crm_users as $crm_user ) : ?>
-						<?php 
-							$user_role_slug = get_user_meta( $crm_user->ID, '_crm_agent_role', true );
-							$user_role_name = '';
-							if ( $user_role_slug && function_exists( 'wpscrm_get_agent_role_by_slug' ) ) {
-								$role_obj = wpscrm_get_agent_role_by_slug( $user_role_slug );
-								$user_role_name = $role_obj ? $role_obj->role_name : '';
-							}
-							$display_text = $user_role_name ? $user_role_name : $crm_user->display_name;
-						?>
-						<option value="<?php echo esc_attr( $crm_user->ID ); ?>" <?php selected( $edit_user_id, $crm_user->ID ); ?>><?php echo esc_html( $display_text ); ?></option>
+						<option value="<?php echo esc_attr( $crm_user->ID ); ?>" <?php selected( $edit_user_id, $crm_user->ID ); ?>>
+							<?php echo esc_html( $crm_user->role_name ? $crm_user->role_name : $crm_user->display_name ); ?>
+						</option>
 					<?php endforeach; ?>
 				</select>
 			</div>
