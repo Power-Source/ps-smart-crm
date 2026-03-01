@@ -48,7 +48,12 @@ function wpscrm_check_financial_alerts($user_id = null) {
     
     // 2. Überfällige Abrechnungsentwürfe prüfen
     $billing_table = WPsCRM_TABLE . 'billing_drafts';
-    $old_drafts = $wpdb->get_var("SELECT COUNT(*) FROM $billing_table WHERE status = 'draft' AND created_at < DATE_SUB(NOW(), INTERVAL 14 DAY)");
+    $old_drafts = 0;
+    
+    // Only check if table exists
+    if ($wpdb->get_var("SHOW TABLES LIKE '$billing_table'")) {
+        $old_drafts = $wpdb->get_var("SELECT COUNT(*) FROM $billing_table WHERE status = 'draft' AND created_at < DATE_SUB(NOW(), INTERVAL 14 DAY)");
+    }
     
     if ((int)$old_drafts > 0) {
         $alerts['warning'][] = array(

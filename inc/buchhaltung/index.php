@@ -38,6 +38,9 @@ require_once dirname(__FILE__) . '/modules/accounting-pdf-export.php';
 // Load smart financial alerts module
 require_once dirname(__FILE__) . '/modules/smart-financial-alerts.php';
 
+// Load AJAX handlers for accounting
+require_once dirname(__FILE__) . '/ajax-handlers.php';
+
 // Available tabs
 $available_tabs = array(
     'dashboard' => array(

@@ -22,10 +22,16 @@ $counts = array(
     'booked' => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$d_table} WHERE tipo = %d AND registrato = 1", $invoice_type)),
 );
 
-// Get timetracking summary (unbilled hours)
-$tt_summary = function_exists( 'wpscrm_get_timetracking_summary' )
-	? wpscrm_get_timetracking_summary( date( 'Y-m-01' ), date( 'Y-m-d' ) )
-	: array();
+// Get timetracking summary (unbilled hours) - check if function exists
+$tt_table = WPsCRM_TABLE . 'timetracking';
+$agents_table = WPsCRM_TABLE . 'agents';
+$tt_summary = array();
+
+if (function_exists('wpscrm_get_timetracking_summary') && 
+    $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $tt_table)) &&
+    $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $agents_table))) {
+    $tt_summary = wpscrm_get_timetracking_summary(date('Y-m-01'), date('Y-m-d'));
+}
 
 $unbilled_total_hours = 0;
 $unbilled_total_amount = 0;
@@ -45,9 +51,12 @@ foreach ( $tt_summary as $agent_row ) {
 	$unbilled_total_amount += $agent_amount;
 }
 
-// Get billing drafts
+// Get billing drafts - check if table exists first
 $billing_table = WPsCRM_TABLE . 'billing_drafts';
-$draft_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $billing_table WHERE status = 'draft'" );
+$draft_count = 0;
+if ($wpdb->get_var("SHOW TABLES LIKE '$billing_table'")) {
+    $draft_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $billing_table WHERE status = 'draft'" );
+}
 
 // Get accounting summary for paid invoices
 $summary = WPsCRM_get_accounting_summary(array('date_from' => date('Y-01-01'), 'date_to' => date('Y-12-31')));

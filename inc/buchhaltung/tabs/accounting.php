@@ -364,7 +364,7 @@ $expenses_list = $wpdb->get_results($wpdb->prepare(
 // Get invoices for current period
 $invoice_list_query = "SELECT d.*, k.firmenname, k.name, k.nachname 
      FROM {$d_table} d
-     LEFT JOIN {$k_table} k ON d.id_cliente = k.id
+     LEFT JOIN {$k_table} k ON d.fk_kunde = k.ID_kunde
      WHERE d.tipo = 2 AND d.pagato = 1 AND DATE_FORMAT(d.data, '%%Y-%%m') = %s{$invoice_owner_filter_alias}
      ORDER BY d.data DESC";
 $invoice_list_params = array_merge(array($period_str), $invoice_owner_params);
@@ -576,8 +576,13 @@ foreach ($tt_summary as $agent_row) {
 
 // Get pending billing drafts
 $billing_table = WPsCRM_TABLE . 'billing_drafts';
-$draft_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM $billing_table WHERE status = 'draft'");
-$drafts_total = (float)$wpdb->get_var("SELECT COALESCE(SUM(amount_gross), 0) FROM $billing_table WHERE status = 'draft'");
+$draft_count = 0;
+$drafts_total = 0;
+
+if ($wpdb->get_var("SHOW TABLES LIKE '$billing_table'")) {
+    $draft_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM $billing_table WHERE status = 'draft'");
+    $drafts_total = (float)$wpdb->get_var("SELECT COALESCE(SUM(amount_gross), 0) FROM $billing_table WHERE status = 'draft'");
+}
 ?>
 
 <?php if (count($tt_summary) > 0 || $draft_count > 0) : ?>
@@ -810,9 +815,65 @@ $sources_breakdown = array(
         </table>
 
         <?php if ($can_manage_manual_accounting) : ?>
-            <button type="button" class="button button-secondary" id="toggle_income_form" style="margin-top: 12px; width: 100%;">
-                <?php _e('+ Manuelle Einnahme', 'cpsmartcrm'); ?>
+            <button type="button" class="button" id="toggle_income_form" style="margin-top: 12px; width: 100%; padding: 8px;">
+                + <?php _e('Manuelle Einnahme', 'cpsmartcrm'); ?>
             </button>
+            
+            <!-- Income Form - Inline in Container -->
+            <div id="income_form_container" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
+                <form id="add_income_form" method="post" action="" style="background: #f0f7ff; padding: 16px; margin-top: 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <input type="hidden" name="action" value="add_income" />
+                    <input type="hidden" name="period_from" value="<?php echo esc_attr($period_from); ?>" />
+                    <input type="hidden" name="period_to" value="<?php echo esc_attr($period_to); ?>" />
+                    <?php wp_nonce_field('add_income_action', 'nonce'); ?>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label for="income_date"><small><?php _e('Datum', 'cpsmartcrm'); ?></small></label>
+                            <input type="date" id="income_date" name="income_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
+                                   required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                        </div>
+                        <div>
+                            <label for="income_category"><small><?php _e('Kategorie', 'cpsmartcrm'); ?></small></label>
+                            <select id="income_category" name="income_category" required 
+                                    style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
+                                <?php foreach ($income_categories as $cat) : ?>
+                                    <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div style="grid-column: 1/-1;">
+                            <label for="income_description"><small><?php _e('Beschreibung', 'cpsmartcrm'); ?></small></label>
+                            <input type="text" id="income_description" name="income_description" 
+                                   style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                        </div>
+                        <div>
+                            <label for="income_amount"><small><?php _e('Betrag (netto)', 'cpsmartcrm'); ?></small></label>
+                            <input type="text" id="income_amount" name="income_amount" placeholder="90,45" 
+                                   required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                        </div>
+                        <div>
+                            <label for="income_tax_rate"><small><?php _e('Steuersatz', 'cpsmartcrm'); ?></small></label>
+                            <select id="income_tax_rate" name="income_tax_rate" 
+                                    style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <option value="0">0%</option>
+                                <option value="7">7%</option>
+                                <option value="19" selected>19%</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="button button-primary" style="font-size: 13px; padding: 6px 12px;">
+                            ✓ <?php _e('Buchen', 'cpsmartcrm'); ?>
+                        </button>
+                        <button type="button" class="button" onclick="toggleIncomeForm();" style="font-size: 13px; padding: 6px 12px;">
+                            ✕ <?php _e('Stornieren', 'cpsmartcrm'); ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
         <?php endif; ?>
         <p style="margin-top: 8px; font-size: 12px; color: #666;">
             <?php _e('Alle Einnahmequellen werden summiert.', 'cpsmartcrm'); ?>
@@ -854,9 +915,65 @@ $sources_breakdown = array(
         </table>
 
         <?php if ($can_manage_manual_accounting) : ?>
-            <button type="button" class="button button-secondary" id="toggle_expense_form" style="margin-top: 12px; width: 100%;">
-                <?php _e('+ Neue Ausgabe', 'cpsmartcrm'); ?>
+            <button type="button" class="button" id="toggle_expense_form" style="margin-top: 12px; width: 100%; padding: 8px;">
+                + <?php _e('Neue Ausgabe', 'cpsmartcrm'); ?>
             </button>
+            
+            <!-- Expense Form - Inline in Container -->
+            <div id="expense_form_container" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
+                <form id="add_expense_form" method="post" action="" style="background: #fff5f0; padding: 16px; margin-top: 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <input type="hidden" name="action" value="add_expense" />
+                    <input type="hidden" name="period_from" value="<?php echo esc_attr($period_from); ?>" />
+                    <input type="hidden" name="period_to" value="<?php echo esc_attr($period_to); ?>" />
+                    <?php wp_nonce_field('add_expense_action', 'nonce'); ?>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label for="expense_date"><small><?php _e('Datum', 'cpsmartcrm'); ?></small></label>
+                            <input type="date" id="expense_date" name="expense_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
+                                   required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                        </div>
+                        <div>
+                            <label for="expense_category"><small><?php _e('Kategorie', 'cpsmartcrm'); ?></small></label>
+                            <select id="expense_category" name="expense_category" required 
+                                    style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
+                                <?php foreach ($expense_categories as $cat) : ?>
+                                    <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div style="grid-column: 1/-1;">
+                            <label for="expense_description"><small><?php _e('Beschreibung', 'cpsmartcrm'); ?></small></label>
+                            <input type="text" id="expense_description" name="expense_description" 
+                                   style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                        </div>
+                        <div>
+                            <label for="expense_amount"><small><?php _e('Betrag (netto)', 'cpsmartcrm'); ?></small></label>
+                            <input type="text" id="expense_amount" name="expense_amount" placeholder="90,45" 
+                                   required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                        </div>
+                        <div>
+                            <label for="expense_tax_rate"><small><?php _e('Steuersatz', 'cpsmartcrm'); ?></small></label>
+                            <select id="expense_tax_rate" name="expense_tax_rate" 
+                                    style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <option value="0">0%</option>
+                                <option value="7">7%</option>
+                                <option value="19" selected>19%</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="button button-primary" style="font-size: 13px; padding: 6px 12px;">
+                            ✓ <?php _e('Buchen', 'cpsmartcrm'); ?>
+                        </button>
+                        <button type="button" class="button" onclick="toggleExpenseForm();" style="font-size: 13px; padding: 6px 12px;">
+                            ✕ <?php _e('Stornieren', 'cpsmartcrm'); ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
         <?php endif; ?>
     </div>
 
@@ -915,133 +1032,7 @@ $sources_breakdown = array(
             <?php _e('Übersicht nach Quelle/Integration', 'cpsmartcrm'); ?>
         </p>
     </div>
-</div>
-
-<?php if ($can_manage_manual_accounting) : ?>
-<!-- New Income Form Modal -->
-<div id="income_modal" class="buch-modal-overlay" style="display: none;">
-    <div class="buch-modal-content">
-        <a href="#" class="buch-modal-close" data-close-modal="income_modal">&times;</a>
-        <h3><?php _e('Manuelle Einnahme erfassen', 'cpsmartcrm'); ?></h3>
-        <form method="post" action="">
-            <input type="hidden" name="action" value="add_income" />
-            <?php wp_nonce_field('add_income_action', 'nonce'); ?>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div>
-                    <label for="income_date"><strong><?php _e('Datum:', 'cpsmartcrm'); ?></strong></label>
-                    <input type="date" id="income_date" name="income_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
-                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-                </div>
-
-                <div>
-                    <label for="income_category"><strong><?php _e('Kategorie:', 'cpsmartcrm'); ?></strong></label>
-                    <select id="income_category" name="income_category" required 
-                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
-                        <?php foreach ($income_categories as $cat) : ?>
-                            <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div style="grid-column: 1/-1;">
-                    <label for="income_description"><strong><?php _e('Beschreibung:', 'cpsmartcrm'); ?></strong></label>
-                    <input type="text" id="income_description" name="income_description" 
-                           style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-                </div>
-
-                <div>
-                    <label for="income_amount"><strong><?php _e('Betrag (netto):', 'cpsmartcrm'); ?></strong></label>
-                    <input type="number" id="income_amount" name="income_amount" step="0.01" min="0" 
-                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-                </div>
-
-                <div>
-                    <label for="income_tax_rate"><strong><?php _e('Steuersatz:', 'cpsmartcrm'); ?></strong></label>
-                    <select id="income_tax_rate" name="income_tax_rate" 
-                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="0">0%</option>
-                        <option value="7">7%</option>
-                        <option value="19" selected>19%</option>
-                    </select>
-                </div>
-            </div>
-
-            <div style="margin-top: 12px; display: flex; gap: 8px;">
-                <button type="submit" class="button button-primary">
-                    <?php _e('Einnahme speichern', 'cpsmartcrm'); ?>
-                </button>
-                <button type="button" class="button button-secondary" data-close-modal="income_modal">
-                    <?php _e('Abbrechen', 'cpsmartcrm'); ?>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- New Expense Form Modal -->
-<div id="expense_modal" class="buch-modal-overlay" style="display: none;">
-    <div class="buch-modal-content">
-        <a href="#" class="buch-modal-close" data-close-modal="expense_modal">&times;</a>
-        <h3><?php _e('Neue Ausgabe erfassen', 'cpsmartcrm'); ?></h3>
-        <form method="post" action="">
-            <input type="hidden" name="action" value="add_expense" />
-            <?php wp_nonce_field('add_expense_action', 'nonce'); ?>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div>
-                    <label for="expense_date"><strong><?php _e('Datum:', 'cpsmartcrm'); ?></strong></label>
-                    <input type="date" id="expense_date" name="expense_date" value="<?php echo esc_attr(date('Y-m-d')); ?>" 
-                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-                </div>
-
-                <div>
-                    <label for="expense_category"><strong><?php _e('Kategorie:', 'cpsmartcrm'); ?></strong></label>
-                    <select id="expense_category" name="expense_category" required 
-                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value=""><?php _e('Wählen...', 'cpsmartcrm'); ?></option>
-                        <?php foreach ($expense_categories as $cat) : ?>
-                            <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div style="grid-column: 1/-1;">
-                    <label for="expense_description"><strong><?php _e('Beschreibung:', 'cpsmartcrm'); ?></strong></label>
-                    <input type="text" id="expense_description" name="expense_description" 
-                           style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-                </div>
-
-                <div>
-                    <label for="expense_amount"><strong><?php _e('Betrag (netto):', 'cpsmartcrm'); ?></strong></label>
-                    <input type="number" id="expense_amount" name="expense_amount" step="0.01" min="0" 
-                           required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" />
-                </div>
-
-                <div>
-                    <label for="expense_tax_rate"><strong><?php _e('Steuersatz:', 'cpsmartcrm'); ?></strong></label>
-                    <select id="expense_tax_rate" name="expense_tax_rate" 
-                            style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="0">0%</option>
-                        <option value="7">7%</option>
-                        <option value="19" selected>19%</option>
-                    </select>
-                </div>
-            </div>
-
-            <div style="margin-top: 12px; display: flex; gap: 8px;">
-                <button type="submit" class="button button-primary">
-                    <?php _e('Ausgabe speichern', 'cpsmartcrm'); ?>
-                </button>
-                <button type="button" class="button button-secondary" data-close-modal="expense_modal">
-                    <?php _e('Abbrechen', 'cpsmartcrm'); ?>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-<?php endif; ?>
+</div></div>
 
 <!-- Alle Transaktionen (Einnahmen & Ausgaben) chronologisch -->
 <style>
@@ -1337,41 +1328,332 @@ $sources_breakdown = array(
 <?php endif; ?>
 
 <script>
-function buchShowModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'block';
-}
-function buchHideModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+// Stelle sicher, dass ajaxurl verfügbar ist
+if (typeof ajaxurl === 'undefined') {
+    ajaxurl = <?php echo json_encode(admin_url('admin-ajax.php')); ?>;
 }
 
-var incomeBtn = document.getElementById('toggle_income_form');
-if (incomeBtn) {
-    incomeBtn.addEventListener('click', function() {
-        buchShowModal('income_modal');
-    });
+// Toggle Inline Forms mit Smooth Height Animation
+function toggleIncomeForm() {
+    const container = document.getElementById('income_form_container');
+    const btn = document.getElementById('toggle_income_form');
+    const form = container.querySelector('form');
+    
+    if (container.style.maxHeight && container.style.maxHeight !== '0px') {
+        // Collapse
+        container.style.maxHeight = '0px';
+        btn.innerHTML = '+ <?php _e('Manuelle Einnahme', 'cpsmartcrm'); ?>';
+    } else {
+        // Expand
+        container.style.maxHeight = (form.scrollHeight + 20) + 'px';
+        btn.innerHTML = '- <?php _e('Formular ausblenden', 'cpsmartcrm'); ?>';
+    }
 }
 
-var expenseBtn = document.getElementById('toggle_expense_form');
-if (expenseBtn) {
-    expenseBtn.addEventListener('click', function() {
-        buchShowModal('expense_modal');
-    });
+function toggleExpenseForm() {
+    const container = document.getElementById('expense_form_container');
+    const btn = document.getElementById('toggle_expense_form');
+    const form = container.querySelector('form');
+    
+    if (container.style.maxHeight && container.style.maxHeight !== '0px') {
+        // Collapse
+        container.style.maxHeight = '0px';
+        btn.innerHTML = '+ <?php _e('Neue Ausgabe', 'cpsmartcrm'); ?>';
+    } else {
+        // Expand
+        container.style.maxHeight = (form.scrollHeight + 20) + 'px';
+        btn.innerHTML = '- <?php _e('Formular ausblenden', 'cpsmartcrm'); ?>';
+    }
 }
 
-document.querySelectorAll('[data-close-modal]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        buchHideModal(btn.getAttribute('data-close-modal'));
-    });
+// Button Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const incomeBtn = document.getElementById('toggle_income_form');
+    const expenseBtn = document.getElementById('toggle_expense_form');
+    
+    if (incomeBtn) {
+        incomeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleIncomeForm();
+        });
+    }
+    
+    if (expenseBtn) {
+        expenseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleExpenseForm();
+        });
+    }
 });
 
-document.querySelectorAll('.buch-modal-overlay').forEach(function(overlay) {
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-            buchHideModal(overlay.id);
+// ===== AJAX Handler für Einnahme/Ausgabe Forms =====
+
+// Income Form AJAX Handler
+document.addEventListener('DOMContentLoaded', function() {
+    const incomeForm = document.getElementById('add_income_form');
+    console.log('🔍 Income Form gefunden:', incomeForm ? '✓' : '✗');
+    console.log('🔍 ajaxurl verfügbar:', typeof ajaxurl !== 'undefined' ? ajaxurl : 'NICHT VERFÜGBAR');
+    
+    if (incomeForm) {
+        incomeForm.addEventListener('submit', function(e) {
+            console.log('📝 Income Form Submitted!');
+            e.preventDefault();
+            
+            try {
+                // Validate amount input
+                const amountInput = this.querySelector('#income_amount');
+                console.log('📍 Amount Input gefunden:', amountInput ? '✓' : '✗');
+                
+                if (!amountInput) {
+                    showAjaxNotice('❌ FEHLER: Betrag-Feld nicht gefunden!', 'error');
+                    return;
+                }
+                
+                const amountValue = amountInput.value.trim();
+                console.log('💰 Amount Value:', amountValue);
+                
+                // Basic validation
+                if (!amountValue) {
+                    showAjaxNotice('❌ Bitte geben Sie einen Betrag ein!', 'error');
+                    return;
+                }
+                
+                // Try to parse amount with both separators
+                const normalizedAmount = parseFloat(amountValue.replace('.', '').replace(',', '.'));
+                console.log('💯 Normalized Amount:', normalizedAmount);
+                
+                if (isNaN(normalizedAmount) || normalizedAmount <= 0) {
+                    showAjaxNotice('❌ Ungültiger Betrag! Bitte verwenden Sie Komma (,) oder Punkt (.) als Dezimaltrenner', 'error');
+                    return;
+                }
+                
+                const formData = new FormData(this);
+                formData.append('action', 'wpscrm_add_income');
+                
+                console.log('📋 FormData Keys:', Array.from(formData.keys()));
+                console.log('✉️ Nonce:', formData.get('nonce'));
+                console.log('🌐 AJAX URL:', typeof ajaxurl !== 'undefined' ? ajaxurl : 'UNDEFINED');
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (!submitBtn) {
+                    showAjaxNotice('❌ FEHLER: Submit-Button nicht gefunden!', 'error');
+                    return;
+                }
+                
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '⏳ Speichert...';
+                submitBtn.disabled = true;
+                
+                if (typeof ajaxurl === 'undefined') {
+                    showAjaxNotice('❌ KRITISCHER FEHLER: ajaxurl ist nicht definiert!', 'error');
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                console.log('🚀 Starte AJAX-Anfrage zu:', ajaxurl);
+                
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    console.log('📡 Response Status:', response.status, response.statusText);
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Server Response:', data);
+                    if (data.success) {
+                        updateIncomeMetrics(data.data);
+                        showAjaxNotice('✓ Einnahme erfolgreich gespeichert!', 'success');
+                        incomeForm.reset();
+                        toggleIncomeForm();
+                        setTimeout(() => {
+                            const metricsSection = document.querySelector('[style*="display: grid"]');
+                            if (metricsSection) metricsSection.scrollIntoView({ behavior: 'smooth' });
+                        }, 300);
+                    } else {
+                        console.error('❌ Server Fehler:', data.data);
+                        showAjaxNotice('❌ ' + (data.data?.message || 'Fehler beim Speichern'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('🔴 AJAX Fehler Details:', error);
+                    showAjaxNotice('🔴 ' + error.message, 'error');
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                });
+            } catch (err) {
+                console.error('🔴 JavaScript Fehler:', err);
+                showAjaxNotice('🔴 JavaScript Fehler: ' + err.message, 'error');
+            }
+        });
+    }
+});
+
+// Expense Form AJAX Handler
+const expenseForm = document.getElementById('add_expense_form');
+if (expenseForm) {
+    expenseForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate amount input
+        const amountInput = this.querySelector('#expense_amount');
+        const amountValue = amountInput.value.trim();
+        
+        // Basic validation
+        if (!amountValue) {
+            showAjaxNotice('❌ Bitte geben Sie einen Betrag ein!', 'error');
+            return;
+        }
+        
+        // Try to parse amount with both separators
+        const normalizedAmount = parseFloat(amountValue.replace('.', '').replace(',', '.'));
+        if (isNaN(normalizedAmount) || normalizedAmount <= 0) {
+            showAjaxNotice('❌ Ungültiger Betrag! Bitte verwenden Sie Komma (,) oder Punkt (.) als Dezimaltrenner', 'error');
+            return;
+        }
+        
+        const formData = new FormData(this);
+        formData.append('action', 'wpscrm_add_expense');
+        
+        console.log('📋 Expense Form DEBUG - FormData Keys:', Array.from(formData.keys()));
+        console.log('📋 Expense Form DEBUG - FormData Werte:', {
+            amount: formData.get('expense_amount'),
+            normalizedAmount: normalizedAmount,
+            taxRate: formData.get('expense_tax_rate'),
+            category: formData.get('expense_category'),
+            date: formData.get('expense_date'),
+            nonce: formData.get('nonce') ? '✓ vorhanden' : '✗ FEHLT!'
+        });
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '⏳ Speichert...';
+        submitBtn.disabled = true;
+        
+        fetch(ajaxurl, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('📡 Response Status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Server Response:', data);
+            if (data.success) {
+                updateExpenseMetrics(data.data);
+                showAjaxNotice('✓ Ausgabe erfolgreich gespeichert!', 'success');
+                expenseForm.reset();
+                toggleExpenseForm();
+                setTimeout(() => {
+                    const metricsSection = document.querySelector('[style*="display: grid"]');
+                    if (metricsSection) metricsSection.scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            } else {
+                console.error('❌ Fehler:', data.data);
+                showAjaxNotice('❌ ' + (data.data?.message || 'Fehler beim Speichern'), 'error');
+            }
+        })
+        .catch(error => {
+            console.error('🔴 AJAX Fehler:', error);
+            showAjaxNotice('🔴 Kritischer Fehler: ' + error.message, 'error');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        });
+    });
+}
+
+// Update Income Metrics Animations
+function updateIncomeMetrics(data) {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        const text = card.textContent;
+        if (text.includes('Einnahmen') && text.includes('Netto')) {
+            const valueEl = card.querySelector('h3');
+            if (valueEl) {
+                valueEl.style.transition = 'color 0.3s ease';
+                valueEl.style.color = '#ff9800';
+                valueEl.innerHTML = data.income_total;
+                setTimeout(() => valueEl.style.color = '#0073aa', 300);
+            }
+        }
+        if (text.includes('Gewinn') && text.includes('Netto')) {
+            const valueEl = card.querySelector('h3');
+            if (valueEl) {
+                valueEl.style.transition = 'color 0.3s ease';
+                valueEl.innerHTML = data.profit_net;
+            }
         }
     });
-});
+}
+
+// Update Expense Metrics Animations
+function updateExpenseMetrics(data) {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        const text = card.textContent;
+        if (text.includes('Ausgaben') && text.includes('Netto')) {
+            const valueEl = card.querySelector('h3');
+            if (valueEl) {
+                valueEl.style.transition = 'color 0.3s ease';
+                valueEl.style.color = '#ff9800';
+                valueEl.innerHTML = data.expenses_total;
+                setTimeout(() => valueEl.style.color = '#ff6b00', 300);
+            }
+        }
+        if (text.includes('Gewinn') && text.includes('Netto')) {
+            const valueEl = card.querySelector('h3');
+            if (valueEl) {
+                valueEl.style.transition = 'color 0.3s ease';
+                valueEl.innerHTML = data.profit_net;
+            }
+        }
+    });
+}
+
+// Show AJAX Notice
+function showAjaxNotice(message, type) {
+    const notice = document.createElement('div');
+    notice.className = 'notice notice-' + type + ' is-dismissible';
+    notice.innerHTML = '<p>' + message + '</p><button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button>';
+    notice.style.cssText = 'animation: slideIn 0.3s ease; margin-bottom: 20px;';
+    
+    // Insert at top of page
+    const mainContent = document.querySelector('[style*="max-width"]') || document.body;
+    mainContent.insertBefore(notice, mainContent.firstChild);
+    
+    // Auto-remove after 4s
+    setTimeout(() => {
+        notice.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notice.remove(), 300);
+    }, 4000);
+    
+    // Dismiss button
+    notice.querySelector('.notice-dismiss').addEventListener('click', () => {
+        notice.remove();
+    });
+}
+
+// Add CSS Animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateY(0); opacity: 1; }
+        to { transform: translateY(-20px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 </script>
