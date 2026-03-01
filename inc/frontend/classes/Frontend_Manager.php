@@ -30,10 +30,8 @@ class WPsCRM_Frontend_Manager {
 	}
 	
 	private function __construct() {
-		error_log( '🔵 Frontend_Manager::__construct() called' );
 		$this->load_modules();
 		$this->register_hooks();
-		error_log( '🔵 Frontend_Manager initialized with ' . count( $this->modules ) . ' modules' );
 	}
 	
 	/**
@@ -74,11 +72,9 @@ class WPsCRM_Frontend_Manager {
 	 * Register Shortcodes
 	 */
 	public function register_shortcodes() {
-		error_log( '🟢 Registering ' . count( $this->modules ) . ' shortcodes' );
 		foreach ( $this->modules as $module ) {
 			$shortcode = 'crm_' . $module->get_id();
 			add_shortcode( $shortcode, array( $module, 'render' ) );
-			error_log( '  ✅ Registered shortcode: [' . $shortcode . ']' );
 		}
 	}
 	
