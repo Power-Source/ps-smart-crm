@@ -138,6 +138,87 @@ function wpscrm_user_can( $user_id, $permission_key ) {
 	return ! empty( $perms[ $permission_key ] );
 }
 
+function wpscrm_get_default_worktime_settings() {
+	return array(
+		'hourly_rate' => 0,
+		'rate_type' => 'net',
+		'billing_mode' => 'employee',
+		'schedule' => array(
+			'mo' => array( 'active' => 1, 'start' => '09:00', 'end' => '17:00', 'break_minutes' => 30 ),
+			'tu' => array( 'active' => 1, 'start' => '09:00', 'end' => '17:00', 'break_minutes' => 30 ),
+			'we' => array( 'active' => 1, 'start' => '09:00', 'end' => '17:00', 'break_minutes' => 30 ),
+			'th' => array( 'active' => 1, 'start' => '09:00', 'end' => '17:00', 'break_minutes' => 30 ),
+			'fr' => array( 'active' => 1, 'start' => '09:00', 'end' => '17:00', 'break_minutes' => 30 ),
+			'sa' => array( 'active' => 0, 'start' => '09:00', 'end' => '17:00', 'break_minutes' => 0 ),
+			'su' => array( 'active' => 0, 'start' => '09:00', 'end' => '17:00', 'break_minutes' => 0 ),
+		),
+		'last_sync_source' => '',
+		'last_sync_at' => '',
+	);
+}
+
+function wpscrm_get_user_worktime_settings( $user_id ) {
+	$defaults = wpscrm_get_default_worktime_settings();
+	$stored = get_user_meta( $user_id, '_crm_worktime_settings', true );
+	if ( ! is_array( $stored ) ) {
+		return $defaults;
+	}
+
+	$settings = wp_parse_args( $stored, $defaults );
+	$settings['schedule'] = wp_parse_args( is_array( $settings['schedule'] ) ? $settings['schedule'] : array(), $defaults['schedule'] );
+
+	foreach ( $defaults['schedule'] as $day_key => $day_defaults ) {
+		$day_values = isset( $settings['schedule'][ $day_key ] ) && is_array( $settings['schedule'][ $day_key ] )
+			? $settings['schedule'][ $day_key ]
+			: array();
+		$settings['schedule'][ $day_key ] = wp_parse_args( $day_values, $day_defaults );
+	}
+
+	return $settings;
+}
+
+function wpscrm_get_user_target_minutes_for_date( $user_id, $date_ymd ) {
+	$timestamp = strtotime( $date_ymd . ' 00:00:00' );
+	if ( ! $timestamp ) {
+		return 0;
+	}
+
+	$weekday_map = array(
+		1 => 'mo',
+		2 => 'tu',
+		3 => 'we',
+		4 => 'th',
+		5 => 'fr',
+		6 => 'sa',
+		7 => 'su',
+	);
+
+	$weekday_number = (int) date( 'N', $timestamp );
+	$day_key = isset( $weekday_map[ $weekday_number ] ) ? $weekday_map[ $weekday_number ] : '';
+	if ( empty( $day_key ) ) {
+		return 0;
+	}
+
+	$settings = wpscrm_get_user_worktime_settings( $user_id );
+	$day = isset( $settings['schedule'][ $day_key ] ) ? $settings['schedule'][ $day_key ] : array();
+	if ( empty( $day ) || empty( $day['active'] ) ) {
+		return 0;
+	}
+
+	$start = isset( $day['start'] ) ? sanitize_text_field( $day['start'] ) : '';
+	$end = isset( $day['end'] ) ? sanitize_text_field( $day['end'] ) : '';
+	if ( ! preg_match( '/^\d{2}:\d{2}$/', $start ) || ! preg_match( '/^\d{2}:\d{2}$/', $end ) ) {
+		return 0;
+	}
+
+	$start_minutes = (int) substr( $start, 0, 2 ) * 60 + (int) substr( $start, 3, 2 );
+	$end_minutes = (int) substr( $end, 0, 2 ) * 60 + (int) substr( $end, 3, 2 );
+	$break_minutes = isset( $day['break_minutes'] ) ? max( 0, (int) $day['break_minutes'] ) : 0;
+
+	$duration = $end_minutes - $start_minutes - $break_minutes;
+	return max( 0, $duration );
+}
+
 function wpscrm_show_user_agent_role_field( $user ) {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return;
@@ -147,6 +228,16 @@ function wpscrm_show_user_agent_role_field( $user ) {
 	$table = WPsCRM_TABLE . 'agent_roles';
 	$roles = $wpdb->get_results( "SELECT * FROM $table ORDER BY sort_order ASC, role_name ASC" );
 	$current_role = get_user_meta( $user->ID, '_crm_agent_role', true );
+	$work_settings = wpscrm_get_user_worktime_settings( $user->ID );
+	$day_labels = array(
+		'mo' => __( 'Montag', 'cpsmartcrm' ),
+		'tu' => __( 'Dienstag', 'cpsmartcrm' ),
+		'we' => __( 'Mittwoch', 'cpsmartcrm' ),
+		'th' => __( 'Donnerstag', 'cpsmartcrm' ),
+		'fr' => __( 'Freitag', 'cpsmartcrm' ),
+		'sa' => __( 'Samstag', 'cpsmartcrm' ),
+		'su' => __( 'Sonntag', 'cpsmartcrm' ),
+	);
 	?>
 	<h3><?php esc_html_e( 'CRM Agent-Rolle', 'cpsmartcrm' ); ?></h3>
 	<table class="form-table">
@@ -162,6 +253,50 @@ function wpscrm_show_user_agent_role_field( $user ) {
 					<?php endforeach; ?>
 				</select>
 				<p class="description"><?php esc_html_e( 'Diese Rolle steuert CRM-Berechtigungen, Kontaktanzeige und optionale WP-Rollenzuweisung.', 'cpsmartcrm' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th><?php esc_html_e( 'Stundensatz', 'cpsmartcrm' ); ?></th>
+			<td>
+				<input type="number" step="0.01" min="0" name="crm_hourly_rate" value="<?php echo esc_attr( $work_settings['hourly_rate'] ); ?>" class="regular-text" />
+				<select name="crm_rate_type">
+					<option value="net" <?php selected( $work_settings['rate_type'], 'net' ); ?>><?php esc_html_e( 'Netto', 'cpsmartcrm' ); ?></option>
+					<option value="gross" <?php selected( $work_settings['rate_type'], 'gross' ); ?>><?php esc_html_e( 'Brutto', 'cpsmartcrm' ); ?></option>
+				</select>
+				<select name="crm_billing_mode">
+					<option value="employee" <?php selected( $work_settings['billing_mode'], 'employee' ); ?>><?php esc_html_e( 'Mitarbeiter', 'cpsmartcrm' ); ?></option>
+					<option value="contractor" <?php selected( $work_settings['billing_mode'], 'contractor' ); ?>><?php esc_html_e( 'Externer Dienstleister', 'cpsmartcrm' ); ?></option>
+				</select>
+				<p class="description"><?php esc_html_e( 'Für interne Kalkulation und Abrechnung externer Agents.', 'cpsmartcrm' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th><?php esc_html_e( 'Wöchentliche Sollzeiten', 'cpsmartcrm' ); ?></th>
+			<td>
+				<table style="border-collapse:collapse;min-width:760px;">
+					<thead>
+						<tr>
+							<th style="text-align:left;padding:4px 8px;"><?php esc_html_e( 'Tag', 'cpsmartcrm' ); ?></th>
+							<th style="text-align:left;padding:4px 8px;"><?php esc_html_e( 'Aktiv', 'cpsmartcrm' ); ?></th>
+							<th style="text-align:left;padding:4px 8px;"><?php esc_html_e( 'Von', 'cpsmartcrm' ); ?></th>
+							<th style="text-align:left;padding:4px 8px;"><?php esc_html_e( 'Bis', 'cpsmartcrm' ); ?></th>
+							<th style="text-align:left;padding:4px 8px;"><?php esc_html_e( 'Pause gesamt (Min.)', 'cpsmartcrm' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $day_labels as $day_key => $day_label ) : ?>
+							<?php $day_values = $work_settings['schedule'][ $day_key ]; ?>
+							<tr>
+								<td style="padding:4px 8px;"><?php echo esc_html( $day_label ); ?></td>
+								<td style="padding:4px 8px;"><input type="checkbox" name="crm_schedule[<?php echo esc_attr( $day_key ); ?>][active]" value="1" <?php checked( ! empty( $day_values['active'] ) ); ?> /></td>
+								<td style="padding:4px 8px;"><input type="time" name="crm_schedule[<?php echo esc_attr( $day_key ); ?>][start]" value="<?php echo esc_attr( $day_values['start'] ); ?>" /></td>
+								<td style="padding:4px 8px;"><input type="time" name="crm_schedule[<?php echo esc_attr( $day_key ); ?>][end]" value="<?php echo esc_attr( $day_values['end'] ); ?>" /></td>
+								<td style="padding:4px 8px;"><input type="number" min="0" max="600" step="1" name="crm_schedule[<?php echo esc_attr( $day_key ); ?>][break_minutes]" value="<?php echo esc_attr( $day_values['break_minutes'] ); ?>" /></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+				<p class="description"><?php esc_html_e( 'Diese Sollzeiten werden in der CRM-Zeiterfassungsübersicht für Über-/Unterstunden verwendet.', 'cpsmartcrm' ); ?></p>
 			</td>
 		</tr>
 	</table>
@@ -184,6 +319,28 @@ function wpscrm_save_user_agent_role_field( $user_id ) {
 	if ( ( 'chef' === $role_slug || 'chef' === $current_target_role ) && ! wpscrm_can_manage_chef_role( get_current_user_id() ) ) {
 		return false;
 	}
+
+	$defaults = wpscrm_get_default_worktime_settings();
+	$settings = wpscrm_get_user_worktime_settings( $user_id );
+	$settings['hourly_rate'] = isset( $_POST['crm_hourly_rate'] ) ? max( 0, (float) $_POST['crm_hourly_rate'] ) : 0;
+	$settings['rate_type'] = ( isset( $_POST['crm_rate_type'] ) && in_array( $_POST['crm_rate_type'], array( 'net', 'gross' ), true ) ) ? sanitize_key( $_POST['crm_rate_type'] ) : 'net';
+	$settings['billing_mode'] = ( isset( $_POST['crm_billing_mode'] ) && in_array( $_POST['crm_billing_mode'], array( 'employee', 'contractor' ), true ) ) ? sanitize_key( $_POST['crm_billing_mode'] ) : 'employee';
+
+	$incoming_schedule = isset( $_POST['crm_schedule'] ) && is_array( $_POST['crm_schedule'] ) ? $_POST['crm_schedule'] : array();
+	$settings['schedule'] = array();
+	foreach ( $defaults['schedule'] as $day_key => $day_defaults ) {
+		$incoming_day = isset( $incoming_schedule[ $day_key ] ) && is_array( $incoming_schedule[ $day_key ] ) ? $incoming_schedule[ $day_key ] : array();
+		$start = isset( $incoming_day['start'] ) && preg_match( '/^\d{2}:\d{2}$/', $incoming_day['start'] ) ? $incoming_day['start'] : $day_defaults['start'];
+		$end = isset( $incoming_day['end'] ) && preg_match( '/^\d{2}:\d{2}$/', $incoming_day['end'] ) ? $incoming_day['end'] : $day_defaults['end'];
+		$settings['schedule'][ $day_key ] = array(
+			'active' => isset( $incoming_day['active'] ) ? 1 : 0,
+			'start' => $start,
+			'end' => $end,
+			'break_minutes' => isset( $incoming_day['break_minutes'] ) ? max( 0, min( 600, (int) $incoming_day['break_minutes'] ) ) : (int) $day_defaults['break_minutes'],
+		);
+	}
+
+	update_user_meta( $user_id, '_crm_worktime_settings', $settings );
 
 	if ( empty( $role_slug ) ) {
 		wpscrm_remove_role_permissions( $user_id );

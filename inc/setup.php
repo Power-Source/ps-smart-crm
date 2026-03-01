@@ -809,6 +809,16 @@ function smart_crm_menu(){
         'admin.php?page=smart-crm&p=buchhaltung/index.php',
         ''
         );
+
+    // Zeiterfassung Übersicht
+    add_submenu_page(
+        'smart-crm',
+        __('CP SMART CRM Zeiterfassung', 'cpsmartcrm'),
+        __('Zeiterfassung', 'cpsmartcrm'),
+        'manage_crm',
+        'admin.php?page=smart-crm&p=timetracking/list.php',
+        ''
+        );
 }
 //$options=get_option('CRM_general_settings');
 //if(isset($options['services']) && $options['services']==1)
