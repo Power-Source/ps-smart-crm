@@ -105,7 +105,10 @@ require_once(__DIR__ . '/inc/options.php');
 require_once(__DIR__ . '/inc/integrations/marketpress.php');
 require_once(__DIR__ . '/inc/integrations/ps-bloghosting.php');
 
-// Load Buchhaltung AJAX handlers (must be loaded early for admin-ajax.php)
+// Load Buchhaltung modules (must be loaded early for admin-ajax.php)
+if (file_exists(__DIR__ . '/inc/buchhaltung/accounting-logger.php')) {
+    require_once(__DIR__ . '/inc/buchhaltung/accounting-logger.php');
+}
 if (file_exists(__DIR__ . '/inc/buchhaltung/ajax-handlers.php')) {
     require_once(__DIR__ . '/inc/buchhaltung/ajax-handlers.php');
 }

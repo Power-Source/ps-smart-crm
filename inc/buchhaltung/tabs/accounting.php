@@ -376,6 +376,7 @@ $all_transactions = array();
 // Add invoices
 foreach ($invoices_list as $invoice) {
     $all_transactions[] = array(
+        'id' => $invoice->id,
         'date' => $invoice->data,
         'type' => 'invoice',
         'category' => __('Rechnung', 'cpsmartcrm'),
@@ -383,13 +384,18 @@ foreach ($invoices_list as $invoice) {
         'net' => (float)$invoice->totale_imponibile,
         'tax' => (float)$invoice->totale_imposta,
         'total' => (float)$invoice->totale,
-        'is_income' => true
+        'is_income' => true,
+        'created_by' => null, // Rechnungen haben keinen created_by
+        'created_at' => null,
+        'can_delete' => false // Rechnungen können nicht storniert werden
     );
 }
 
 // Add manual incomes
 foreach ($incomes_list as $income) {
+    $can_delete = current_user_can('manage_options') || (isset($income->created_by) && $income->created_by == get_current_user_id());
     $all_transactions[] = array(
+        'id' => $income->id,
         'date' => $income->data,
         'type' => 'manual_income',
         'category' => $income->kategoria,
@@ -397,13 +403,18 @@ foreach ($incomes_list as $income) {
         'net' => (float)$income->imponibile,
         'tax' => (float)$income->imposta,
         'total' => (float)$income->totale,
-        'is_income' => true
+        'is_income' => true,
+        'created_by' => isset($income->created_by) ? (int)$income->created_by : null,
+        'created_at' => isset($income->created_at) ? $income->created_at : null,
+        'can_delete' => $can_delete
     );
 }
 
 // Add expenses
 foreach ($expenses_list as $expense) {
+    $can_delete = current_user_can('manage_options') || (isset($expense->created_by) && $expense->created_by == get_current_user_id());
     $all_transactions[] = array(
+        'id' => $expense->id,
         'date' => $expense->data,
         'type' => 'expense',
         'category' => $expense->kategoria,
@@ -411,7 +422,10 @@ foreach ($expenses_list as $expense) {
         'net' => (float)$expense->imponibile,
         'tax' => (float)$expense->imposta,
         'total' => (float)$expense->totale,
-        'is_income' => false
+        'is_income' => false,
+        'created_by' => isset($expense->created_by) ? (int)$expense->created_by : null,
+        'created_at' => isset($expense->created_at) ? $expense->created_at : null,
+        'can_delete' => $can_delete
     );
 }
 
@@ -1210,6 +1224,169 @@ foreach ($income_by_source as $source) {
     font-size: 16px;
     margin: 0;
 }
+
+/* Transaction Actions Menu */
+.crm-transaction-actions-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.crm-transaction-actions-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.crm-transaction-actions-btn:hover {
+    background: #f5f5f5;
+    border-color: #999;
+    color: #333;
+}
+
+.crm-transaction-actions-dropdown {
+    position: absolute;
+    right: 0;
+    top: 38px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 160px;
+    z-index: 1000;
+}
+
+.crm-transaction-actions-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    text-decoration: none;
+    color: #333;
+    font-size: 13px;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.crm-transaction-actions-dropdown a:last-child {
+    border-bottom: none;
+}
+
+.crm-transaction-actions-dropdown a:hover {
+    background: #f5f5f5;
+}
+
+.crm-transaction-actions-dropdown a span {
+    font-size: 16px;
+}
+
+/* Transaction Details Modal */
+.crm-transaction-details-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+
+.crm-transaction-details-modal.active {
+    display: flex;
+}
+
+.crm-transaction-details-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.crm-transaction-details-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.crm-transaction-details-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.crm-transaction-details-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.crm-transaction-details-close:hover {
+    color: #333;
+}
+
+.crm-transaction-details-body {
+    padding: 24px;
+}
+
+.crm-transaction-detail-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.crm-transaction-detail-row:last-child {
+    border-bottom: none;
+}
+
+.crm-transaction-detail-label {
+    font-weight: 600;
+    color: #666;
+    font-size: 13px;
+}
+
+.crm-transaction-detail-value {
+    color: #333;
+    font-size: 14px;
+}
+
+.crm-transaction-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.crm-transaction-type-badge.income {
+    background: #d4edda;
+    color: #155724;
+}
+
+.crm-transaction-type-badge.expense {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 </style>
 
 <?php if (!empty($all_transactions)) : ?>
@@ -1236,6 +1413,7 @@ foreach ($income_by_source as $source) {
                         <?php endif; ?>
                         <th style="width: 140px; text-align: right;"><?php _e('Betrag', 'cpsmartcrm'); ?></th>
                         <th style="width: 80px; text-align: center;"><?php _e('Belege', 'cpsmartcrm'); ?></th>
+                        <th style="width: 60px; text-align: center;"><?php _e('Aktionen', 'cpsmartcrm'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1288,6 +1466,23 @@ foreach ($income_by_source as $source) {
                             <?php else : ?>
                                 <span style="color: #999; font-size: 12px;">−</span>
                             <?php endif; ?>
+                        </td>
+                        <td style="text-align: center; position: relative;">
+                            <div class="crm-transaction-actions-menu">
+                                <button class="crm-transaction-actions-btn" onclick="toggleTransactionMenu(event, this)" title="<?php _e('Aktionen', 'cpsmartcrm'); ?>">
+                                    ⋮
+                                </button>
+                                <div class="crm-transaction-actions-dropdown" style="display: none;">
+                                    <a href="#" onclick="showTransactionDetails(event, <?php echo esc_js(json_encode($trans)); ?>)">
+                                        <span>📝</span> <?php _e('Details', 'cpsmartcrm'); ?>
+                                    </a>
+                                    <?php if ($trans['can_delete']) : ?>
+                                        <a href="#" onclick="deleteTransaction(event, '<?php echo esc_js($trans['type']); ?>', <?php echo esc_js($trans['id']); ?>)" style="color: #c62828;">
+                                            <span>🗑️</span> <?php _e('Stornieren', 'cpsmartcrm'); ?>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -1345,10 +1540,209 @@ foreach ($income_by_source as $source) {
 </div>
 <?php endif; ?>
 
+<!-- Transaction Details Modal -->
+<div id="transactionDetailsModal" class="crm-transaction-details-modal">
+    <div class="crm-transaction-details-content">
+        <div class="crm-transaction-details-header">
+            <h3><?php _e('Transaktionsdetails', 'cpsmartcrm'); ?></h3>
+            <button class="crm-transaction-details-close" onclick="closeTransactionDetails()">&times;</button>
+        </div>
+        <div class="crm-transaction-details-body" id="transactionDetailsBody">
+            <!-- Details werden hier dynamisch eingefügt -->
+        </div>
+    </div>
+</div>
+
 <script>
 // Stelle sicher, dass ajaxurl verfügbar ist
 if (typeof ajaxurl === 'undefined') {
     ajaxurl = <?php echo json_encode(admin_url('admin-ajax.php')); ?>;
+}
+
+// ===== Transaction Actions Menu =====
+
+// Toggle Transaction Actions Dropdown
+function toggleTransactionMenu(event, button) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Close all other open menus
+    document.querySelectorAll('.crm-transaction-actions-dropdown').forEach(dropdown => {
+        if (dropdown !== button.nextElementSibling) {
+            dropdown.style.display = 'none';
+        }
+    });
+    
+    // Toggle this menu
+    const dropdown = button.nextElementSibling;
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close all menus when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.crm-transaction-actions-menu')) {
+        document.querySelectorAll('.crm-transaction-actions-dropdown').forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
+    }
+});
+
+// Show Transaction Details Modal
+function showTransactionDetails(event, transaction) {
+    event.preventDefault();
+    console.log('📋 Zeige Details für:', transaction);
+    
+    const modal = document.getElementById('transactionDetailsModal');
+    const body = document.getElementById('transactionDetailsBody');
+    
+    // Type labels
+    const typeLabels = {
+        'invoice': '<?php _e('Rechnung', 'cpsmartcrm'); ?>',
+        'manual_income': '<?php _e('Manuelle Einnahme', 'cpsmartcrm'); ?>',
+        'expense': '<?php _e('Ausgabe', 'cpsmartcrm'); ?>'
+    };
+    
+    // Get username if available
+    let createdByHtml = '<?php _e('System', 'cpsmartcrm'); ?>';
+    if (transaction.created_by) {
+        <?php
+        // Prepare user data for JavaScript
+        $users = get_users(array('fields' => array('ID', 'display_name')));
+        $users_json = array();
+        foreach ($users as $user) {
+            $users_json[$user->ID] = $user->display_name;
+        }
+        ?>
+        const users = <?php echo json_encode($users_json); ?>;
+        createdByHtml = users[transaction.created_by] || '<?php _e('Unbekannt', 'cpsmartcrm'); ?>';
+    }
+    
+    // Format datetime
+    let createdAtHtml = '<?php _e('Nicht verfügbar', 'cpsmartcrm'); ?>';
+    if (transaction.created_at) {
+        const date = new Date(transaction.created_at);
+        createdAtHtml = date.toLocaleString('de-DE', {
+            day: '2-digit',
+            month: '2-digit', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    // Build details HTML
+    const typeBadgeClass = transaction.is_income ? 'income' : 'expense';
+    const typeLabel = typeLabels[transaction.type] || transaction.type;
+    
+    body.innerHTML = `
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Typ', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value">
+                <span class="crm-transaction-type-badge ${typeBadgeClass}">
+                    ${transaction.is_income ? '+' : '−'} ${typeLabel}
+                </span>
+            </div>
+        </div>
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Datum', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value">${new Date(transaction.date).toLocaleDateString('de-DE')}</div>
+        </div>
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Kategorie', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value"><strong>${transaction.category}</strong></div>
+        </div>
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Beschreibung', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value">${transaction.description}</div>
+        </div>
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Netto-Betrag', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value"><strong>${new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(transaction.net)}</strong></div>
+        </div>
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Steuer', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value">${new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(transaction.tax)}</div>
+        </div>
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Brutto-Betrag', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value"><strong style="font-size: 16px;">${new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(transaction.total)}</strong></div>
+        </div>
+        ${transaction.type !== 'invoice' ? `
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Erfasst von', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value">${createdByHtml}</div>
+        </div>
+        <div class="crm-transaction-detail-row">
+            <div class="crm-transaction-detail-label"><?php _e('Erfasst am', 'cpsmartcrm'); ?></div>
+            <div class="crm-transaction-detail-value">${createdAtHtml}</div>
+        </div>
+        ` : ''}
+    `;
+    
+    modal.classList.add('active');
+}
+
+// Close Transaction Details Modal
+function closeTransactionDetails() {
+    const modal = document.getElementById('transactionDetailsModal');
+    modal.classList.remove('active');
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeTransactionDetails();
+    }
+});
+
+// Close modal on backdrop click
+document.getElementById('transactionDetailsModal')?.addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeTransactionDetails();
+    }
+});
+
+// Delete/Cancel Transaction
+function deleteTransaction(event, type, id) {
+    event.preventDefault();
+    
+    if (!confirm('<?php _e('Möchten Sie diese Transaktion wirklich stornieren? Dies kann nicht rückgängig gemacht werden.', 'cpsmartcrm'); ?>')) {
+        return;
+    }
+    
+    console.log('🗑️ Storniere Transaktion:', type, id);
+    
+    // Close menu
+    document.querySelectorAll('.crm-transaction-actions-dropdown').forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+    
+    // Send AJAX request
+    const formData = new FormData();
+    formData.append('action', 'wpscrm_delete_transaction');
+    formData.append('type', type);
+    formData.append('id', id);
+    formData.append('nonce', '<?php echo wp_create_nonce('delete_transaction_action'); ?>');
+    
+    fetch(ajaxurl, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Server Response:', data);
+        if (data.success) {
+            showAjaxNotice('✓ Transaktion erfolgreich storniert!', 'success');
+            // Reload page to refresh data
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAjaxNotice('❌ ' + (data.data?.message || 'Fehler beim Stornieren'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('🔴 AJAX Fehler:', error);
+        showAjaxNotice('🔴 Fehler: ' + error.message, 'error');
+    });
 }
 
 // Toggle Inline Forms mit Smooth Height Animation

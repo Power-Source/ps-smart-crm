@@ -84,7 +84,17 @@ add_action('wp_ajax_wpscrm_add_expense', function() {
         wp_send_json_error(array('message' => __('Fehler beim Speichern', 'cpsmartcrm')));
     }
     
-    error_log('✅ Expense gespeichert, ID: ' . $wpdb->insert_id);
+    $expense_id = $wpdb->insert_id;
+    error_log('✅ Expense gespeichert, ID: ' . $expense_id);
+    
+    // Log accounting activity
+    wpscrm_log_accounting_activity('create_expense', array(
+        'kategorie' => $expense_category,
+        'beschreibung' => $expense_description,
+        'betrag' => $expense_amount,
+        'steuersatz' => $expense_tax_rate,
+        'datum' => $expense_date,
+    ), $expense_id, 'expense');
     
     // Aktualisierte Daten laden
     error_log('📊 Lade aktualisierte Daten...');
@@ -172,7 +182,17 @@ add_action('wp_ajax_wpscrm_add_income', function() {
         wp_send_json_error(array('message' => __('Fehler beim Speichern', 'cpsmartcrm')));
     }
     
-    error_log('✅ Income gespeichert, ID: ' . $wpdb->insert_id);
+    $income_id = $wpdb->insert_id;
+    error_log('✅ Income gespeichert, ID: ' . $income_id);
+    
+    // Log accounting activity
+    wpscrm_log_accounting_activity('create_income', array(
+        'kategorie' => $income_category,
+        'beschreibung' => $income_description,
+        'betrag' => $income_amount,
+        'steuersatz' => $income_tax_rate,
+        'datum' => $income_date,
+    ), $income_id, 'income');
     
     // Aktualisierte Daten laden
     error_log('📊 Lade aktualisierte Daten...');
@@ -223,6 +243,83 @@ add_action('wp_ajax_wpscrm_add_income', function() {
             'profit_gross' => WPsCRM_format_currency($data['summary']['profit_gross']),
             'tax_payment' => WPsCRM_format_currency($data['income']['total_tax'] - $data['expenses']['tax']),
         ),
+    ));
+});
+
+/**
+ * AJAX: Transaktion stornieren/löschen
+ */
+add_action('wp_ajax_wpscrm_delete_transaction', function() {
+    error_log('🔵 AJAX Handler wpscrm_delete_transaction wurde aufgerufen');
+    
+    // Nonce prüfen
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'delete_transaction_action')) {
+        error_log('❌ Nonce Check failed');
+        wp_send_json_error(array('message' => __('Sicherheitsüberprüfung fehlgeschlagen', 'cpsmartcrm')));
+    }
+    
+    global $wpdb;
+    
+    $type = sanitize_text_field($_POST['type'] ?? '');
+    $id = (int)($_POST['id'] ?? 0);
+    
+    if (empty($type) || $id <= 0) {
+        wp_send_json_error(array('message' => __('Ungültige Parameter', 'cpsmartcrm')));
+    }
+    
+    // Determine table and check permissions
+    $table = null;
+    $created_by_col = 'created_by';
+    
+    if ($type === 'manual_income') {
+        $table = WPsCRM_TABLE . 'incomes';
+    } elseif ($type === 'expense') {
+        $table = WPsCRM_TABLE . 'expenses';
+    } else {
+        wp_send_json_error(array('message' => __('Ungültiger Transaktionstyp', 'cpsmartcrm')));
+    }
+    
+    // Check if transaction exists and get created_by
+    $transaction = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$table} WHERE id = %d",
+        $id
+    ));
+    
+    if (!$transaction) {
+        wp_send_json_error(array('message' => __('Transaktion nicht gefunden', 'cpsmartcrm')));
+    }
+    
+    // Check permissions: Admin can delete all, users can only delete their own
+    $can_delete = current_user_can('manage_options');
+    if (!$can_delete && isset($transaction->created_by)) {
+        $can_delete = ($transaction->created_by == get_current_user_id());
+    }
+    
+    if (!$can_delete) {
+        error_log('❌ Permission denied for user ' . get_current_user_id());
+        wp_send_json_error(array('message' => __('Keine Berechtigung zum Löschen', 'cpsmartcrm')));
+    }
+    
+    // Delete transaction
+    $result = $wpdb->delete($table, array('id' => $id), array('%d'));
+    
+    if ($result === false) {
+        error_log('❌ DB Delete failed: ' . $wpdb->last_error);
+        wp_send_json_error(array('message' => __('Fehler beim Löschen', 'cpsmartcrm')));
+    }
+    
+    error_log('✅ Transaktion gelöscht: ' . $type . ' ID ' . $id);
+    
+    // Log accounting activity
+    wpscrm_log_accounting_activity('delete_transaction', array(
+        'typ' => $type,
+        'kategorie' => isset($transaction->kategoria) ? $transaction->kategoria : '',
+        'betrag' => isset($transaction->totale) ? $transaction->totale : 0,
+        'datum' => isset($transaction->data) ? $transaction->data : '',
+    ), $id, ($type === 'manual_income' ? 'income' : 'expense'));
+    
+    wp_send_json_success(array(
+        'message' => __('Transaktion erfolgreich storniert', 'cpsmartcrm')
     ));
 });
 ?>

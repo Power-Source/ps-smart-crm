@@ -99,6 +99,13 @@ $available_tabs = array(
         'capability' => 'manage_crm',
         'permission_key' => 'can_view_all_accounting',
     ),
+    'audit_log' => array(
+        'label' => __('Audit-Log', 'cpsmartcrm'),
+        'icon' => 'glyphicon glyphicon-list-alt',
+        'file' => 'tabs/audit-log.php',
+        'capability' => 'manage_options', // Nur Admin + Chef
+        'permission_key' => 'chef_role', // Chef-Rolle Zugriff
+    ),
 );
 
 // Allow third-party plugins to add tabs
