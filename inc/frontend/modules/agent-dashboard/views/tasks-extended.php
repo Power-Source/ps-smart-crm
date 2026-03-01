@@ -65,6 +65,8 @@ $nonce = wp_create_nonce( 'crm_task_management' );
             Termin
         </button>
     </div>
+
+    <div id="crm-tasks-feedback" style="display:none;margin-bottom:12px;padding:10px;border-radius:4px;background:#f5f5f5;color:#333;border:1px solid #ddd;"></div>
     
     <!-- Todo Form (Hidden) -->
     <form id="form-add-todo" style="display: none; background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
@@ -216,6 +218,11 @@ $nonce = wp_create_nonce( 'crm_task_management' );
 jQuery(document).ready(function($) {
     const ajaxurl = crmAjax?.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>';
     const nonce = '<?php echo $nonce; ?>';
+
+    function showTasksFeedback(message) {
+        const $feedback = $('#crm-tasks-feedback');
+        $feedback.stop(true, true).text(message).slideDown(150);
+    }
     
     // Toggle Todo Form
     $('#btn-add-todo').on('click', function() {
@@ -264,12 +271,12 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('Todo erstellt.');
+                    showTasksFeedback('Todo erstellt.');
                     $('#form-add-todo')[0].reset();
                     $('#form-add-todo').slideUp(200);
-                    location.reload();
+                    setTimeout(function() { location.reload(); }, 400);
                 } else {
-                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    showTasksFeedback('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });
@@ -293,12 +300,12 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('Termin erstellt.');
+                    showTasksFeedback('Termin erstellt.');
                     $('#form-add-appointment')[0].reset();
                     $('#form-add-appointment').slideUp(200);
-                    location.reload();
+                    setTimeout(function() { location.reload(); }, 400);
                 } else {
-                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    showTasksFeedback('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });

@@ -29,6 +29,8 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
         </h3>
     </div>
     <div class="crm-card-body">
+        <div id="crm-customers-feedback" style="display:none;margin-bottom:12px;padding:10px;border-radius:4px;background:#f5f5f5;color:#333;border:1px solid #ddd;"></div>
+
         <!-- Tab Navigation -->
         <div class="crm-customers-tabs">
             <div class="crm-customers-tabs-nav">
@@ -970,6 +972,11 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
 jQuery(document).ready(function($) {
     var selectedCustomerId = 0;
     var selectedCustomerName = '';
+
+    function showCustomersFeedback(message) {
+        var $feedback = $('#crm-customers-feedback');
+        $feedback.stop(true, true).text(message).slideDown(150);
+    }
     
     // =========================
     // TAB-WECHSEL
@@ -1008,11 +1015,11 @@ jQuery(document).ready(function($) {
                     var customers = response.data.customers || response.data;
                     renderCustomersList(customers);
                 } else {
-                    $('#customers-list-container').html('<div class="crm-alert" style="background:#ffebee;padding:15px;border-left:4px solid #f44336;color:#c62828;"><?php _e('Fehler beim Laden der Kunden.', 'cpsmartcrm'); ?></div>');
+                    $('#customers-list-container').html('<div class="crm-alert" style="background:#f5f5f5;padding:15px;border:1px solid #ddd;color:#333;"><?php _e('Fehler beim Laden der Kunden.', 'cpsmartcrm'); ?></div>');
                 }
             },
             error: function() {
-                $('#customers-list-container').html('<div class="crm-alert" style="background:#ffebee;padding:15px;border-left:4px solid #f44336;color:#c62828;"><?php _e('Verbindungsfehler.', 'cpsmartcrm'); ?></div>');
+                $('#customers-list-container').html('<div class="crm-alert" style="background:#f5f5f5;padding:15px;border:1px solid #ddd;color:#333;"><?php _e('Verbindungsfehler.', 'cpsmartcrm'); ?></div>');
             }
         });
     }
@@ -1187,7 +1194,7 @@ jQuery(document).ready(function($) {
             data: $.param(formData),
             success: function(response) {
                 if (response.success) {
-                    alert('<?php _e('Kunde erfolgreich gespeichert!', 'cpsmartcrm'); ?>');
+                    showCustomersFeedback('<?php _e('Kunde gespeichert.', 'cpsmartcrm'); ?>');
                     resetCustomerForm();
                     loadCustomersList();
                     if ($('.crm-customers-tab-btn[data-tab="customers-list"]').length) {
@@ -1195,7 +1202,7 @@ jQuery(document).ready(function($) {
                     }
                     $('.crm-customers-tab-btn[data-tab="customers-form"]').hide();
                 } else {
-                    alert('<?php _e('Fehler beim Speichern: ', 'cpsmartcrm'); ?>' + (response.data.message || ''));
+                    showCustomersFeedback('<?php _e('Fehler beim Speichern: ', 'cpsmartcrm'); ?>' + (response.data.message || ''));
                 }
             }
         });
@@ -1256,11 +1263,11 @@ jQuery(document).ready(function($) {
                     renderDocuments(docs.invoices || [], '#docs-invoices-list', 'invoice');
                     renderDocuments(docs.proforma || [], '#docs-proforma-list', 'proforma');
                 } else {
-                    $('#docs-quotes-list, #docs-invoices-list, #docs-proforma-list').html('<div style="color:red;padding:10px;">Fehler: ' + (response.data?.message || 'Unbekannt') + '</div>');
+                    $('#docs-quotes-list, #docs-invoices-list, #docs-proforma-list').html('<div style="background:#f5f5f5;padding:10px;border:1px solid #ddd;color:#333;">Fehler: ' + (response.data?.message || 'Unbekannt') + '</div>');
                 }
             },
             error: function(xhr, status, error) {
-                $('#docs-quotes-list, #docs-invoices-list, #docs-proforma-list').html('<div style="color:red;padding:10px;">AJAX-Fehler: ' + error + '</div>');
+                $('#docs-quotes-list, #docs-invoices-list, #docs-proforma-list').html('<div style="background:#f5f5f5;padding:10px;border:1px solid #ddd;color:#333;">AJAX-Fehler: ' + error + '</div>');
             }
         });
     }
@@ -1358,11 +1365,11 @@ jQuery(document).ready(function($) {
                 if (response.success && response.data) {
                     renderContacts(response.data);
                 } else {
-                    $('#contacts-list-container').html('<div style="color:red;padding:10px;">Fehler: ' + (response.data?.message || 'Unbekannt') + '</div>');
+                    $('#contacts-list-container').html('<div style="background:#f5f5f5;padding:10px;border:1px solid #ddd;color:#333;">Fehler: ' + (response.data?.message || 'Unbekannt') + '</div>');
                 }
             },
             error: function(xhr, status, error) {
-                $('#contacts-list-container').html('<div style="color:red;padding:10px;">AJAX-Fehler: ' + error + '</div>');
+                $('#contacts-list-container').html('<div style="background:#f5f5f5;padding:10px;border:1px solid #ddd;color:#333;">AJAX-Fehler: ' + error + '</div>');
             }
         });
     }
@@ -1412,11 +1419,11 @@ jQuery(document).ready(function($) {
             data: $(this).serialize(),
             success: function(response) {
                 if (response.success) {
-                    alert('<?php _e('Kontakt erfolgreich gespeichert!', 'cpsmartcrm'); ?>');
+                    showCustomersFeedback('<?php _e('Kontakt gespeichert.', 'cpsmartcrm'); ?>');
                     $('#contact-modal').fadeOut();
                     loadCustomerContacts(selectedCustomerId);
                 } else {
-                    alert('<?php _e('Fehler beim Speichern.', 'cpsmartcrm'); ?>');
+                    showCustomersFeedback('<?php _e('Fehler beim Speichern.', 'cpsmartcrm'); ?>');
                 }
             }
         });
@@ -1661,13 +1668,13 @@ jQuery(document).ready(function($) {
         
         const customerId = $('#selected-customer-id-docs').val();
         if (!customerId) {
-            alert('Fehler: Kein Kunde ausgewählt');
+            showCustomersFeedback('Fehler: Kein Kunde ausgewählt');
             return;
         }
         
         const lines = collectDocumentLines('quotation');
         if (!lines.length) {
-            alert('Bitte mindestens eine Positionszeile hinzufügen.');
+            showCustomersFeedback('Bitte mindestens eine Positionszeile hinzufügen.');
             return;
         }
 
@@ -1687,14 +1694,14 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('Angebot erstellt.');
+                    showCustomersFeedback('Angebot erstellt.');
                     $('#form-add-quotation')[0].reset();
                     $('#quotation-lines-body').empty();
                     addDocumentLine('quotation', 19);
                     $('#form-add-quotation').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
-                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    showCustomersFeedback('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });
@@ -1706,13 +1713,13 @@ jQuery(document).ready(function($) {
         
         const customerId = $('#selected-customer-id-docs').val();
         if (!customerId) {
-            alert('Fehler: Kein Kunde ausgewählt');
+            showCustomersFeedback('Fehler: Kein Kunde ausgewählt');
             return;
         }
         
         const lines = collectDocumentLines('invoice');
         if (!lines.length) {
-            alert('Bitte mindestens eine Rechnungszeile hinzufügen.');
+            showCustomersFeedback('Bitte mindestens eine Rechnungszeile hinzufügen.');
             return;
         }
 
@@ -1733,14 +1740,14 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('Rechnung erstellt.');
+                    showCustomersFeedback('Rechnung erstellt.');
                     $('#form-add-invoice')[0].reset();
                     $('#invoice-lines-body').empty();
                     addDocumentLine('invoice', 19);
                     $('#form-add-invoice').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
-                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    showCustomersFeedback('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });
@@ -1752,7 +1759,7 @@ jQuery(document).ready(function($) {
 
         const customerId = $('#selected-customer-id-docs').val();
         if (!customerId) {
-            alert('Fehler: Kein Kunde ausgewählt');
+            showCustomersFeedback('Fehler: Kein Kunde ausgewählt');
             return;
         }
 
@@ -1771,12 +1778,12 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('Proforma erstellt.');
+                    showCustomersFeedback('Proforma erstellt.');
                     $('#form-add-proforma')[0].reset();
                     $('#form-add-proforma').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
-                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    showCustomersFeedback('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });
