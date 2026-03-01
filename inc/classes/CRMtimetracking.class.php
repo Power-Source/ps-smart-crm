@@ -39,6 +39,7 @@ class WPsCRM_Timetracking {
 		add_action( 'wp_ajax_wpscrm_get_active_timer', array( $this, 'ajax_get_active_timer' ) );
 		add_action( 'wp_ajax_wpscrm_update_timer_entry', array( $this, 'ajax_update_entry' ) );
 		add_action( 'wp_ajax_wpscrm_delete_timer_entry', array( $this, 'ajax_delete_entry' ) );
+		add_action( 'wp_ajax_crm_add_manual_time', array( $this, 'ajax_add_manual_entry' ) );
 		
 		// Shortcode
 		add_shortcode( 'crm_timer', array( $this, 'render_timer_widget' ) );
@@ -400,6 +401,160 @@ class WPsCRM_Timetracking {
 		}
 		
 		wp_send_json_error( array( 'message' => __( 'Löschen fehlgeschlagen.', 'cpsmartcrm' ) ) );
+	}
+	
+	/**
+	 * Hole monatliche Statistik für User
+	 * 
+	 * @param int $user_id
+	 * @param string $month Format: Y-m
+	 * @return array
+	 */
+	public function get_monthly_stats( $user_id, $month ) {
+		global $wpdb;
+		
+		$start_date = $month . '-01 00:00:00';
+		$end_date = date( 'Y-m-t 23:59:59', strtotime( $start_date ) );
+		
+		$results = $wpdb->get_row( $wpdb->prepare(
+			"SELECT 
+				COUNT(*) as entry_count,
+				SUM(duration_minutes) as total_minutes,
+				SUM(total_amount) as total_earnings,
+				SUM(CASE WHEN is_billable = 1 THEN duration_minutes ELSE 0 END) as billable_minutes
+			FROM {$this->table_name}
+			WHERE user_id = %d
+			AND start_time >= %s
+			AND start_time <= %s
+			AND status = 'completed'",
+			$user_id,
+			$start_date,
+			$end_date
+		) );
+		
+		return array(
+			'entry_count' => intval( $results->entry_count ),
+			'total_hours' => round( floatval( $results->total_minutes ) / 60, 2 ),
+			'total_minutes' => intval( $results->total_minutes ),
+			'total_earnings' => floatval( $results->total_earnings ),
+			'billable_hours' => round( floatval( $results->billable_minutes ) / 60, 2 ),
+		);
+	}
+	
+	/**
+	 * Hole letzte X Einträge für User
+	 * 
+	 * @param int $user_id
+	 * @param int $limit
+	 * @return array
+	 */
+	public function get_recent_entries( $user_id, $limit = 10 ) {
+		global $wpdb;
+		
+		return $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$this->table_name}
+			WHERE user_id = %d
+			AND status = 'completed'
+			ORDER BY start_time DESC
+			LIMIT %d",
+			$user_id,
+			$limit
+		) );
+	}
+	
+	/**
+	 * Füge manuellen Zeiteintrag hinzu
+	 * 
+	 * @param int $user_id
+	 * @param string $work_date Format: Y-m-d
+	 * @param float $duration_hours
+	 * @param string $description
+	 * @param array $args Zusätzliche Parameter
+	 * @return int|WP_Error Entry ID oder Error
+	 */
+	public function add_manual_entry( $user_id, $work_date, $duration_hours, $description, $args = array() ) {
+		global $wpdb;
+		
+		$defaults = array(
+			'fk_kunde' => null,
+			'project_name' => '',
+			'hourly_rate' => 0,
+			'is_billable' => 1,
+		);
+		
+		$data = wp_parse_args( $args, $defaults );
+		
+		// Berechne Start- und End-Zeit (Standard: 09:00 - Ende)
+		$start_time = $work_date . ' 09:00:00';
+		$duration_minutes = round( $duration_hours * 60 );
+		$end_timestamp = strtotime( $start_time ) + ( $duration_minutes * 60 );
+		$end_time = date( 'Y-m-d H:i:s', $end_timestamp );
+		
+		$total_amount = 0;
+		if ( $data['is_billable'] && $data['hourly_rate'] > 0 ) {
+			$total_amount = $duration_hours * $data['hourly_rate'];
+		}
+		
+		$insert_data = array(
+			'user_id' => $user_id,
+			'fk_kunde' => $data['fk_kunde'],
+			'project_name' => sanitize_text_field( $data['project_name'] ),
+			'task_description' => sanitize_textarea_field( $description ),
+			'start_time' => $start_time,
+			'end_time' => $end_time,
+			'duration_minutes' => $duration_minutes,
+			'hourly_rate' => floatval( $data['hourly_rate'] ),
+			'total_amount' => $total_amount,
+			'is_billable' => intval( $data['is_billable'] ),
+			'status' => 'completed',
+			'entry_type' => 'manual',
+		);
+		
+		$result = $wpdb->insert( $this->table_name, $insert_data );
+		
+		if ( $result ) {
+			return $wpdb->insert_id;
+		}
+		
+		return new WP_Error( 'db_error', __( 'Zeiteintrag konnte nicht gespeichert werden.', 'cpsmartcrm' ) );
+	}
+	
+	/**
+	 * AJAX: Füge manuellen Zeiteintrag hinzu
+	 */
+	public function ajax_add_manual_entry() {
+		check_ajax_referer( 'crm_manual_time', 'nonce' );
+		
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'Nicht angemeldet' ) );
+		}
+		
+		$user_id = get_current_user_id();
+		$work_date = sanitize_text_field( $_POST['work_date'] ?? '' );
+		$duration_hours = floatval( $_POST['duration_hours'] ?? 0 );
+		$description = sanitize_textarea_field( $_POST['task_description'] ?? '' );
+		$customer_id = ! empty( $_POST['customer_id'] ) ? intval( $_POST['customer_id'] ) : null;
+		
+		if ( empty( $work_date ) || $duration_hours <= 0 || empty( $description ) ) {
+			wp_send_json_error( array( 'message' => 'Bitte alle Felder ausfüllen' ) );
+		}
+		
+		// Zusätzliche Parameter
+		$args = array();
+		if ( $customer_id ) {
+			$args['fk_kunde'] = $customer_id;
+		}
+		
+		$result = $this->add_manual_entry( $user_id, $work_date, $duration_hours, $description, $args );
+		
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		}
+		
+		wp_send_json_success( array(
+			'message' => 'Zeiteintrag erfolgreich hinzugefügt!',
+			'entry_id' => $result,
+		) );
 	}
 	
 	/**

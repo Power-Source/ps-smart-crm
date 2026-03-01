@@ -156,3 +156,55 @@ function wpscrm_agent_dashboard_timetracking_toggle() {
         wp_send_json_error( array( 'message' => 'Ungültige Aktion' ) );
     }
 }
+
+/**
+ * Toggle Task Status (AJAX)
+ */
+function wpscrm_agent_dashboard_toggle_task() {
+    check_ajax_referer( 'crm_task_toggle', 'nonce' );
+    
+    if ( ! is_user_logged_in() ) {
+        wp_send_json_error( array( 'message' => 'Nicht angemeldet' ) );
+    }
+    
+    $user_id = get_current_user_id();
+    $task_id = intval( $_POST['task_id'] ?? 0 );
+    $fatto = intval( $_POST['fatto'] ?? 1 );
+    
+    if ( ! $task_id ) {
+        wp_send_json_error( array( 'message' => 'Ungültige Aufgabe' ) );
+    }
+    
+    global $wpdb;
+    $agenda_table = WPsCRM_TABLE . 'agenda';
+    
+    // Prüfe ob Task dem User gehört
+    $task = $wpdb->get_row( $wpdb->prepare(
+        "SELECT id_agenda FROM {$agenda_table} WHERE id_agenda = %d AND fk_utenti_des = %d",
+        $task_id,
+        $user_id
+    ) );
+    
+    if ( ! $task ) {
+        wp_send_json_error( array( 'message' => 'Aufgabe nicht gefunden' ) );
+    }
+    
+    // Update Status
+    $result = $wpdb->update(
+        $agenda_table,
+        array( 'fatto' => $fatto ),
+        array( 'id_agenda' => $task_id ),
+        array( '%d' ),
+        array( '%d' )
+    );
+    
+    if ( $result === false ) {
+        wp_send_json_error( array( 'message' => 'Fehler beim Aktualisieren' ) );
+    }
+    
+    wp_send_json_success( array(
+        'message' => 'Aufgabe aktualisiert',
+        'task_id' => $task_id,
+        'fatto' => $fatto
+    ) );
+}

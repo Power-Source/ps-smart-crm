@@ -31,6 +31,7 @@ class WPsCRM_Agent_Dashboard extends WPsCRM_Module_Base {
 		add_action( 'wp_ajax_crm_agent_get_stats', 'wpscrm_agent_dashboard_get_stats' );
 		add_action( 'wp_ajax_crm_agent_get_active_tracking', 'wpscrm_agent_dashboard_get_active_tracking' );
 		add_action( 'wp_ajax_crm_agent_timetracking_toggle', 'wpscrm_agent_dashboard_timetracking_toggle' );
+		add_action( 'wp_ajax_crm_toggle_task', 'wpscrm_agent_dashboard_toggle_task' );
 	}
 	
 	/**
