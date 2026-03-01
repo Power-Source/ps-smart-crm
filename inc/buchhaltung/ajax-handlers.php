@@ -179,10 +179,37 @@ add_action('wp_ajax_wpscrm_add_income', function() {
     $data = wpscrm_get_accounting_period_data($period_from, $period_to, get_current_user_id());
     error_log('📊 Income-Daten geladen');
     
+    // Einnahmequellen nach Kategorie laden
+    $income_by_source = $wpdb->get_results($wpdb->prepare(
+        "SELECT 
+            kategoria as source,
+            COUNT(*) as count,
+            COALESCE(SUM(totale), 0) as total,
+            COALESCE(SUM(imponibile), 0) as net
+         FROM " . WPsCRM_TABLE . "incomes
+         WHERE data BETWEEN %s AND %s
+         GROUP BY kategoria
+         ORDER BY total DESC",
+        $period_from,
+        $period_to
+    ), ARRAY_A);
+    
+    $sources_breakdown = array();
+    foreach ($income_by_source as $source) {
+        if (!empty($source['source'])) {
+            $sources_breakdown[$source['source']] = array(
+                'count' => (int)$source['count'],
+                'net' => WPsCRM_format_currency((float)$source['net']),
+                'total' => WPsCRM_format_currency((float)$source['total']),
+            );
+        }
+    }
+    
     // Return erfolgreiche Response mit aktualisierten Metrics
     error_log('✅ Sende Income Success Response');
     wp_send_json_success(array(
         'message' => __('Einnahme erfolgreich hinzugefügt', 'cpsmartcrm'),
+        'sources' => $sources_breakdown,
         'data' => array(
             'income_net' => WPsCRM_format_currency($data['income']['total_net']),
             'income_tax' => WPsCRM_format_currency($data['income']['total_tax']),

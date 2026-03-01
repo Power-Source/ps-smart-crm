@@ -728,6 +728,18 @@ $sources_breakdown = array(
         'total' => $current_data['income']['invoices_gross'],
     ),
 );
+
+// Manuelle Einnahmen nach Kategorie hinzufügen
+foreach ($income_by_source as $source) {
+    $category = $source['source'];
+    if (!empty($category)) {
+        $sources_breakdown[$category] = array(
+            'count' => (int)$source['count'],
+            'net' => (float)$source['net'],
+            'total' => (float)$source['total'],
+        );
+    }
+}
 ?>
 
 <?php if ($is_own_accounting_scope) : ?>
@@ -990,12 +1002,18 @@ $sources_breakdown = array(
             $source_labels = array(
                 'CRM' => __('Rechnungen CRM', 'cpsmartcrm'),
                 'eCommerce' => __('Rechnungen MarketPress', 'cpsmartcrm'),
-                'BlogHosting' => __('Rechnungen PS-Bloghosting', 'cpsmartcrm')
+                'BlogHosting' => __('Rechnungen PS-Bloghosting', 'cpsmartcrm'),
+                // Manuelle Einnahmen-Kategorien
+                'Dienstleistung' => __('Manuelle Einnahmen: Dienstleistung', 'cpsmartcrm'),
+                'Produktverkauf' => __('Manuelle Einnahmen: Produktverkauf', 'cpsmartcrm'),
+                'Abo' => __('Manuelle Einnahmen: Abo', 'cpsmartcrm'),
+                'Wartung' => __('Manuelle Einnahmen: Wartung', 'cpsmartcrm'),
+                'Sonstiges' => __('Manuelle Einnahmen: Sonstiges', 'cpsmartcrm'),
             );
             
             foreach ($sources_breakdown as $source_key => $source_data) :
                 if ($source_data['total'] > 0) : // Only show sources with revenue
-                    $label = isset($source_labels[$source_key]) ? $source_labels[$source_key] : $source_key;
+                    $label = isset($source_labels[$source_key]) ? $source_labels[$source_key] : __('Manuelle Einnahmen: ', 'cpsmartcrm') . $source_key;
             ?>
             <tr style="border-bottom: 1px solid #e8e8e8;">
                 <td style="padding: 6px;">
@@ -1476,6 +1494,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('✅ Server Response:', data);
                     if (data.success) {
                         updateIncomeMetrics(data.data);
+                        if (data.sources) {
+                            updateRevenueSources(data.sources);
+                        }
                         showAjaxNotice('✓ Einnahme erfolgreich gespeichert!', 'success');
                         incomeForm.reset();
                         toggleIncomeForm();
@@ -1619,13 +1640,100 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Update Revenue Sources Table
+function updateRevenueSources(sources) {
+    console.log('📈 Aktualisiere Einnahmequellen:', sources);
+    
+    // Find revenue sources table
+    const allCards = document.querySelectorAll('.card');
+    let sourcesCard = null;
+    
+    allCards.forEach(card => {
+        if (card.textContent.includes('Einnahmequellen') && card.textContent.includes('📈')) {
+            sourcesCard = card;
+        }
+    });
+    
+    if (!sourcesCard) {
+        console.warn('⚠️ Einnahmequellen-Card nicht gefunden');
+        return;
+    }
+    
+    const table = sourcesCard.querySelector('table');
+    if (!table) {
+        console.warn('⚠️ Einnahmequellen-Tabelle nicht gefunden');
+        return;
+    }
+    
+    // Build new table content
+    let html = '';
+    const hasData = Object.keys(sources).length > 0;
+    
+    if (hasData) {
+        // Source labels mapping
+        const sourceLabels = {
+            'CRM': 'Rechnungen CRM',
+            'Dienstleistung': 'Manuelle Einnahmen: Dienstleistung',
+            'Produktverkauf': 'Manuelle Einnahmen: Produktverkauf',
+            'Abo': 'Manuelle Einnahmen: Abo',
+            'Wartung': 'Manuelle Einnahmen: Wartung',
+            'Sonstiges': 'Manuelle Einnahmen: Sonstiges'
+        };
+        
+        for (const [key, data] of Object.entries(sources)) {
+            const label = sourceLabels[key] || 'Manuelle Einnahmen: ' + key;
+            html += `
+                <tr style="border-bottom: 1px solid #e8e8e8;">
+                    <td style="padding: 6px;"><strong>${label}:</strong></td>
+                    <td style="text-align: right; padding: 6px; font-family: monospace;">${data.total}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e8e8e8;">
+                    <td style="padding: 6px 6px 6px 20px; font-size: 12px; color: #666;">
+                        ${data.count} Rechnung(en)
+                    </td>
+                    <td style="text-align: right; padding: 6px; font-size: 12px; color: #666; font-family: monospace;">
+                        ${data.net} netto
+                    </td>
+                </tr>
+            `;
+        }
+    } else {
+        html = `
+            <tr>
+                <td colspan="2" style="padding: 20px; text-align: center; color: #999; font-style: italic;">
+                    Keine Einnahmen in diesem Zeitraum
+                </td>
+            </tr>
+        `;
+    }
+    
+    // Smooth fade animation
+    table.style.transition = 'opacity 0.3s ease';
+    table.style.opacity = '0';
+    
+    setTimeout(() => {
+        table.innerHTML = html;
+        table.style.opacity = '1';
+        console.log('✅ Einnahmequellen aktualisiert');
+    }, 300);
+}
+
 // Update All Metrics with Smooth Animations
 function updateAllMetrics(data) {
     console.log('🔄 Aktualisiere alle Metriken mit Daten:', data);
     
+    // Validate data exists
+    if (!data || typeof data !== 'object') {
+        console.error('❌ Ungültige Daten für Update:', data);
+        return;
+    }
+    
     // Helper function for smooth value update
     const updateValue = (element, newValue, color = null) => {
-        if (!element) return;
+        if (!element || !newValue) {
+            console.warn('⚠️ Überspringe Update - Element oder Wert fehlt:', element, newValue);
+            return;
+        }
         element.style.transition = 'transform 0.3s ease, color 0.3s ease';
         element.style.transform = 'scale(1.1)';
         if (color) element.style.color = '#ff9800';
@@ -1644,19 +1752,19 @@ function updateAllMetrics(data) {
         
         // Einnahmen (Netto) Card
         if (text.includes('Einnahmen (Netto)') && !text.includes('Rechnungen')) {
-            updateValue(h3, data.income_net, '#0073aa');
+            if (data.income_net) updateValue(h3, data.income_net, '#0073aa');
         }
         // Ausgaben (Netto) Card
         else if (text.includes('Ausgaben (Netto)') && !text.includes('Erfasste')) {
-            updateValue(h3, data.expenses_net, '#ff6b00');
+            if (data.expenses_net) updateValue(h3, data.expenses_net, '#ff6b00');
         }
         // Gewinn (Netto) Card
         else if (text.includes('Gewinn (Netto)')) {
-            updateValue(h3, data.profit_net, '#046307');
+            if (data.profit_net) updateValue(h3, data.profit_net, '#046307');
         }
         // USt.-Zahlung Card
         else if (text.includes('USt.-Zahlung')) {
-            updateValue(h3, data.tax_payment, '#dd3333');
+            if (data.tax_payment) updateValue(h3, data.tax_payment, '#dd3333');
         }
     });
     
@@ -1672,13 +1780,13 @@ function updateAllMetrics(data) {
                     const label = cells[0].textContent.trim();
                     const valueCell = cells[1];
                     
-                    if (label.includes('Bezahlte Rechnungen:')) {
+                    if (label.includes('Bezahlte Rechnungen:') && data.income_count !== undefined) {
                         updateValue(valueCell, data.income_count);
-                    } else if (label.includes('Netto-Summe')) {
+                    } else if (label.includes('Netto-Summe') && data.income_net) {
                         updateValue(valueCell, data.income_net);
-                    } else if (label.includes('Umsatzsteuer:')) {
+                    } else if (label.includes('Umsatzsteuer:') && data.income_tax) {
                         updateValue(valueCell, data.income_tax);
-                    } else if (label.includes('Brutto-Summe:')) {
+                    } else if (label.includes('Brutto-Summe:') && data.income_gross) {
                         updateValue(valueCell, data.income_gross);
                     }
                 }
@@ -1697,13 +1805,13 @@ function updateAllMetrics(data) {
                     const label = cells[0].textContent.trim();
                     const valueCell = cells[1];
                     
-                    if (label.includes('Erfasste Ausgaben:')) {
+                    if (label.includes('Erfasste Ausgaben:') && data.expenses_count !== undefined) {
                         updateValue(valueCell, data.expenses_count);
-                    } else if (label.includes('Netto-Summe:')) {
+                    } else if (label.includes('Netto-Summe:') && data.expenses_net) {
                         updateValue(valueCell, data.expenses_net);
-                    } else if (label.includes('Vorsteuer:')) {
+                    } else if (label.includes('Vorsteuer:') && data.expenses_tax) {
                         updateValue(valueCell, data.expenses_tax);
-                    } else if (label.includes('Brutto-Summe:')) {
+                    } else if (label.includes('Brutto-Summe:') && data.expenses_gross) {
                         updateValue(valueCell, data.expenses_gross);
                     }
                 }
