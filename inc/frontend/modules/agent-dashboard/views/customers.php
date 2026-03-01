@@ -311,15 +311,15 @@ $provenienz = WPsCRM_get_customer_field_values('provenienza');
                     </button>
                     <button type="button" class="crm-btn crm-btn-success" id="btn-add-quotation">
                         <i class="dashicons dashicons-plus"></i>
-                        📋 <?php _e('Neues Angebot', 'cpsmartcrm'); ?>
+                        <?php _e('Neues Angebot', 'cpsmartcrm'); ?>
                     </button>
                     <button type="button" class="crm-btn crm-btn-success" id="btn-add-invoice">
                         <i class="dashicons dashicons-plus"></i>
-                        💰 <?php _e('Neue Rechnung', 'cpsmartcrm'); ?>
+                        <?php _e('Neue Rechnung', 'cpsmartcrm'); ?>
                     </button>
                     <button type="button" class="crm-btn crm-btn-success" id="btn-add-proforma">
                         <i class="dashicons dashicons-plus"></i>
-                        📄 <?php _e('Neue Proforma', 'cpsmartcrm'); ?>
+                        <?php _e('Neue Proforma', 'cpsmartcrm'); ?>
                     </button>
                 </div>
 
@@ -1279,7 +1279,7 @@ jQuery(document).ready(function($) {
             html += '</tr></thead><tbody>';
             
             docs.forEach(function(doc) {
-                var status = doc.pagato == 1 ? '<span style="color:green;font-weight:600;">✓ <?php _e('Bezahlt', 'cpsmartcrm'); ?></span>' : '<span style="color:orange;font-weight:600;">⏱ <?php _e('Offen', 'cpsmartcrm'); ?></span>';
+                var status = doc.pagato == 1 ? '<span style="color:green;font-weight:600;"><?php _e('Bezahlt', 'cpsmartcrm'); ?></span>' : '<span style="color:orange;font-weight:600;"><?php _e('Offen', 'cpsmartcrm'); ?></span>';
                 html += '<tr>';
                 html += '<td><strong>' + (doc.progressivo || doc.id) + '</strong></td>';
                 html += '<td>' + (doc.einstiegsdatum || doc.data || '—') + '</td>';
@@ -1661,13 +1661,13 @@ jQuery(document).ready(function($) {
         
         const customerId = $('#selected-customer-id-docs').val();
         if (!customerId) {
-            alert('❌ Fehler: Kein Kunde ausgewählt');
+            alert('Fehler: Kein Kunde ausgewählt');
             return;
         }
         
         const lines = collectDocumentLines('quotation');
         if (!lines.length) {
-            alert('❌ Bitte mindestens eine Positionszeile hinzufügen.');
+            alert('Bitte mindestens eine Positionszeile hinzufügen.');
             return;
         }
 
@@ -1687,14 +1687,14 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('✅ Angebot erstellt!');
+                    alert('Angebot erstellt.');
                     $('#form-add-quotation')[0].reset();
                     $('#quotation-lines-body').empty();
                     addDocumentLine('quotation', 19);
                     $('#form-add-quotation').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
-                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });
@@ -1706,13 +1706,13 @@ jQuery(document).ready(function($) {
         
         const customerId = $('#selected-customer-id-docs').val();
         if (!customerId) {
-            alert('❌ Fehler: Kein Kunde ausgewählt');
+            alert('Fehler: Kein Kunde ausgewählt');
             return;
         }
         
         const lines = collectDocumentLines('invoice');
         if (!lines.length) {
-            alert('❌ Bitte mindestens eine Rechnungszeile hinzufügen.');
+            alert('Bitte mindestens eine Rechnungszeile hinzufügen.');
             return;
         }
 
@@ -1733,14 +1733,14 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('✅ Rechnung erstellt!');
+                    alert('Rechnung erstellt.');
                     $('#form-add-invoice')[0].reset();
                     $('#invoice-lines-body').empty();
                     addDocumentLine('invoice', 19);
                     $('#form-add-invoice').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
-                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });
@@ -1752,7 +1752,7 @@ jQuery(document).ready(function($) {
 
         const customerId = $('#selected-customer-id-docs').val();
         if (!customerId) {
-            alert('❌ Fehler: Kein Kunde ausgewählt');
+            alert('Fehler: Kein Kunde ausgewählt');
             return;
         }
 
@@ -1771,12 +1771,12 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('✅ Proforma erstellt!');
+                    alert('Proforma erstellt.');
                     $('#form-add-proforma')[0].reset();
                     $('#form-add-proforma').slideUp(200);
                     loadCustomerDocuments(customerId);
                 } else {
-                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });

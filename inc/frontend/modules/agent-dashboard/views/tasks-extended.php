@@ -49,7 +49,6 @@ $nonce = wp_create_nonce( 'crm_task_management' );
 <div class="crm-card" style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #ff9800;">
     <h3 style="margin: 0 0 15px 0; color: #ff9800; display: flex; align-items: center; justify-content: space-between;">
         <span style="display: flex; align-items: center;">
-            <span style="font-size: 24px; margin-right: 10px;">✅</span>
             <span>Meine Aufgaben</span>
         </span>
         <span style="background: #ff9800; color: white; font-size: 12px; padding: 4px 8px; border-radius: 12px; font-weight: bold;">
@@ -60,10 +59,10 @@ $nonce = wp_create_nonce( 'crm_task_management' );
     <!-- Action Buttons -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
         <button class="crm-btn crm-btn-sm crm-btn-primary" id="btn-add-todo" style="cursor: pointer;">
-            ➕ Todo
+            Todo
         </button>
         <button class="crm-btn crm-btn-sm crm-btn-info" id="btn-add-appointment" style="cursor: pointer;">
-            📅 Termin
+            Termin
         </button>
     </div>
     
@@ -265,12 +264,12 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('✅ Todo erstellt!');
+                    alert('Todo erstellt.');
                     $('#form-add-todo')[0].reset();
                     $('#form-add-todo').slideUp(200);
                     location.reload();
                 } else {
-                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });
@@ -294,12 +293,12 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('✅ Termin erstellt!');
+                    alert('Termin erstellt.');
                     $('#form-add-appointment')[0].reset();
                     $('#form-add-appointment').slideUp(200);
                     location.reload();
                 } else {
-                    alert('❌ Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
+                    alert('Fehler: ' + (response.data.message || 'Unbekannter Fehler'));
                 }
             }
         });

@@ -44,12 +44,11 @@ $customers = $wpdb->get_results( $wpdb->prepare(
     <!-- Header mit Tabs -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h3 style="margin: 0; color: #2196F3; display: flex; align-items: center;">
-            <span style="font-size: 24px; margin-right: 10px;">⏱️</span>
             <span>Zeiterfassung</span>
         </h3>
         <div style="display: flex; gap: 8px;">
-            <button class="crm-time-tab active" data-tab="manual" style="padding: 6px 12px; border: none; background: #2196F3; color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">✏️ Eintragen</button>
-            <button class="crm-time-tab" data-tab="stats" style="padding: 6px 12px; border: none; background: #e0e0e0; color: #666; border-radius: 4px; cursor: pointer; font-size: 12px;">📊 Statistik</button>
+            <button class="crm-time-tab active" data-tab="manual" style="padding: 6px 12px; border: none; background: #2196F3; color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">Eintragen</button>
+            <button class="crm-time-tab" data-tab="stats" style="padding: 6px 12px; border: none; background: #e0e0e0; color: #666; border-radius: 4px; cursor: pointer; font-size: 12px;">Statistik</button>
         </div>
     </div>
 
@@ -93,7 +92,7 @@ $customers = $wpdb->get_results( $wpdb->prepare(
             </div>
             
             <button type="submit" class="button button-primary" style="width: 100%;">
-                ✅ Zeiteintrag hinzufügen
+                Zeiteintrag hinzufügen
             </button>
         </form>
         
@@ -218,9 +217,15 @@ jQuery(document).ready(function($) {
         
         $.post(ajaxurl, formData, function(response) {
             const $msg = $('#crm-manual-time-message');
+            const neutralMessageStyle = {
+                'background': '#f5f5f5',
+                'color': '#333',
+                'border': '1px solid #ddd'
+            };
+
             if (response.success) {
-                $msg.css({'background': '#d4edda', 'color': '#155724', 'border': '1px solid #c3e6cb'})
-                    .text('✅ ' + response.data.message)
+                $msg.css(neutralMessageStyle)
+                    .text(response.data.message || 'Zeiteintrag gespeichert.')
                     .show();
                 
                 // Reset Form
@@ -230,8 +235,8 @@ jQuery(document).ready(function($) {
                 // Reload nach 2 Sekunden
                 setTimeout(() => location.reload(), 2000);
             } else {
-                $msg.css({'background': '#f8d7da', 'color': '#721c24', 'border': '1px solid #f5c6cb'})
-                    .text('❌ ' + response.data.message)
+                $msg.css(neutralMessageStyle)
+                    .text(response.data.message || 'Es ist ein Fehler aufgetreten.')
                     .show();
             }
         });
