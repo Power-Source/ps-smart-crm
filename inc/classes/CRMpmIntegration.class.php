@@ -47,7 +47,14 @@ class WPsCRM_PM_Integration {
 	 * Prüft ob Private-Messaging Plugin aktiv ist
 	 */
 	public function is_pm_active() {
-		return class_exists( 'MMessaging' ) && function_exists( 'mm_display_contact_button' );
+		// Prüfe ob MMessaging Klasse/Plugin existiert
+		if ( ! class_exists( 'MMessaging' ) ) {
+			return false;
+		}
+		
+		// Prüfe ob message_inbox Shortcode registriert ist
+		global $shortcode_tags;
+		return isset( $shortcode_tags['message_inbox'] );
 	}
 	
 	/**
