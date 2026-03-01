@@ -124,7 +124,6 @@ function WPsCRM_mp_get_order_total($order)
 function WPsCRM_mp_log($message)
 {
     if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[WPsCRM MP] ' . $message);
     }
 }
 

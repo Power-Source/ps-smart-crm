@@ -12,20 +12,50 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="crm-agent-dashboard" style="padding: 20px; background: #f5f5f5; min-height: 100vh;">
     
     <!-- Header Section -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div style="flex: 1;">
             <?php if ( 'agent' === $user_type ) : ?>
-                <h1 style="margin: 0; color: #333;">👋 Willkommen, <?php echo esc_html( $user_data['display_name'] ); ?></h1>
+                <h1 style="margin: 0 0 15px 0; color: #333;">👋 Willkommen, <?php echo esc_html( $user_data['display_name'] ); ?></h1>
+                
+                <!-- Profile Info Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; color: #999; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">Name</label>
+                        <p style="margin: 0; color: #333; font-weight: 500; font-size: 15px;"><?php echo esc_html( $user_data['display_name'] ); ?></p>
+                    </div>
+                    <div>
+                        <label style="display: block; color: #999; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">E-Mail</label>
+                        <p style="margin: 0; color: #333; font-size: 15px;"><?php echo esc_html( $user_data['email'] ); ?></p>
+                    </div>
+                    <div>
+                        <label style="display: block; color: #999; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">Stundensatz</label>
+                        <p style="margin: 0; color: #333; font-weight: 500; font-size: 15px;">
+                            <?php 
+                            if ( isset( $user_data['hourly_rate'] ) && $user_data['hourly_rate'] ) {
+                                echo '€' . esc_html( $user_data['hourly_rate'] ) . '/h';
+                            } else {
+                                echo '€—/h';
+                            }
+                            ?>
+                        </p>
+                    </div>
+                </div>
+                
+                <p style="margin: 15px 0 0 0; color: #666; font-size: 14px;">
+                    <?php echo date_i18n( 'l, d. F Y' ); ?>
+                </p>
             <?php elseif ( 'customer' === $user_type ) : ?>
                 <h1 style="margin: 0; color: #333;">🏢 Kundenzone</h1>
+                <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;"><?php echo date_i18n( 'l, d. F Y' ); ?></p>
             <?php else : ?>
                 <h1 style="margin: 0; color: #333;">💼 Agent Dashboard</h1>
+                <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;"><?php echo date_i18n( 'l, d. F Y' ); ?></p>
             <?php endif; ?>
-            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
-                <?php echo date_i18n( 'l, d. F Y' ); ?>
-            </p>
         </div>
-        <div>
+        <div style="display: flex; gap: 10px;">
+            <?php if ( 'agent' === $user_type && $user_data['ID'] ) : ?>
+                <a href="<?php echo admin_url( 'user-edit.php?user_id=' . $user_data['ID'] ); ?>" class="button button-small" style="margin-right: 10px;">🔧 Profil bearbeiten</a>
+            <?php endif; ?>
             <?php if ( $user_data['ID'] ) : ?>
                 <a href="<?php echo wp_logout_url(); ?>" class="button button-secondary">🚪 Logout</a>
             <?php else : ?>
@@ -67,9 +97,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <?php echo do_shortcode( '[message_inbox]' ); ?>
         </div>
         <?php endif; ?>
-
-        <!-- Profile Section -->
-        <?php include __DIR__ . '/profile.php'; ?>
 
     <?php elseif ( 'customer' === $user_type ) : ?>
         

@@ -47,8 +47,6 @@ add_action( 'prosites_transaction_record', function( $transaction ) {
     // In CRM Datenbank einfügen
     // $wpdb->insert( $wpdb->prefix . 'smartcrm_incomes', $income_data );
     
-    error_log( 'Smart CRM: Zahlung registriert - Transaktions-ID: ' . $transaction->invoice_number );
-    
 } );
 
 
@@ -102,13 +100,6 @@ add_action( 'psts_extend', function(
     // Speichere in CRM
     // $wpdb->insert( $wpdb->prefix . 'smartcrm_subscriptions', $renewal_data );
     
-    error_log( sprintf(
-        'Smart CRM: Abonnement verlängert - Blog %d, Level %d, Ablaufdatum %s',
-        $blog_id,
-        $level,
-        $expire_date
-    ) );
-    
 }, 10, 7 );
 
 
@@ -125,13 +116,6 @@ add_action( 'psts_upgrade', function( $blog_id, $new_level, $old_level ) {
     
     $new_level_name = $psts->get_level_setting( $new_level, 'name' );
     $old_level_name = $old_level ? $psts->get_level_setting( $old_level, 'name' ) : 'Kostenlos';
-    
-    error_log( sprintf(
-        'Smart CRM: Blog %d aktualisiert von %s auf %s',
-        $blog_id,
-        $old_level_name,
-        $new_level_name
-    ) );
     
     // Speichere Upgrade in CRM
     // $wpdb->insert( $wpdb->prefix . 'smartcrm_upgrades', array(
@@ -152,13 +136,6 @@ add_action( 'psts_downgrade', function( $blog_id, $new_level, $old_level ) {
     
     $new_level_name = $psts->get_level_setting( $new_level, 'name' );
     $old_level_name = $psts->get_level_setting( $old_level, 'name' );
-    
-    error_log( sprintf(
-        'Smart CRM: Blog %d herabgestuft von %s auf %s',
-        $blog_id,
-        $old_level_name,
-        $new_level_name
-    ) );
     
 } );
 
@@ -498,10 +475,6 @@ function pscrm_test_payment_hook() {
         ),
     );
     
-    // Triggere den Hook
-    do_action( 'prosites_transaction_record', $test_transaction );
-    
-    error_log( 'Smart CRM: Test-Hook ausgelöst mit Transaktions-ID: ' . $test_transaction->invoice_number );
 }
 
 /**
@@ -512,11 +485,6 @@ function pscrm_debug_payment_logs( $blog_id ) {
     $subscription = pscrm_get_blog_subscription( $blog_id );
     $payments = pscrm_get_blog_payments( $blog_id );
     $history = pscrm_get_complete_payment_history( $blog_id );
-    
-    error_log( '=== Smart CRM Zahlungs-Debug für Blog ' . $blog_id . ' ===' );
-    error_log( 'Aktuelles Abonnement: ' . print_r( $subscription, true ) );
-    error_log( 'Letzte Zahlungen: ' . print_r( $payments, true ) );
-    error_log( 'Vollständige Historie: ' . print_r( $history, true ) );
 }
 
 
@@ -579,8 +547,6 @@ function pscrm_setup_payment_tables() {
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql_incomes );
     dbDelta( $sql_subscriptions );
-    
-    error_log( 'Smart CRM: Zahlungs-Tabellen erstellt/aktualisiert' );
 }
 
 // Registriere Setup-Funktion

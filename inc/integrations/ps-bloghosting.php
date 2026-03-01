@@ -82,7 +82,6 @@ function WPsCRM_bh_get_blog_name($blog_id)
 function WPsCRM_bh_log($message)
 {
     if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[WPsCRM BH] ' . $message);
     }
 }
 
