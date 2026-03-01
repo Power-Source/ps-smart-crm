@@ -8,6 +8,9 @@
 
 if (!defined('ABSPATH')) exit;
 
+error_log('🟢 ajax-handlers.php wurde geladen');
+error_log('🔧 Registriere AJAX-Hooks: wpscrm_add_income und wpscrm_add_expense');
+
 /**
  * Konvertiert Dezimaltrennerin (Komma) zu Punkt
  * Funktioniert mit: 90,45 (DE) → 90.45 und 90.45 (EN) → 90.45
@@ -24,15 +27,22 @@ function wpscrm_normalize_amount($amount) {
  * AJAX: Neue Ausgabe hinzufügen und aktualisierte Tabelle zurückgeben
  */
 add_action('wp_ajax_wpscrm_add_expense', function() {
+    error_log('🔵 AJAX Handler wpscrm_add_expense wurde aufgerufen');
+    error_log('🔍 POST Data: ' . print_r($_POST, true));
+    
     // Permissions prüfen
     if (!current_user_can('manage_crm')) {
+        error_log('❌ Permission Check failed');
         wp_send_json_error(array('message' => __('Keine Berechtigung', 'cpsmartcrm')));
     }
     
     // Nonce prüfen
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_expense_action')) {
+        error_log('❌ Nonce Check failed - nonce: ' . ($_POST['nonce'] ?? 'NOT SET'));
         wp_send_json_error(array('message' => __('Sicherheitsüberprüfung fehlgeschlagen', 'cpsmartcrm')));
     }
+    
+    error_log('✅ Permissions und Nonce OK');
     
     global $wpdb;
     
@@ -70,21 +80,33 @@ add_action('wp_ajax_wpscrm_add_expense', function() {
     );
     
     if (!$result) {
+        error_log('❌ Expense DB Insert failed: ' . $wpdb->last_error);
         wp_send_json_error(array('message' => __('Fehler beim Speichern', 'cpsmartcrm')));
     }
     
+    error_log('✅ Expense gespeichert, ID: ' . $wpdb->insert_id);
+    
     // Aktualisierte Daten laden
+    error_log('📊 Lade aktualisierte Daten...');
     $data = wpscrm_get_accounting_period_data($period_from, $period_to, get_current_user_id());
+    error_log('📊 Expense-Daten geladen');
     
     // Return erfolgreiche Response mit aktualisierten Metrics
+    error_log('✅ Sende Expense Success Response');
     wp_send_json_success(array(
         'message' => __('Ausgabe erfolgreich hinzugefügt', 'cpsmartcrm'),
         'data' => array(
-            'expenses_total' => WPsCRM_format_currency($data['expenses']['gross']),
-            'expenses_count' => $data['expenses']['count'],
+            'income_net' => WPsCRM_format_currency($data['income']['total_net']),
+            'income_tax' => WPsCRM_format_currency($data['income']['total_tax']),
+            'income_gross' => WPsCRM_format_currency($data['income']['total_gross']),
+            'income_count' => $data['income']['total_count'],
             'expenses_net' => WPsCRM_format_currency($data['expenses']['net']),
+            'expenses_tax' => WPsCRM_format_currency($data['expenses']['tax']),
+            'expenses_gross' => WPsCRM_format_currency($data['expenses']['total_gross']),
+            'expenses_count' => $data['expenses']['total_count'],
             'profit_net' => WPsCRM_format_currency($data['summary']['profit_net']),
             'profit_gross' => WPsCRM_format_currency($data['summary']['profit_gross']),
+            'tax_payment' => WPsCRM_format_currency($data['income']['total_tax'] - $data['expenses']['tax']),
         ),
     ));
 });
@@ -93,15 +115,22 @@ add_action('wp_ajax_wpscrm_add_expense', function() {
  * AJAX: Neue Einnahme hinzufügen und aktualisierte Tabelle zurückgeben
  */
 add_action('wp_ajax_wpscrm_add_income', function() {
+    error_log('🔵 AJAX Handler wpscrm_add_income wurde aufgerufen');
+    error_log('🔍 POST Data: ' . print_r($_POST, true));
+    
     // Permissions prüfen
     if (!current_user_can('manage_crm')) {
+        error_log('❌ Permission Check failed');
         wp_send_json_error(array('message' => __('Keine Berechtigung', 'cpsmartcrm')));
     }
     
     // Nonce prüfen
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add_income_action')) {
+        error_log('❌ Nonce Check failed - nonce: ' . ($_POST['nonce'] ?? 'NOT SET'));
         wp_send_json_error(array('message' => __('Sicherheitsüberprüfung fehlgeschlagen', 'cpsmartcrm')));
     }
+    
+    error_log('✅ Permissions und Nonce OK');
     
     global $wpdb;
     
@@ -139,21 +168,33 @@ add_action('wp_ajax_wpscrm_add_income', function() {
     );
     
     if (!$result) {
+        error_log('❌ Income DB Insert failed: ' . $wpdb->last_error);
         wp_send_json_error(array('message' => __('Fehler beim Speichern', 'cpsmartcrm')));
     }
     
+    error_log('✅ Income gespeichert, ID: ' . $wpdb->insert_id);
+    
     // Aktualisierte Daten laden
+    error_log('📊 Lade aktualisierte Daten...');
     $data = wpscrm_get_accounting_period_data($period_from, $period_to, get_current_user_id());
+    error_log('📊 Income-Daten geladen');
     
     // Return erfolgreiche Response mit aktualisierten Metrics
+    error_log('✅ Sende Income Success Response');
     wp_send_json_success(array(
         'message' => __('Einnahme erfolgreich hinzugefügt', 'cpsmartcrm'),
         'data' => array(
-            'income_total' => WPsCRM_format_currency($data['income']['total_gross']),
-            'income_count' => $data['income']['total_count'],
             'income_net' => WPsCRM_format_currency($data['income']['total_net']),
+            'income_tax' => WPsCRM_format_currency($data['income']['total_tax']),
+            'income_gross' => WPsCRM_format_currency($data['income']['total_gross']),
+            'income_count' => $data['income']['total_count'],
+            'expenses_net' => WPsCRM_format_currency($data['expenses']['net']),
+            'expenses_tax' => WPsCRM_format_currency($data['expenses']['tax']),
+            'expenses_gross' => WPsCRM_format_currency($data['expenses']['total_gross']),
+            'expenses_count' => $data['expenses']['total_count'],
             'profit_net' => WPsCRM_format_currency($data['summary']['profit_net']),
             'profit_gross' => WPsCRM_format_currency($data['summary']['profit_gross']),
+            'tax_payment' => WPsCRM_format_currency($data['income']['total_tax'] - $data['expenses']['tax']),
         ),
     ));
 });

@@ -105,6 +105,19 @@ require_once(__DIR__ . '/inc/options.php');
 require_once(__DIR__ . '/inc/integrations/marketpress.php');
 require_once(__DIR__ . '/inc/integrations/ps-bloghosting.php');
 
+// Load Buchhaltung AJAX handlers (must be loaded early for admin-ajax.php)
+if (file_exists(__DIR__ . '/inc/buchhaltung/ajax-handlers.php')) {
+    require_once(__DIR__ . '/inc/buchhaltung/ajax-handlers.php');
+}
+
+// Load Buchhaltung helper modules for AJAX handlers
+if (file_exists(__DIR__ . '/inc/buchhaltung/helpers.php')) {
+    require_once(__DIR__ . '/inc/buchhaltung/helpers.php');
+}
+if (file_exists(__DIR__ . '/inc/buchhaltung/modules/accounting-period-filters.php')) {
+    require_once(__DIR__ . '/inc/buchhaltung/modules/accounting-period-filters.php');
+}
+
 
 
 register_activation_hook( __FILE__, 'WPsCRM_crm_install' );

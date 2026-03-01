@@ -822,7 +822,7 @@ $sources_breakdown = array(
             <!-- Income Form - Inline in Container -->
             <div id="income_form_container" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
                 <form id="add_income_form" method="post" action="" style="background: #f0f7ff; padding: 16px; margin-top: 12px; border: 1px solid #ddd; border-radius: 4px;">
-                    <input type="hidden" name="action" value="add_income" />
+                    <input type="hidden" name="action" value="wpscrm_add_income" />
                     <input type="hidden" name="period_from" value="<?php echo esc_attr($period_from); ?>" />
                     <input type="hidden" name="period_to" value="<?php echo esc_attr($period_to); ?>" />
                     <?php wp_nonce_field('add_income_action', 'nonce'); ?>
@@ -922,7 +922,7 @@ $sources_breakdown = array(
             <!-- Expense Form - Inline in Container -->
             <div id="expense_form_container" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
                 <form id="add_expense_form" method="post" action="" style="background: #fff5f0; padding: 16px; margin-top: 12px; border: 1px solid #ddd; border-radius: 4px;">
-                    <input type="hidden" name="action" value="add_expense" />
+                    <input type="hidden" name="action" value="wpscrm_add_expense" />
                     <input type="hidden" name="period_from" value="<?php echo esc_attr($period_from); ?>" />
                     <input type="hidden" name="period_to" value="<?php echo esc_attr($period_to); ?>" />
                     <?php wp_nonce_field('add_expense_action', 'nonce'); ?>
@@ -1032,7 +1032,7 @@ $sources_breakdown = array(
             <?php _e('Übersicht nach Quelle/Integration', 'cpsmartcrm'); ?>
         </p>
     </div>
-</div></div>
+</div>
 
 <!-- Alle Transaktionen (Einnahmen & Ausgaben) chronologisch -->
 <style>
@@ -1428,7 +1428,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 const formData = new FormData(this);
-                formData.append('action', 'wpscrm_add_income');
                 
                 console.log('📋 FormData Keys:', Array.from(formData.keys()));
                 console.log('✉️ Nonce:', formData.get('nonce'));
@@ -1459,10 +1458,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(response => {
                     console.log('📡 Response Status:', response.status, response.statusText);
-                    if (!response.ok) {
-                        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-                    }
-                    return response.json();
+                    // Log raw response for debugging
+                    return response.text().then(text => {
+                        console.log('📄 Raw Response:', text);
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status + ': ' + response.statusText + ' - ' + text.substring(0, 200));
+                        }
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error('❌ JSON Parse Error:', e);
+                            throw new Error('Ungültige JSON-Antwort: ' + text.substring(0, 100));
+                        }
+                    });
                 })
                 .then(data => {
                     console.log('✅ Server Response:', data);
@@ -1497,127 +1505,222 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Expense Form AJAX Handler
-const expenseForm = document.getElementById('add_expense_form');
-if (expenseForm) {
-    expenseForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Validate amount input
-        const amountInput = this.querySelector('#expense_amount');
-        const amountValue = amountInput.value.trim();
-        
-        // Basic validation
-        if (!amountValue) {
-            showAjaxNotice('❌ Bitte geben Sie einen Betrag ein!', 'error');
-            return;
-        }
-        
-        // Try to parse amount with both separators
-        const normalizedAmount = parseFloat(amountValue.replace('.', '').replace(',', '.'));
-        if (isNaN(normalizedAmount) || normalizedAmount <= 0) {
-            showAjaxNotice('❌ Ungültiger Betrag! Bitte verwenden Sie Komma (,) oder Punkt (.) als Dezimaltrenner', 'error');
-            return;
-        }
-        
-        const formData = new FormData(this);
-        formData.append('action', 'wpscrm_add_expense');
-        
-        console.log('📋 Expense Form DEBUG - FormData Keys:', Array.from(formData.keys()));
-        console.log('📋 Expense Form DEBUG - FormData Werte:', {
-            amount: formData.get('expense_amount'),
-            normalizedAmount: normalizedAmount,
-            taxRate: formData.get('expense_tax_rate'),
-            category: formData.get('expense_category'),
-            date: formData.get('expense_date'),
-            nonce: formData.get('nonce') ? '✓ vorhanden' : '✗ FEHLT!'
-        });
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '⏳ Speichert...';
-        submitBtn.disabled = true;
-        
-        fetch(ajaxurl, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            console.log('📡 Response Status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Server Response:', data);
-            if (data.success) {
-                updateExpenseMetrics(data.data);
-                showAjaxNotice('✓ Ausgabe erfolgreich gespeichert!', 'success');
-                expenseForm.reset();
-                toggleExpenseForm();
-                setTimeout(() => {
-                    const metricsSection = document.querySelector('[style*="display: grid"]');
-                    if (metricsSection) metricsSection.scrollIntoView({ behavior: 'smooth' });
-                }, 300);
-            } else {
-                console.error('❌ Fehler:', data.data);
-                showAjaxNotice('❌ ' + (data.data?.message || 'Fehler beim Speichern'), 'error');
+document.addEventListener('DOMContentLoaded', function() {
+    const expenseForm = document.getElementById('add_expense_form');
+    console.log('🔍 Expense Form gefunden:', expenseForm ? '✓' : '✗');
+    
+    if (expenseForm) {
+        expenseForm.addEventListener('submit', function(e) {
+            console.log('📝 Expense Form Submitted!');
+            e.preventDefault();
+            
+            try {
+                // Validate amount input
+                const amountInput = this.querySelector('#expense_amount');
+                console.log('📍 Amount Input gefunden:', amountInput ? '✓' : '✗');
+                
+                if (!amountInput) {
+                    showAjaxNotice('❌ FEHLER: Betrag-Feld nicht gefunden!', 'error');
+                    return;
+                }
+                
+                const amountValue = amountInput.value.trim();
+                console.log('💰 Amount Value:', amountValue);
+                
+                // Basic validation
+                if (!amountValue) {
+                    showAjaxNotice('❌ Bitte geben Sie einen Betrag ein!', 'error');
+                    return;
+                }
+                
+                // Try to parse amount with both separators
+                const normalizedAmount = parseFloat(amountValue.replace('.', '').replace(',', '.'));
+                console.log('💯 Normalized Amount:', normalizedAmount);
+                
+                if (isNaN(normalizedAmount) || normalizedAmount <= 0) {
+                    showAjaxNotice('❌ Ungültiger Betrag! Bitte verwenden Sie Komma (,) oder Punkt (.) als Dezimaltrenner', 'error');
+                    return;
+                }
+                
+                const formData = new FormData(this);
+                
+                console.log('📋 FormData Keys:', Array.from(formData.keys()));
+                console.log('✉️ Nonce:', formData.get('nonce'));
+                console.log('🌐 AJAX URL:', typeof ajaxurl !== 'undefined' ? ajaxurl : 'UNDEFINED');
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (!submitBtn) {
+                    showAjaxNotice('❌ FEHLER: Submit-Button nicht gefunden!', 'error');
+                    return;
+                }
+                
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '⏳ Speichert...';
+                submitBtn.disabled = true;
+                
+                if (typeof ajaxurl === 'undefined') {
+                    showAjaxNotice('❌ KRITISCHER FEHLER: ajaxurl ist nicht definiert!', 'error');
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                console.log('🚀 Starte AJAX-Anfrage zu:', ajaxurl);
+                
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    console.log('📡 Response Status:', response.status, response.statusText);
+                    // Log raw response for debugging
+                    return response.text().then(text => {
+                        console.log('📄 Raw Response:', text);
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status + ': ' + response.statusText + ' - ' + text.substring(0, 200));
+                        }
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error('❌ JSON Parse Error:', e);
+                            throw new Error('Ungültige JSON-Antwort: ' + text.substring(0, 100));
+                        }
+                    });
+                })
+                .then(data => {
+                    console.log('✅ Server Response:', data);
+                    if (data.success) {
+                        updateExpenseMetrics(data.data);
+                        showAjaxNotice('✓ Ausgabe erfolgreich gespeichert!', 'success');
+                        expenseForm.reset();
+                        toggleExpenseForm();
+                        setTimeout(() => {
+                            const metricsSection = document.querySelector('[style*="display: grid"]');
+                            if (metricsSection) metricsSection.scrollIntoView({ behavior: 'smooth' });
+                        }, 300);
+                    } else {
+                        console.error('❌ Server Fehler:', data.data);
+                        showAjaxNotice('❌ ' + (data.data?.message || 'Fehler beim Speichern'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('🔴 AJAX Fehler Details:', error);
+                    showAjaxNotice('🔴 ' + error.message, 'error');
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                });
+            } catch (err) {
+                console.error('🔴 JavaScript Fehler:', err);
+                showAjaxNotice('🔴 JavaScript Fehler: ' + err.message, 'error');
             }
-        })
-        .catch(error => {
-            console.error('🔴 AJAX Fehler:', error);
-            showAjaxNotice('🔴 Kritischer Fehler: ' + error.message, 'error');
-        })
-        .finally(() => {
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
         });
+    }
+});
+
+// Update All Metrics with Smooth Animations
+function updateAllMetrics(data) {
+    console.log('🔄 Aktualisiere alle Metriken mit Daten:', data);
+    
+    // Helper function for smooth value update
+    const updateValue = (element, newValue, color = null) => {
+        if (!element) return;
+        element.style.transition = 'transform 0.3s ease, color 0.3s ease';
+        element.style.transform = 'scale(1.1)';
+        if (color) element.style.color = '#ff9800';
+        element.textContent = newValue;
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+            if (color) element.style.color = color;
+        }, 300);
+    };
+    
+    // Update Key Metrics (Top 4 Cards)
+    const allCards = document.querySelectorAll('.card');
+    allCards.forEach(card => {
+        const text = card.textContent;
+        const h3 = card.querySelector('h3');
+        
+        // Einnahmen (Netto) Card
+        if (text.includes('Einnahmen (Netto)') && !text.includes('Rechnungen')) {
+            updateValue(h3, data.income_net, '#0073aa');
+        }
+        // Ausgaben (Netto) Card
+        else if (text.includes('Ausgaben (Netto)') && !text.includes('Erfasste')) {
+            updateValue(h3, data.expenses_net, '#ff6b00');
+        }
+        // Gewinn (Netto) Card
+        else if (text.includes('Gewinn (Netto)')) {
+            updateValue(h3, data.profit_net, '#046307');
+        }
+        // USt.-Zahlung Card
+        else if (text.includes('USt.-Zahlung')) {
+            updateValue(h3, data.tax_payment, '#dd3333');
+        }
     });
+    
+    // Update Income Detail Table
+    const incomeTables = document.querySelectorAll('.card table');
+    incomeTables.forEach(table => {
+        const parentCard = table.closest('.card');
+        if (parentCard && parentCard.textContent.includes('💰')) {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 2) {
+                    const label = cells[0].textContent.trim();
+                    const valueCell = cells[1];
+                    
+                    if (label.includes('Bezahlte Rechnungen:')) {
+                        updateValue(valueCell, data.income_count);
+                    } else if (label.includes('Netto-Summe')) {
+                        updateValue(valueCell, data.income_net);
+                    } else if (label.includes('Umsatzsteuer:')) {
+                        updateValue(valueCell, data.income_tax);
+                    } else if (label.includes('Brutto-Summe:')) {
+                        updateValue(valueCell, data.income_gross);
+                    }
+                }
+            });
+        }
+    });
+    
+    // Update Expense Detail Table
+    incomeTables.forEach(table => {
+        const parentCard = table.closest('.card');
+        if (parentCard && parentCard.textContent.includes('📊')) {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 2) {
+                    const label = cells[0].textContent.trim();
+                    const valueCell = cells[1];
+                    
+                    if (label.includes('Erfasste Ausgaben:')) {
+                        updateValue(valueCell, data.expenses_count);
+                    } else if (label.includes('Netto-Summe:')) {
+                        updateValue(valueCell, data.expenses_net);
+                    } else if (label.includes('Vorsteuer:')) {
+                        updateValue(valueCell, data.expenses_tax);
+                    } else if (label.includes('Brutto-Summe:')) {
+                        updateValue(valueCell, data.expenses_gross);
+                    }
+                }
+            });
+        }
+    });
+    
+    console.log('✅ Alle Metriken aktualisiert');
 }
 
-// Update Income Metrics Animations
+// Wrapper functions for backward compatibility
 function updateIncomeMetrics(data) {
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-        const text = card.textContent;
-        if (text.includes('Einnahmen') && text.includes('Netto')) {
-            const valueEl = card.querySelector('h3');
-            if (valueEl) {
-                valueEl.style.transition = 'color 0.3s ease';
-                valueEl.style.color = '#ff9800';
-                valueEl.innerHTML = data.income_total;
-                setTimeout(() => valueEl.style.color = '#0073aa', 300);
-            }
-        }
-        if (text.includes('Gewinn') && text.includes('Netto')) {
-            const valueEl = card.querySelector('h3');
-            if (valueEl) {
-                valueEl.style.transition = 'color 0.3s ease';
-                valueEl.innerHTML = data.profit_net;
-            }
-        }
-    });
+    updateAllMetrics(data);
 }
 
-// Update Expense Metrics Animations
 function updateExpenseMetrics(data) {
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-        const text = card.textContent;
-        if (text.includes('Ausgaben') && text.includes('Netto')) {
-            const valueEl = card.querySelector('h3');
-            if (valueEl) {
-                valueEl.style.transition = 'color 0.3s ease';
-                valueEl.style.color = '#ff9800';
-                valueEl.innerHTML = data.expenses_total;
-                setTimeout(() => valueEl.style.color = '#ff6b00', 300);
-            }
-        }
-        if (text.includes('Gewinn') && text.includes('Netto')) {
-            const valueEl = card.querySelector('h3');
-            if (valueEl) {
-                valueEl.style.transition = 'color 0.3s ease';
-                valueEl.innerHTML = data.profit_net;
-            }
-        }
-    });
+    updateAllMetrics(data);
 }
 
 // Show AJAX Notice
