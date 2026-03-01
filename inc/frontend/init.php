@@ -30,12 +30,15 @@ function wpscrm_init_frontend_system() {
 	require_once __DIR__ . '/modules/agent-dashboard/Agent_Dashboard.php';
 	require_once __DIR__ . '/modules/customer-portal/Customer_Portal.php';
 	require_once __DIR__ . '/modules/guest-view/Guest_View.php';
+	
+	// Initialize Frontend Manager (registers shortcodes and hooks)
+	WPsCRM_Frontend_Manager::get_instance();
 }
 
 /**
  * Hook on plugins_loaded
  */
-add_action( 'plugins_loaded', 'wpscrm_init_frontend_system', 10 );
+add_action( 'plugins_loaded', 'wpscrm_init_frontend_system', 5 ); // Früher laden (Priority 5 statt 10)
 
 /**
  * Helper: Get customer by email

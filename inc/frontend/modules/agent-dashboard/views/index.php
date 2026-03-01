@@ -46,12 +46,24 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             
             // Aufgaben
             include __DIR__ . '/tasks.php';
-            
-            // Postfach
-            include __DIR__ . '/inbox.php';
             ?>
             
         </div>
+
+        <?php 
+        // PM Inbox Container - wenn PM aktiv ist
+        $pm_integration = null;
+        if ( class_exists( 'WPsCRM_PM_Integration' ) ) {
+            $pm_integration = WPsCRM_PM_Integration::get_instance();
+        }
+        
+        if ( $pm_integration && $pm_integration->is_pm_active() ) : 
+        ?>
+        <!-- PM Inbox Container -->
+        <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 30px;">
+            <?php echo do_shortcode( '[message_inbox]' ); ?>
+        </div>
+        <?php endif; ?>
 
         <!-- Profile Section -->
         <?php include __DIR__ . '/profile.php'; ?>

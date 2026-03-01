@@ -33,9 +33,6 @@ class WPsCRM_Frontend_Settings {
 	private function __construct() {
 		// Settings registrieren
 		$this->register_settings();
-		
-		// AJAX Handler für Seite erstellen
-		add_action( 'wp_ajax_crm_create_frontend_page', array( $this, 'ajax_create_page' ) );
 	}
 	
 	/**

@@ -40,14 +40,20 @@ class WPsCRM_Agent_Dashboard extends WPsCRM_Module_Base {
 	 * @return string
 	 */
 	public function render( $atts = array() ) {
+		// Debug: Test ob render() aufgerufen wird
+		error_log( 'Agent Dashboard render() called' );
+		
 		// Detect User
 		$detector = new WPsCRM_User_Detector();
 		$this->set_user_data( $detector->get_data() );
 		
 		// Load main view
-		return $this->load_view( 'index', array(
+		$output = $this->load_view( 'index', array(
 			'user_type' => $detector->get_type(),
 			'user_data' => $detector->get_data(),
 		) );
+		
+		error_log( 'Agent Dashboard output length: ' . strlen( $output ) );
+		return $output;
 	}
 }

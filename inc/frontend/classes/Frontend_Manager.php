@@ -30,8 +30,10 @@ class WPsCRM_Frontend_Manager {
 	}
 	
 	private function __construct() {
+		error_log( '🔵 Frontend_Manager::__construct() called' );
 		$this->load_modules();
 		$this->register_hooks();
+		error_log( '🔵 Frontend_Manager initialized with ' . count( $this->modules ) . ' modules' );
 	}
 	
 	/**
@@ -58,24 +60,25 @@ class WPsCRM_Frontend_Manager {
 	 * Register Hooks
 	 */
 	private function register_hooks() {
+		// Register Shortcodes SOFORT (nicht warten auf init)
+		$this->register_shortcodes();
+		
 		// Enqueue Assets
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 		
-		// Register Shortcodes
-		add_action( 'init', array( $this, 'register_shortcodes' ), 20 );
-		
-		// AJAX
+		// AJAX - nur für authentifizierte Admins
 		add_action( 'wp_ajax_crm_create_frontend_page', array( $this, 'ajax_create_frontend_page' ) );
-		add_action( 'wp_ajax_nopriv_crm_create_frontend_page', array( $this, 'ajax_create_frontend_page' ) );
 	}
 	
 	/**
 	 * Register Shortcodes
 	 */
 	public function register_shortcodes() {
+		error_log( '🟢 Registering ' . count( $this->modules ) . ' shortcodes' );
 		foreach ( $this->modules as $module ) {
 			$shortcode = 'crm_' . $module->get_id();
 			add_shortcode( $shortcode, array( $module, 'render' ) );
+			error_log( '  ✅ Registered shortcode: [' . $shortcode . ']' );
 		}
 	}
 	
@@ -111,30 +114,29 @@ class WPsCRM_Frontend_Manager {
 	 * AJAX: Create Frontend Page
 	 */
 	public function ajax_create_frontend_page() {
-		check_ajax_referer( 'crm_frontend_nonce', 'nonce' );
+		check_ajax_referer( 'crm_create_frontend_page', 'nonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Keine Berechtigung' ) );
 		}
 		
 		$page_type = sanitize_text_field( $_POST['page_type'] ?? '' );
-		$page_title = sanitize_text_field( $_POST['page_title'] ?? '' );
 		
-		if ( empty( $page_type ) || empty( $page_title ) ) {
-			wp_send_json_error( array( 'message' => 'Fehlende Daten' ) );
-		}
-		
-		// Bestimme Shortcode basierend auf Seiten-Typ
+		// Bestimme Seiten-Titel basierend auf Typ
+		$page_title = '';
 		$shortcode = '';
+		
 		switch ( $page_type ) {
-			case 'agent-dashboard':
-				$shortcode = '[crm_agent_dashboard]';
+			case 'intranet':
+				$page_title = 'Intranet - Agent Dashboard';
+				$shortcode = '[crm_agent-dashboard]';
 				break;
-			case 'customer-portal':
-				$shortcode = '[crm_customer_portal]';
+			case 'customer':
+				$page_title = 'Kundenzone - Kundenportal';
+				$shortcode = '[crm_customer-portal]';
 				break;
 			default:
-				wp_send_json_error( array( 'message' => 'Unbekannter Seityp' ) );
+				wp_send_json_error( array( 'message' => 'Ungültiger Seitentyp' ) );
 		}
 		
 		// Erstelle WordPress-Seite
@@ -149,8 +151,15 @@ class WPsCRM_Frontend_Manager {
 			wp_send_json_error( array( 'message' => $page_id->get_error_message() ) );
 		}
 		
+		// Speichere in Frontend Settings
+		WPsCRM_Frontend_Settings::update_option( 
+			'frontend_' . $page_type . '_page', 
+			$page_id 
+		);
+		
 		wp_send_json_success( array(
 			'page_id' => $page_id,
+			'page_title' => $page_title,
 			'edit_url' => admin_url( 'post.php?post=' . $page_id . '&action=edit' ),
 			'view_url' => get_permalink( $page_id ),
 		) );

@@ -114,11 +114,15 @@ abstract class WPsCRM_Module_Base {
 		$css_path = $this->base_path . '/assets/style.css';
 		$js_path = $this->base_path . '/assets/script.js';
 		
+		// Basis-Plugin-Pfad
+		$plugin_dir = dirname( dirname( dirname( __DIR__ ) ) ); // ps-smart-crm root
+		$plugin_url = plugins_url( '', $plugin_dir . '/ps-smart-crm.php' );
+		
 		// CSS
 		if ( file_exists( $css_path ) ) {
 			wp_enqueue_style(
 				'crm-' . $this->module_id . '-style',
-				plugins_url( 'inc/frontend/modules/' . $this->module_id . '/assets/style.css', dirname( dirname( dirname( __FILE__ ) ) ) . '/ps-smart-crm.php' ),
+				$plugin_url . '/inc/frontend/modules/' . $this->module_id . '/assets/style.css',
 				array(),
 				WPSCRM_VERSION
 			);
@@ -128,7 +132,7 @@ abstract class WPsCRM_Module_Base {
 		if ( file_exists( $js_path ) ) {
 			wp_enqueue_script(
 				'crm-' . $this->module_id . '-script',
-				plugins_url( 'inc/frontend/modules/' . $this->module_id . '/assets/script.js', dirname( dirname( dirname( __FILE__ ) ) ) . '/ps-smart-crm.php' ),
+				$plugin_url . '/inc/frontend/modules/' . $this->module_id . '/assets/script.js',
 				array( 'jquery' ),
 				WPSCRM_VERSION,
 				true
