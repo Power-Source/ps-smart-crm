@@ -73,9 +73,8 @@ $edit_user_id = isset( $_REQUEST['edit_user_id'] ) ? absint( $_REQUEST['edit_use
 $crm_users = get_users( array(
 	'meta_query' => array(
 		array(
-			'key' => 'wp_capabilities',
-			'value' => 'manage_crm',
-			'compare' => 'LIKE',
+			'key' => '_crm_agent_role',
+			'compare' => 'EXISTS',
 		),
 	),
 	'orderby' => 'display_name',
@@ -373,7 +372,16 @@ $customers = $wpdb->get_results( "SELECT ID_kunde, name, nachname FROM " . WPsCR
 				<label for="edit_user_id"><?php _e( 'Agent / Dienstleister', 'cpsmartcrm' ); ?></label>
 				<select id="edit_user_id" name="edit_user_id" <?php disabled( ! $can_manage_all_worktimes ); ?>>
 					<?php foreach ( $crm_users as $crm_user ) : ?>
-						<option value="<?php echo esc_attr( $crm_user->ID ); ?>" <?php selected( $edit_user_id, $crm_user->ID ); ?>><?php echo esc_html( $crm_user->display_name . ' (' . $crm_user->user_email . ')' ); ?></option>
+						<?php 
+							$user_role_slug = get_user_meta( $crm_user->ID, '_crm_agent_role', true );
+							$user_role_name = '';
+							if ( $user_role_slug && function_exists( 'wpscrm_get_agent_role_by_slug' ) ) {
+								$role_obj = wpscrm_get_agent_role_by_slug( $user_role_slug );
+								$user_role_name = $role_obj ? $role_obj->role_name : '';
+							}
+							$display_text = $user_role_name ? $user_role_name : $crm_user->display_name;
+						?>
+						<option value="<?php echo esc_attr( $crm_user->ID ); ?>" <?php selected( $edit_user_id, $crm_user->ID ); ?>><?php echo esc_html( $display_text ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</div>
