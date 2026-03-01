@@ -67,6 +67,29 @@ $recent_invoices = $wpdb->get_results(
         $invoice_type
     )
 );
+
+// Steuerlast für aktuellen Monat
+$current_year_month = date('Y-m');
+$month_start = date('Y-m-01 00:00:00');
+$month_end = date('Y-m-t 23:59:59');
+
+// Get income USt
+$income_ust = (float) $wpdb->get_var($wpdb->prepare(
+    "SELECT COALESCE(SUM(tax), 0) FROM " . WPsCRM_TABLE . "incomes 
+     WHERE data_created BETWEEN %s AND %s AND deleted = 0 AND tax_rate > 0",
+    $month_start,
+    $month_end
+));
+
+// Get expense VSt
+$expense_vst = (float) $wpdb->get_var($wpdb->prepare(
+    "SELECT COALESCE(SUM(tax), 0) FROM " . WPsCRM_TABLE . "expenses 
+     WHERE data_created BETWEEN %s AND %s AND deleted = 0",
+    $month_start,
+    $month_end
+));
+
+$current_zahllast = $income_ust - $expense_vst;
 ?>
 
 <p><?php _e('Zentrale Übersicht für Einnahmen, Rechnungen und Buchungen.', 'cpsmartcrm'); ?></p>
@@ -165,6 +188,23 @@ if (function_exists('wpscrm_check_financial_alerts')) {
         <p style="font-size: 28px; margin: 0;"><?php echo esc_html($counts['booked']); ?></p>
         <p style="margin: 4px 0 0; color: #666;"><?php _e('bereits verbucht', 'cpsmartcrm'); ?></p>
     </div>
+    
+    <?php if (!$is_kleinunternehmer) : ?>
+        <!-- 🏛️ Steuerlast-Karte für aktuellen Monat -->
+        <div class="card" style="min-width: 220px; padding: 16px; background: <?php echo $current_zahllast > 0 ? '#ffebee' : '#e8f5e9'; ?>; border-left: 4px solid <?php echo $current_zahllast > 0 ? '#f44336' : '#4caf50'; ?>;">
+            <h2 style="margin-top: 0; color: <?php echo $current_zahllast > 0 ? '#c62828' : '#1b5e20'; ?>;">🏛️ <?php _e('Gesamt-Zahllast', 'cpsmartcrm'); ?></h2>
+            <p style="font-size: 24px; margin: 0; color: <?php echo $current_zahllast > 0 ? '#f44336' : '#4caf50'; ?>; font-weight: bold;">
+                <?php echo WPsCRM_format_currency($current_zahllast); ?>
+            </p>
+            <p style="margin: 4px 0 0; color: #666; font-size: 12px;">
+                <?php 
+                echo $current_zahllast > 0 
+                    ? __('(An Finanzamt)', 'cpsmartcrm') 
+                    : __('(Rückerstattung)', 'cpsmartcrm'); 
+                ?>
+            </p>
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php if ($summary['total'] > 0) : ?>

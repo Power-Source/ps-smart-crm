@@ -419,3 +419,153 @@ function WPsCRM_get_belege_statistics($date_from = null, $date_to = null) {
     
     return $wpdb->get_results($sql);
 }
+
+/**
+ * Get last 12 months tax data (Steuerlast calculations)
+ * Returns: income_ust, expense_vst, month_label for each month
+ */
+function wpscrm_get_last_12_months_tax_data($user_id = null) {
+    global $wpdb;
+    $tax_data = array();
+    $business_type = isset($GLOBALS['CRM_business_settings']['business_type']) ? $GLOBALS['CRM_business_settings']['business_type'] : 'standard';
+    
+    // For Kleinunternehmer, return zeros (no tax)
+    if ($business_type === 'kleinunternehmer') {
+        for ($i = 11; $i >= 0; $i--) {
+            $month = strtotime("-$i months");
+            $tax_data[] = array(
+                'month_label' => date_i18n('M Y', $month),
+                'month_key'   => date('Y-m', $month),
+                'income_ust'  => 0,
+                'expense_vst' => 0,
+            );
+        }
+        return $tax_data;
+    }
+    
+    // For standard/freiberufler: Calculate actual tax
+    for ($i = 11; $i >= 0; $i--) {
+        $month = strtotime("-$i months");
+        $month_start = date('Y-m-01 00:00:00', $month);
+        $month_end = date('Y-m-t 23:59:59', $month);
+        
+        // Get income USt (Umsatzsteuer)
+        $income_ust = $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(SUM(tax), 0) FROM " . WPsCRM_TABLE . "incomes 
+             WHERE data_created BETWEEN %s AND %s AND deleted = 0 AND tax_rate > 0" 
+             . ($user_id ? " AND user_id = %d" : ""),
+            $month_start,
+            $month_end,
+            ...$user_id ? array($user_id) : array()
+        ));
+        
+        // Get expense VSt (Vorsteuer)
+        $expense_vst = $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(SUM(tax), 0) FROM " . WPsCRM_TABLE . "expenses 
+             WHERE data_created BETWEEN %s AND %s AND deleted = 0" 
+             . ($user_id ? " AND user_id = %d" : ""),
+            $month_start,
+            $month_end,
+            ...$user_id ? array($user_id) : array()
+        ));
+        
+        $tax_data[] = array(
+            'month_label' => date_i18n('M Y', $month),
+            'month_key'   => date('Y-m', $month),
+            'income_ust'  => (float)$income_ust,
+            'expense_vst' => (float)$expense_vst,
+        );
+    }
+    
+    return $tax_data;
+}
+
+/**
+ * Generate tax trend chart configuration for Chart.js
+ */
+function wpscrm_generate_tax_trend_chart_config($tax_months, $business_type = 'standard') {
+    $labels = array();
+    $income_ust_data = array();
+    $expense_vst_data = array();
+    $zahllast_data = array();
+    $background_colors = array();
+    
+    foreach ($tax_months as $month) {
+        $labels[] = $month['month_key'];
+        $income_ust_data[] = $month['income_ust'];
+        $expense_vst_data[] = $month['expense_vst'];
+        
+        $zahllast = $month['income_ust'] - $month['expense_vst'];
+        $zahllast_data[] = $zahllast;
+        $background_colors[] = $zahllast > 0 ? '#f44336' : '#4caf50';
+    }
+    
+    return array(
+        'type' => 'line',
+        'data' => array(
+            'labels' => $labels,
+            'datasets' => array(
+                array(
+                    'label' => __('Einnahmen-USt', 'cpsmartcrm'),
+                    'data' => $income_ust_data,
+                    'borderColor' => '#46b450',
+                    'backgroundColor' => 'rgba(70, 180, 80, 0.05)',
+                    'borderWidth' => 2,
+                    'fill' => true,
+                    'tension' => 0.4,
+                    'pointRadius' => 4,
+                    'pointBackgroundColor' => '#46b450',
+                ),
+                array(
+                    'label' => __('Ausgaben-VSt', 'cpsmartcrm'),
+                    'data' => $expense_vst_data,
+                    'borderColor' => '#ff6b00',
+                    'backgroundColor' => 'rgba(255, 107, 0, 0.05)',
+                    'borderWidth' => 2,
+                    'fill' => true,
+                    'tension' => 0.4,
+                    'pointRadius' => 4,
+                    'pointBackgroundColor' => '#ff6b00',
+                ),
+                array(
+                    'label' => __('Zahllast (Netto)', 'cpsmartcrm'),
+                    'data' => $zahllast_data,
+                    'borderColor' => '#2196F3',
+                    'backgroundColor' => 'rgba(33, 150, 243, 0.1)',
+                    'borderWidth' => 3,
+                    'fill' => true,
+                    'tension' => 0.4,
+                    'pointRadius' => 5,
+                    'pointBackgroundColor' => '#2196F3',
+                    'yAxisID' => 'y1',
+                ),
+            ),
+        ),
+        'options' => array(
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'interaction' => array('mode' => 'index', 'intersect' => false),
+            'plugins' => array(
+                'legend' => array('display' => true, 'position' => 'top'),
+                'title' => array('display' => false),
+                'tooltip' => array('enabled' => true),
+            ),
+            'scales' => array(
+                'y' => array(
+                    'type' => 'linear',
+                    'display' => true,
+                    'position' => 'left',
+                    'min' => 0,
+                    'title' => array('display' => true, 'text' => __('EUR', 'cpsmartcrm')),
+                ),
+                'y1' => array(
+                    'type' => 'linear',
+                    'display' => true,
+                    'position' => 'right',
+                    'title' => array('display' => true, 'text' => __('Zahllast EUR', 'cpsmartcrm')),
+                    'grid' => array('drawOnChartArea' => false),
+                ),
+            ),
+        ),
+    );
+}

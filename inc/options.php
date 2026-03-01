@@ -474,9 +474,6 @@ class CRM_Options_Settings{
 						$('#crm_business_ustid').removeAttr('required').removeAttr('data-parsley-required-message').removeClass('disabled-field').css('color', 'inherit');
 						$('#crm_business_ustid').closest('.item').find('span').hide();
 					}
-					
-					// Refresh Parsley validation
-					$('form').parsley().validate();
 				}
 
 				// Initial setup beim Laden
@@ -486,18 +483,47 @@ class CRM_Options_Settings{
 				}
 
 				window.saveBusiness = function(e) {
-					var $form = $("form");
-					// Umsatzsteuer-ID nur required, wenn kein Kleinunternehmer
-					if ($('#crm_kleinunternehmer').is(':checked')) {
-						$('#crm_business_ustid').removeAttr('required').removeAttr('data-parsley-required-message');
-					} else {
-						$('#crm_business_ustid').attr('required', 'required').attr('data-parsley-required-message', "<?php _e('Umsatzsteuer-ID ist erforderlich','cpsmartcrm')?>");
+					// Einfache Validierung ohne Parsley
+					let isValid = true;
+					let errorMsg = '<?php _e("Bitte füllen Sie alle erforderlichen Felder aus:", "cpsmartcrm"); ?>\n\n';
+					
+					// Erforderliche Felder prüfen
+					const requiredFields = [
+						{ id: 'crm_business_name', label: '<?php _e("Firmenname", "cpsmartcrm"); ?>' },
+						{ id: 'crm_business_address', label: '<?php _e("Adresse", "cpsmartcrm"); ?>' },
+						{ id: 'crm_business_town', label: '<?php _e("Stadt", "cpsmartcrm"); ?>' },
+						{ id: 'crm_business_zip', label: '<?php _e("PLZ", "cpsmartcrm"); ?>' },
+						{ id: 'crm_business_email', label: '<?php _e("E-Mail", "cpsmartcrm"); ?>' }
+					];
+					
+					requiredFields.forEach(field => {
+						const $field = $('#' + field.id);
+						if (!$field.val() || $field.val().trim() === '') {
+							isValid = false;
+							errorMsg += '• ' + field.label + '\n';
+						}
+					});
+					
+					// USt-ID prüfen wenn kein Kleinunternehmer
+					if (!$('#crm_kleinunternehmer').is(':checked') && !$('#crm_business_ustid').val()) {
+						isValid = false;
+						errorMsg += '• <?php _e("Umsatzsteuer-ID", "cpsmartcrm"); ?>\n';
 					}
-					if ($form.parsley().validate()) {
+					
+					// E-Mail Format prüfen
+					const emailField = $('#crm_business_email').val();
+					const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+					if (emailField && !emailRegex.test(emailField)) {
+						isValid = false;
+						errorMsg = '<?php _e("Ungültige E-Mail-Adresse", "cpsmartcrm"); ?>';
+					}
+					
+					if (isValid) {
 						$('#CRM_required_settings').val(1);
-						$form.find(':submit').click();
+						$('form').find(':submit').click();
 					} else {
-						$('#CRM_required_settings').val(0);
+						alert(errorMsg);
+						return false;
 					}
 				}
 
