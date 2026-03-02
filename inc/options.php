@@ -33,6 +33,7 @@ class CRM_Options_Settings{
 	private $adv_settings_key = 'CRM_adv_settings';
     private $ag_settings_key = 'CRM_ag_settings';
     private $frontend_settings_key = 'CRM_frontend_settings';
+	private $newsletter_settings_key = 'CRM_newsletter_settings';
 	private $plugin_options_key = 'smartcrm_settings';
 	private $plugin_settings_tabs = array();
 	
@@ -53,6 +54,7 @@ class CRM_Options_Settings{
 		add_action('admin_init', array( &$this, 'check_accountability_addon' ),10 );
 		add_action('admin_init', array( &$this, 'check_advanced_addon' ),10 );
         add_action('admin_init', array( &$this, 'check_agents_addon' ),10 );
+		add_action('admin_init', array( &$this, 'check_newsletter_addon' ),10 );
 		add_action( 'admin_menu', array( &$this, 'WPsCRM_add_admin_menus' ) );
 	}
 	function check_woo_addon(){
@@ -74,6 +76,11 @@ class CRM_Options_Settings{
 		$advPlugin='wp-smart-crm-agents/wp-smart-crm-agents.php' ;
 		if (is_plugin_active( $advPlugin ) ) 
 			add_action( 'admin_init', array( &$this, 'register_ag_settings'),11 );
+	}
+	function check_newsletter_addon(){
+		$newsletterPlugin='e-newsletter/e-newsletter.php' ;
+		if (is_plugin_active( $newsletterPlugin ) ) 
+			add_action( 'admin_init', array( &$this, 'register_newsletter_settings'),11 );
 	}
 	/*
 	 * Loads both the general and advanced settings from
@@ -235,6 +242,12 @@ class CRM_Options_Settings{
 		register_setting( $this->ag_settings_key, $this->ag_settings_key );
 		add_settings_section( 'section_agents', __( 'Agenteneinstellungen', 'cpsmartcrm'), array( &$this, 'section_ag_desc' ), $this->ag_settings_key );
 		do_action('WPsCRM_add_ag_settings_fields');
+	}
+	
+	function register_newsletter_settings(){
+		$this->plugin_settings_tabs[$this->newsletter_settings_key] =  __( 'Newsletter', 'cpsmartcrm');
+		// Newsletter Settings benutzt ein Custom-Form statt Standard Settings API
+		// Die Rendering erfolgt direkt in plugin_options_page()
 	}
 	
 	function register_frontend_settings(){
@@ -1835,12 +1848,22 @@ class CRM_Options_Settings{
             <div class="row">
 
                 <div class="col-md-12">
-			    <form method="post" action="options.php">
-				    <?php wp_nonce_field( 'update-options' ); ?>
-				    <?php settings_fields( $tab ); ?>
-				    <?php do_settings_sections( $tab ); ?>
-                    <span class="" style="padding:12px"><input type="submit" name="submit" id="submit" class="_flat btn btn-success" value="<?php _e('Speichern','cpsmartcrm')?>" style="margin: 30px;<?php if(isset($_GET['tab']) && $_GET['tab']=="CRM_business_settings") { ?>display:none;<?php } ?>" ></span>
-			    </form>
+			    <?php 
+			    // Newsletter-Tab hat Custom-Form, nicht Settings API
+			    if ( $tab === $this->newsletter_settings_key ) {
+			        include( __DIR__ . '/crm/newsletter-settings.php' );
+			    } else {
+			        // Standard WordPress Settings API
+			        ?>
+			        <form method="post" action="options.php">
+					    <?php wp_nonce_field( 'update-options' ); ?>
+					    <?php settings_fields( $tab ); ?>
+					    <?php do_settings_sections( $tab ); ?>
+                        <span class="" style="padding:12px"><input type="submit" name="submit" id="submit" class="_flat btn btn-success" value="<?php _e('Speichern','cpsmartcrm')?>" style="margin: 30px;<?php if(isset($_GET['tab']) && $_GET['tab']=="CRM_business_settings") { ?>display:none;<?php } ?>" ></span>
+				    </form>
+			        <?php
+			    }
+			    ?>
                 </div>
 
             </div>
