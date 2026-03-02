@@ -1,0 +1,1212 @@
+/**
+ * PS CRM Progressive Web App Styles
+ * 
+ * Clean, modern UI für Standalone App-Modus
+ * iOS/Android optimiert
+ * 
+ * @package PS Smart CRM
+ * @subpackage PWA
+ */
+
+/* ========================================
+   APP MODE BASE
+   ======================================== */
+
+.wpscrm-app-mode {
+	margin: 0;
+	padding: 0;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	background: var(--app-bg-color, #f5f5f5);
+	overflow-x: hidden;
+}
+
+#wpscrm-app-wrapper {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	padding-bottom: env(safe-area-inset-bottom); /* iOS notch support */
+}
+
+/* iOS Safe Area Support */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+	.wpscrm-app-mode {
+		padding-top: env(safe-area-inset-top);
+	}
+}
+
+/* ========================================
+   APP HEADER
+   ======================================== */
+
+.wpscrm-app-header {
+	background: var(--app-theme-color, #1e3a8a);
+	color: white;
+	padding: 1rem;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	position: sticky;
+	top: 0;
+	z-index: 100;
+}
+
+.wpscrm-app-header-content {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.wpscrm-app-header h1 {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.wpscrm-user-info {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.wpscrm-user-info img {
+	border-radius: 50%;
+	border: 2px solid rgba(255,255,255,0.3);
+}
+
+.wpscrm-user-info span {
+	font-size: 0.875rem;
+	opacity: 0.9;
+}
+
+/* ========================================
+   APP CONTENT
+   ======================================== */
+
+.wpscrm-app-content {
+	flex: 1;
+	max-width: 1200px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 1rem;
+	padding-bottom: 80px; /* Space for nav */
+}
+
+/* ========================================
+   LOGIN SCREEN
+   ======================================== */
+
+.wpscrm-login-screen {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: 2rem;
+	background: linear-gradient(135deg, var(--app-theme-color, #1e3a8a) 0%, #3b82f6 100%);
+}
+
+.wpscrm-login-container {
+	background: white;
+	border-radius: 1rem;
+	padding: 2rem;
+	max-width: 400px;
+	width: 100%;
+	box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+	text-align: center;
+}
+
+.wpscrm-login-logo {
+	margin-bottom: 1.5rem;
+}
+
+.wpscrm-login-logo img {
+	width: 100px;
+	height: 100px;
+	object-fit: contain;
+}
+
+.wpscrm-login-container h1 {
+	font-size: 1.5rem;
+	margin: 0 0 0.5rem;
+	color: var(--app-theme-color, #1e3a8a);
+}
+
+.wpscrm-login-subtitle {
+	color: #6b7280;
+	font-size: 0.875rem;
+	margin-bottom: 2rem;
+}
+
+.wpscrm-login-form {
+	text-align: left;
+}
+
+.wpscrm-login-form label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+	color: #374151;
+	font-size: 0.875rem;
+}
+
+.wpscrm-login-form input[type="text"],
+.wpscrm-login-form input[type="password"] {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid #d1d5db;
+	border-radius: 0.5rem;
+	font-size: 1rem;
+	margin-bottom: 1rem;
+	transition: border-color 0.2s;
+}
+
+.wpscrm-login-form input:focus {
+	outline: none;
+	border-color: var(--app-theme-color, #1e3a8a);
+	box-shadow: 0 0 0 3px rgba(30,58,138,0.1);
+}
+
+.wpscrm-login-form input[type="submit"] {
+	width: 100%;
+	padding: 0.875rem;
+	background: var(--app-theme-color, #1e3a8a);
+	color: white;
+	border: none;
+	border-radius: 0.5rem;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.wpscrm-login-form input[type="submit"]:hover {
+	background: #1e40af;
+}
+
+.wpscrm-login-form .login-remember {
+	margin-bottom: 1rem;
+}
+
+.wpscrm-login-form .login-remember label {
+	display: flex;
+	align-items: center;
+	font-weight: normal;
+	cursor: pointer;
+}
+
+.wpscrm-login-form .login-remember input {
+	margin: 0 0.5rem 0 0;
+}
+
+.wpscrm-login-links {
+	margin-top: 1rem;
+	text-align: center;
+}
+
+.wpscrm-login-links a {
+	color: var(--app-theme-color, #1e3a8a);
+	text-decoration: none;
+	font-size: 0.875rem;
+}
+
+/* ========================================
+   ACCESS DENIED
+   ======================================== */
+
+.wpscrm-access-denied {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: 2rem;
+	text-align: center;
+}
+
+.wpscrm-message-container {
+	max-width: 400px;
+}
+
+.wpscrm-icon-error {
+	width: 80px;
+	height: 80px;
+	margin: 0 auto 1.5rem;
+	color: #ef4444;
+}
+
+.wpscrm-icon-error svg {
+	width: 100%;
+	height: 100%;
+}
+
+/* ========================================
+   WIDGETS
+   ======================================== */
+
+.wpscrm-widget {
+	background: white;
+	border-radius: 0.75rem;
+	margin-bottom: 1rem;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+	overflow: hidden;
+}
+
+.wpscrm-widget-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.wpscrm-widget-header h2 {
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 600;
+	color: #111827;
+}
+
+.wpscrm-widget-content {
+	padding: 1rem;
+}
+
+/* ========================================
+   TICKET LIST
+   ======================================== */
+
+.wpscrm-ticket-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.wpscrm-ticket-item {
+	display: flex;
+	gap: 1rem;
+	padding: 0.75rem;
+	background: #f9fafb;
+	border-radius: 0.5rem;
+	transition: background 0.2s;
+	cursor: pointer;
+}
+
+.wpscrm-ticket-item:hover {
+	background: #f3f4f6;
+}
+
+.wpscrm-ticket-status {
+	flex-shrink: 0;
+	padding: 0.25rem 0.75rem;
+	border-radius: 1rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	align-self: flex-start;
+}
+
+.wpscrm-ticket-status.status-0,
+.wpscrm-ticket-status.status-1 {
+	background: #dbeafe;
+	color: #1e40af;
+}
+
+.wpscrm-ticket-status.status-2 {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.wpscrm-ticket-status.status-4,
+.wpscrm-ticket-status.status-5 {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.wpscrm-ticket-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.wpscrm-ticket-content h3 {
+	margin: 0 0 0.25rem;
+	font-size: 1rem;
+	font-weight: 500;
+}
+
+.wpscrm-ticket-content h3 a {
+	color: #111827;
+	text-decoration: none;
+}
+
+.wpscrm-ticket-content h3 a:hover {
+	color: var(--app-theme-color, #1e3a8a);
+}
+
+.wpscrm-ticket-meta {
+	display: flex;
+	gap: 1rem;
+	font-size: 0.75rem;
+	color: #6b7280;
+}
+
+.wpscrm-no-items {
+	text-align: center;
+	padding: 2rem 1rem;
+	color: #9ca3af;
+}
+
+/* ========================================
+   APP NAVIGATION
+   ======================================== */
+
+.wpscrm-app-nav {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: white;
+	border-top: 1px solid #e5e7eb;
+	display: flex;
+	justify-content: space-around;
+	padding: 0.5rem 0;
+	padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+	box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+	z-index: 100;
+}
+
+.wpscrm-nav-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.5rem 1rem;
+	color: #6b7280;
+	text-decoration: none;
+	transition: color 0.2s;
+	flex: 1;
+	max-width: 100px;
+}
+
+.wpscrm-nav-item svg {
+	width: 24px;
+	height: 24px;
+}
+
+.wpscrm-nav-item span {
+	font-size: 0.75rem;
+}
+
+.wpscrm-nav-item:hover,
+.wpscrm-nav-item.active {
+	color: var(--app-theme-color, #1e3a8a);
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	border-radius: 0.5rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	text-decoration: none;
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.2s;
+	border: none;
+}
+
+.btn-primary {
+	background: var(--app-theme-color, #1e3a8a);
+	color: white;
+}
+
+.btn-primary:hover {
+	background: #1e40af;
+}
+
+.btn-secondary {
+	background: #f3f4f6;
+	color: #374151;
+}
+
+.btn-secondary:hover {
+	background: #e5e7eb;
+}
+
+.btn-sm {
+	padding: 0.375rem 0.75rem;
+	font-size: 0.8125rem;
+}
+
+/* ========================================
+   INSTALL BANNER
+   ======================================== */
+
+.wpscrm-install-banner {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: white;
+	border-top: 1px solid #e5e7eb;
+	box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+	padding: 1rem;
+	transform: translateY(100%);
+	transition: transform 0.3s ease-out;
+	z-index: 1000;
+}
+
+.wpscrm-install-banner.show {
+	transform: translateY(0);
+}
+
+.wpscrm-install-content {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.wpscrm-install-icon {
+	flex-shrink: 0;
+	color: var(--app-theme-color, #1e3a8a);
+}
+
+.wpscrm-install-text {
+	flex: 1;
+}
+
+.wpscrm-install-text strong {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-size: 1rem;
+}
+
+.wpscrm-install-text p {
+	margin: 0;
+	font-size: 0.875rem;
+	color: #6b7280;
+}
+
+.wpscrm-install-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+/* ========================================
+   CONNECTION STATUS BANNER
+   ======================================== */
+
+.wpscrm-connection-banner {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 0.75rem 1rem;
+	text-align: center;
+	font-size: 0.875rem;
+	font-weight: 500;
+	z-index: 9999;
+}
+
+.wpscrm-connection-online {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.wpscrm-connection-offline {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.wpscrm-connection-content {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.wpscrm-connection-content svg {
+	width: 20px;
+	height: 20px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 640px) {
+	.wpscrm-app-header-content h1 {
+		font-size: 1.125rem;
+	}
+	
+	.wpscrm-install-content {
+		flex-direction: column;
+		text-align: center;
+	}
+	
+	.wpscrm-install-actions {
+		width: 100%;
+	}
+	
+	.wpscrm-install-actions .btn {
+		flex: 1;
+	}
+}
+
+/* ========================================
+   STANDALONE MODE SPECIFIC
+   ======================================== */
+
+/* ========================================
+   PAGE HEADER (für Vollansichten)
+   ======================================== */
+
+.wpscrm-page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.wpscrm-page-header h1 {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #111827;
+}
+
+.wpscrm-back-btn a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	color: #6b7280;
+	text-decoration: none;
+	font-size: 0.875rem;
+	margin-bottom: 0.5rem;
+	transition: color 0.2s;
+}
+
+.wpscrm-back-btn a:hover {
+	color: #111827;
+}
+
+.wpscrm-back-btn svg {
+	width: 20px;
+	height: 20px;
+}
+
+/* ========================================
+   TICKET FILTERS
+   ======================================== */
+
+.wpscrm-ticket-filters {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 1.5rem;
+	overflow-x: auto;
+	padding-bottom: 0.5rem;
+}
+
+.wpscrm-ticket-filters .filter-btn {
+	padding: 0.5rem 1rem;
+	border-radius: 20px;
+	background: white;
+	border: 1px solid #e5e7eb;
+	color: #374151;
+	text-decoration: none;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	transition: all 0.2s;
+}
+
+.wpscrm-ticket-filters .filter-btn:hover {
+	background: #f9fafb;
+}
+
+.wpscrm-ticket-filters .filter-btn.active {
+	background: var(--app-theme-color, #1e3a8a);
+	color: white;
+	border-color: var(--app-theme-color, #1e3a8a);
+}
+
+/* ========================================
+   TICKETS GRID (Listenansicht)
+   ======================================== */
+
+.wpscrm-tickets-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 1rem;
+	margin-bottom: 2rem;
+}
+
+.wpscrm-ticket-card {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 1rem;
+	transition: box-shadow 0.2s;
+}
+
+.wpscrm-ticket-card:hover {
+	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.wpscrm-ticket-card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.75rem;
+}
+
+.wpscrm-ticket-id {
+	font-size: 0.875rem;
+	color: #6b7280;
+	font-weight: 500;
+}
+
+.wpscrm-ticket-card h3 {
+	margin: 0 0 0.5rem 0;
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.wpscrm-ticket-card h3 a {
+	color: #111827;
+	text-decoration: none;
+}
+
+.wpscrm-ticket-card h3 a:hover {
+	color: var(--app-theme-color, #1e3a8a);
+}
+
+.wpscrm-ticket-card-meta {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	font-size: 0.75rem;
+	color: #6b7280;
+}
+
+.wpscrm-ticket-unread {
+	margin-top: 0.5rem;
+	padding: 0.25rem 0.5rem;
+	background: #dbeafe;
+	color: #1e40af;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	display: inline-block;
+}
+
+/* ========================================
+   TICKET DETAIL PAGE
+   ======================================== */
+
+.wpscrm-ticket-detail {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 1.5rem;
+}
+
+.wpscrm-ticket-detail-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+	margin-bottom: 1rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.wpscrm-ticket-detail-header h2 {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 700;
+	flex: 1;
+}
+
+.wpscrm-ticket-detail-meta {
+	display: flex;
+	gap: 2rem;
+	margin-bottom: 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid #e5e7eb;
+	font-size: 0.875rem;
+}
+
+.wpscrm-ticket-detail-meta .meta-item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.wpscrm-ticket-detail-meta strong {
+	color: #6b7280;
+	font-weight: 500;
+}
+
+/* ========================================
+   TICKET CONVERSATION
+   ======================================== */
+
+.wpscrm-ticket-conversation {
+	margin-bottom: 2rem;
+}
+
+.wpscrm-message {
+	display: flex;
+	gap: 0.75rem;
+	margin-bottom: 1.5rem;
+}
+
+.wpscrm-message-avatar {
+	flex-shrink: 0;
+}
+
+.wpscrm-message-avatar img {
+	border-radius: 50%;
+	display: block;
+}
+
+.wpscrm-message-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.wpscrm-message-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.wpscrm-message-header strong {
+	color: #111827;
+	font-size: 0.875rem;
+}
+
+.wpscrm-agent-badge {
+	background: #dbeafe;
+	color: #1e40af;
+	padding: 0.125rem 0.5rem;
+	border-radius: 12px;
+	font-size: 0.75rem;
+	font-weight: 500;
+}
+
+.wpscrm-message-time {
+	color: #9ca3af;
+	font-size: 0.75rem;
+}
+
+.wpscrm-message-body {
+	background: #f9fafb;
+	padding: 0.75rem 1rem;
+	border-radius: 8px;
+	line-height: 1.6;
+	font-size: 0.875rem;
+	color: #374151;
+}
+
+.wpscrm-message-agent .wpscrm-message-body {
+	background: #eff6ff;
+	border-left: 3px solid #3b82f6;
+}
+
+.wpscrm-message-body p:first-child {
+	margin-top: 0;
+}
+
+.wpscrm-message-body p:last-child {
+	margin-bottom: 0;
+}
+
+/* ========================================
+   REPLY FORM
+   ======================================== */
+
+.wpscrm-reply-form {
+	border-top: 2px solid #e5e7eb;
+	padding-top: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+.wpscrm-reply-form textarea {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	font-family: inherit;
+	font-size: 0.875rem;
+	resize: vertical;
+	min-height: 100px;
+	margin-bottom: 1rem;
+}
+
+.wpscrm-reply-form textarea:focus {
+	outline: none;
+	border-color: var(--app-theme-color, #1e3a8a);
+	box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+/* ========================================
+   NEW TICKET FORM
+   ======================================== */
+
+.wpscrm-form-container {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 1.5rem;
+	max-width: 600px;
+}
+
+.wpscrm-form-field {
+	margin-bottom: 1.5rem;
+}
+
+.wpscrm-form-field label {
+	display: block;
+	font-weight: 500;
+	margin-bottom: 0.5rem;
+	color: #374151;
+	font-size: 0.875rem;
+}
+
+.wpscrm-form-field input[type="text"],
+.wpscrm-form-field select,
+.wpscrm-form-field textarea {
+	width: 100%;
+	padding: 0.625rem;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	font-family: inherit;
+	font-size: 0.875rem;
+	transition: border-color 0.2s;
+}
+
+.wpscrm-form-field input[type="text"]:focus,
+.wpscrm-form-field select:focus,
+.wpscrm-form-field textarea:focus {
+	outline: none;
+	border-color: var(--app-theme-color, #1e3a8a);
+	box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.wpscrm-form-field textarea {
+	resize: vertical;
+	min-height: 150px;
+}
+
+.wpscrm-form-actions {
+	display: flex;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+.wpscrm-form-actions .btn {
+	flex: 1;
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+
+.wpscrm-empty-state {
+	text-align: center;
+	padding: 3rem 1rem;
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+}
+
+.wpscrm-empty-state svg {
+	color: #d1d5db;
+	margin-bottom: 1rem;
+}
+
+.wpscrm-empty-state h3 {
+	margin: 0 0 0.5rem 0;
+	color: #374151;
+	font-size: 1.125rem;
+}
+
+.wpscrm-empty-state p {
+	color: #6b7280;
+	margin: 0 0 1.5rem 0;
+}
+
+/* ========================================
+   ERROR STATE
+   ======================================== */
+
+.wpscrm-error {
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	border-radius: 8px;
+	padding: 1.5rem;
+	color: #991b1b;
+}
+
+.wpscrm-error p {
+	margin: 0 0 1rem 0;
+}
+
+/* ========================================
+   FAQ PAGE
+   ======================================== */
+
+.wpscrm-faq-search {
+	margin-bottom: 1.5rem;
+}
+
+.wpscrm-faq-search form {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.wpscrm-search-input {
+	flex: 1;
+	padding: 0.75rem 1rem;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	font-size: 0.875rem;
+}
+
+.wpscrm-search-input:focus {
+	outline: none;
+	border-color: var(--app-theme-color, #1e3a8a);
+	box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.wpscrm-faq-categories {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 1.5rem;
+	overflow-x: auto;
+	padding-bottom: 0.5rem;
+}
+
+.faq-cat-btn {
+	padding: 0.5rem 1rem;
+	border-radius: 20px;
+	background: white;
+	border: 1px solid #e5e7eb;
+	color: #374151;
+	text-decoration: none;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.faq-cat-btn:hover {
+	background: #f9fafb;
+}
+
+.faq-cat-btn.active {
+	background: var(--app-theme-color, #1e3a8a);
+	color: white;
+	border-color: var(--app-theme-color, #1e3a8a);
+}
+
+.faq-count {
+	font-size: 0.75rem;
+	opacity: 0.8;
+}
+
+.wpscrm-faq-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.wpscrm-faq-item {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 1rem;
+	transition: box-shadow 0.2s;
+}
+
+.wpscrm-faq-item:hover {
+	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.wpscrm-faq-question {
+	margin: 0 0 0.5rem 0;
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.wpscrm-faq-question a {
+	color: #111827;
+	text-decoration: none;
+}
+
+.wpscrm-faq-question a:hover {
+	color: var(--app-theme-color, #1e3a8a);
+}
+
+.wpscrm-faq-meta {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	font-size: 0.75rem;
+	color: #6b7280;
+}
+
+.faq-views {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.faq-views svg {
+	flex-shrink: 0;
+}
+
+/* FAQ Single */
+
+.wpscrm-faq-single {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 1.5rem;
+}
+
+.wpscrm-faq-title {
+	margin: 0 0 1.5rem 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: #111827;
+}
+
+.wpscrm-faq-content {
+	margin-bottom: 2rem;
+	line-height: 1.7;
+	color: #374151;
+}
+
+.wpscrm-faq-content p:first-child {
+	margin-top: 0;
+}
+
+.wpscrm-faq-content p:last-child {
+	margin-bottom: 0;
+}
+
+.wpscrm-faq-helpful {
+	border-top: 2px solid #e5e7eb;
+	padding-top: 1.5rem;
+	margin-top: 2rem;
+}
+
+.wpscrm-faq-helpful h4 {
+	margin: 0 0 1rem 0;
+	font-size: 1rem;
+	font-weight: 600;
+	color: #374151;
+}
+
+.wpscrm-faq-vote-buttons {
+	display: flex;
+	gap: 1rem;
+}
+
+.btn-vote {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.75rem 1.5rem;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: white;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.btn-vote svg {
+	flex-shrink: 0;
+}
+
+.btn-vote:hover:not(:disabled) {
+	background: #f9fafb;
+	border-color: #9ca3af;
+}
+
+.btn-vote:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-vote-yes:hover:not(:disabled) {
+	background: #ecfdf5;
+	border-color: #10b981;
+	color: #10b981;
+}
+
+.btn-vote-no:hover:not(:disabled) {
+	background: #fef2f2;
+	border-color: #ef4444;
+	color: #ef4444;
+}
+
+.vote-count {
+	background: #f3f4f6;
+	padding: 0.125rem 0.5rem;
+	border-radius: 12px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: #6b7280;
+}
+
+.wpscrm-faq-vote-message {
+	margin-top: 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+/* ========================================
+   DARK MODE SUPPORT (optional)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+	.wpscrm-app-mode {
+		background: #111827;
+		color: #f3f4f6;
+	}
+	
+	.wpscrm-widget {
+		background: #1f2937;
+	}
+	
+	.wpscrm-widget-header {
+		border-bottom-color: #374151;
+	}
+	
+	.wpscrm-ticket-item {
+		background: #111827;
+	}
+	
+	.wpscrm-app-nav {
+		background: #1f2937;
+		border-top-color: #374151;
+	}
+}

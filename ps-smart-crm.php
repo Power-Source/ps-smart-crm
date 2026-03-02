@@ -104,6 +104,12 @@ require_once(__DIR__ . '/inc/classes/CRMtimetracking.class.php');
 require_once(__DIR__ . '/inc/user-profile-integration.php');
 require_once(__DIR__ . '/inc/debug-status.php');
 require_once(__DIR__ . '/inc/options.php');
+
+// PWA - Progressive Web App
+require_once(__DIR__ . '/inc/pwa/class-pwa-manager.php');
+require_once(__DIR__ . '/inc/pwa/class-app-template.php');
+require_once(__DIR__ . '/inc/pwa/pwa-settings.php');
+require_once(__DIR__ . '/inc/pwa/pwa-ajax-handlers.php');
 require_once(__DIR__ . '/inc/integrations/marketpress.php');
 require_once(__DIR__ . '/inc/integrations/ps-bloghosting.php');
 
@@ -132,6 +138,7 @@ if (file_exists(__DIR__ . '/inc/frontend/init.php')) {
 
 register_activation_hook( __FILE__, 'WPsCRM_crm_install' );
 register_activation_hook(__FILE__,'WPsCRM_create_doc_folder');
+register_activation_hook(__FILE__,'WPsCRM_pwa_flush_rewrite_rules');
 
 function WPsCRM_create_doc_folder(){
 	$save_to_path = WPsCRM_UPLOADS;
@@ -146,6 +153,16 @@ function WPsCRM_create_doc_folder(){
 		$content = 'Options -Indexes' . "\n";
 		file_put_contents($save_to_path.DIRECTORY_SEPARATOR.'.htaccess', $content);
 	}
+}
+
+/**
+ * Flush rewrite rules for PWA endpoints
+ */
+function WPsCRM_pwa_flush_rewrite_rules() {
+	// Trigger rewrite rules registration
+	WPsCRM_PWA_Manager::register_endpoints();
+	// Flush
+	flush_rewrite_rules();
 }
 
 /**

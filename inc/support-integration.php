@@ -66,6 +66,9 @@ class WPsCRM_Support_Integration {
 		// Wenn bereits ein Admin zugewiesen ist, direkt TODO erstellen
 		if ( ! empty( $ticket->admin_id ) ) {
 			self::create_agenda_todo_from_ticket( $ticket_id, $ticket );
+			
+			// Push-Benachrichtigung an zugewiesenen Agent
+			self::send_ticket_notification( $ticket->admin_id, 'new_assigned', $ticket_id, $ticket );
 		}
 	}
 	
@@ -89,6 +92,9 @@ class WPsCRM_Support_Integration {
 			// Erstelle neues TODO
 			self::create_agenda_todo_from_ticket( $ticket_id, $ticket, $agent_id );
 		}
+		
+		// Push-Benachrichtigung an Agent
+		self::send_ticket_notification( $agent_id, 'assigned', $ticket_id, $ticket );
 	}
 	
 	/**
@@ -185,6 +191,22 @@ class WPsCRM_Support_Integration {
 			array( '%s' ),
 			array( '%d' )
 		);
+		
+		// Push-Benachrichtigung senden
+		$ticket = function_exists( 'psource_support_get_ticket' ) ? psource_support_get_ticket( $ticket_id ) : false;
+		if ( ! $ticket ) return;
+		
+		$reply_author_id = isset( $reply_data['author_id'] ) ? $reply_data['author_id'] : get_current_user_id();
+		
+		// Wenn Agent geantwortet hat: Benachrichtige Kunde
+		if ( WPsCRM_Check::isAgent( $reply_author_id ) ) {
+			self::send_ticket_notification( $ticket->user_id, 'reply_customer', $ticket_id, $ticket );
+		} else {
+			// Wenn Kunde geantwortet hat: Benachrichtige Agent
+			if ( ! empty( $ticket->admin_id ) ) {
+				self::send_ticket_notification( $ticket->admin_id, 'reply_agent', $ticket_id, $ticket );
+			}
+		}
 	}
 	
 	/**
@@ -457,6 +479,77 @@ class WPsCRM_Support_Integration {
 		}
 		
 		return array_merge( $data, $tickets );
+	}
+	
+	/**
+	 * Sende Push-Benachrichtigung für Ticket-Event
+	 * 
+	 * @param int $user_id - User ID des Empfängers
+	 * @param string $event_type - Art des Events (assigned, reply_customer, reply_agent, status_changed)
+	 * @param int $ticket_id - Ticket ID
+	 * @param object $ticket - Ticket Object
+	 */
+	private static function send_ticket_notification( $user_id, $event_type, $ticket_id, $ticket ) {
+		// Prüfe ob PWA Manager aktiv ist
+		if ( ! class_exists( 'WPsCRM_PWA_Manager' ) ) {
+			return;
+		}
+		
+		// Notification Daten basierend auf Event-Type
+		$notifications = array(
+			'new_assigned' => array(
+				'title' => __( 'Neues Support-Ticket', 'cpsmartcrm' ),
+				'body' => sprintf( __( 'Ticket #%d wurde Ihnen zugewiesen: %s', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 10 ) ),
+				'icon' => 'dashicons-sos',
+			),
+			'assigned' => array(
+				'title' => __( 'Ticket zugewiesen', 'cpsmartcrm' ),
+				'body' => sprintf( __( 'Ticket #%d: %s', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 10 ) ),
+				'icon' => 'dashicons-admin-users',
+			),
+			'reply_customer' => array(
+				'title' => __( 'Neue Antwort zu Ihrem Ticket', 'cpsmartcrm' ),
+				'body' => sprintf( __( 'Ticket #%d: %s - Ein Agent hat geantwortet', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 8 ) ),
+				'icon' => 'dashicons-email',
+			),
+			'reply_agent' => array(
+				'title' => __( 'Neue Kundenantwort', 'cpsmartcrm' ),
+				'body' => sprintf( __( 'Ticket #%d: %s', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 10 ) ),
+				'icon' => 'dashicons-email-alt',
+			),
+			'status_changed' => array(
+				'title' => __( 'Ticket-Status aktualisiert', 'cpsmartcrm' ),
+				'body' => sprintf( __( 'Ticket #%d: Status geändert', 'cpsmartcrm' ), $ticket_id ),
+				'icon' => 'dashicons-info',
+			),
+		);
+		
+		$notification_data = isset( $notifications[ $event_type ] ) ? $notifications[ $event_type ] : $notifications['assigned'];
+		
+		// Icon URL
+		$plugin_url = plugin_dir_url( dirname( __FILE__ ) );
+		$icon_url = $plugin_url . 'assets/img/icon-192.png';
+		
+		// App-URL für dieses Ticket
+		$ticket_url = add_query_arg( array(
+			'app' => '1',
+			'view' => 'support',
+			'ticket_id' => $ticket_id,
+		), home_url( '/' ) );
+		
+		// Push senden
+		WPsCRM_PWA_Manager::send_push_notification( $user_id, array(
+			'title' => $notification_data['title'],
+			'body' => $notification_data['body'],
+			'icon' => $icon_url,
+			'badge' => $icon_url,
+			'tag' => 'ticket-' . $ticket_id,
+			'requireInteraction' => false,
+			'data' => array(
+				'url' => $ticket_url,
+				'ticket_id' => $ticket_id,
+			),
+		) );
 	}
 	
 }
