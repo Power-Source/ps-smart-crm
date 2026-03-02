@@ -168,6 +168,7 @@ function WPsCRM_pwa_flush_rewrite_rules() {
 /**
  * @@@@@@@@@@@@@@@@@ LOAD SCRIPTS @@@@@@@@@@@
  *
+ * Intelligente Asset-Ladung: Nur notwendige Libraries je nach CRM-Seite laden
  **/
 function WPsCRM_add_smartcrm_scripts(){
     $options = get_option( 'CRM_general_settings' );
@@ -188,19 +189,7 @@ function WPsCRM_add_smartcrm_scripts(){
     wp_deregister_script( 'jquery-ui-mouse' );
     wp_deregister_script( 'jquery-ui-sortable' );
 
-    // DataTables für Grid-Funktionalität (lokal eingebunden, ohne CDN)
-    wp_enqueue_style( 'datatables-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/jquery.dataTables.min.css', array(), '1.13.8' );
-    wp_enqueue_script( 'datatables-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/jquery.dataTables.min.js', array( 'jquery' ), '1.13.8', true );
-    wp_enqueue_style( 'datatables-bootstrap-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/dataTables.bootstrap5.min.css', array( 'datatables-css' ), '1.13.8' );
-    wp_enqueue_script( 'datatables-bootstrap-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/dataTables.bootstrap5.min.js', array( 'datatables-js', 'bootstrap' ), '1.13.8', true );
-
-    // Flatpickr für Datepicker (lokal eingebunden, ohne CDN)
-    wp_enqueue_style( 'flatpickr-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/flatpickr.min.css', array(), '4.6.13' );
-    wp_enqueue_script( 'flatpickr-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/flatpickr.min.js', array(), '4.6.13', true );
-    wp_enqueue_script( 'flatpickr-de', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/l10n/de.js', array( 'flatpickr-js' ), '4.6.13', true );
-    
-    // jQuery UI Shim (ersetzt jQuery UI durch Flatpickr)
-    wp_enqueue_script( 'jquery-ui-shim', plugin_dir_url( __FILE__ ).'js/jquery-ui-shim.js', array('jquery', 'flatpickr-js'), '1.0.0', true );
+    // ===== IMMER LADEN: Basis-Assets (notwendig auf allen CRM-Seiten) =====
     
     // Bootstrap & Theme
     wp_enqueue_style( 'bootstrap',plugin_dir_url( __FILE__ ).'inc/bootstrap/css/bootstrap-'.$style.'.min.css');
@@ -209,35 +198,101 @@ function WPsCRM_add_smartcrm_scripts(){
     wp_enqueue_style( 'crm-vanilla', plugin_dir_url( __FILE__ ).'css/crm-vanilla.css', array(), '1.0.0');
     
     // CRM Core JavaScript
-        // Suppress jQuery Migrate warnings (added BEFORE other scripts)
-        wp_add_inline_script( 'jquery', "window.jQuery && (window.jQuery.migrateMute = true);" );
-    
+    // Suppress jQuery Migrate warnings (added BEFORE other scripts)
+    wp_add_inline_script( 'jquery', "window.jQuery && (window.jQuery.migrateMute = true);" );
+
     wp_enqueue_script( 'pscrm-core', plugin_dir_url( __FILE__ ).'js/crm-core.js', array(), '1.0.0', true );
-    wp_enqueue_script( 'pscrm-grid', plugin_dir_url( __FILE__ ).'js/crm-grid.js', array('pscrm-core', 'datatables-js'), '1.0.0', true );
-    wp_enqueue_script( 'pscrm-datepicker', plugin_dir_url( __FILE__ ).'js/crm-datepicker.js', array('pscrm-core', 'flatpickr-js'), '1.0.0', true );
     wp_enqueue_script( 'pscrm-modal', plugin_dir_url( __FILE__ ).'js/crm-modal.js', array('pscrm-core'), '1.0.0', true );
     wp_enqueue_script( 'pscrm-dropdown', plugin_dir_url( __FILE__ ).'js/crm-dropdown.js', array('pscrm-core'), '1.0.0', true );
-    
-    // CRM Component JavaScript
-    wp_enqueue_script( 'pscrm-customer-grid', plugin_dir_url( __FILE__ ).'js/components/customer-grid.js', array('pscrm-grid'), '1.0.0', true );
-    wp_enqueue_script( 'pscrm-scheduler-grid', plugin_dir_url( __FILE__ ).'js/components/scheduler-grid.js', array('pscrm-grid'), '1.0.0', true );
-    wp_enqueue_script( 'pscrm-documents-grid', plugin_dir_url( __FILE__ ).'js/components/documents-grid.js', array('pscrm-grid'), '1.0.0', true );
-    
 
-    // Legacy Scripts
+    // Legacy Scripts (allgemein verwendet)
     wp_enqueue_script( 'mainjs', plugin_dir_url( __FILE__ ).'js/adminScript.min.js',array('jquery'),"1.1",true );
     wp_enqueue_script( 'signature',  plugin_dir_url( __FILE__ ).'js/signature.js',array('jquery'),"1.3",false );
     wp_enqueue_script( 'noty',  plugin_dir_url( __FILE__ ).'js/noty-2.3.8/js/noty/packaged/jquery.noty.packaged.min.js', array('jquery'),"1.4",false );
     wp_enqueue_script( 'pako',  plugin_dir_url( __FILE__ ).'js/pako/pako.min.js', array('jquery'),"1.4",false );
-    // WordPress-Core Underscore verwenden (vermeidet doppelte/dreifache Library-Ladung)
-    wp_enqueue_script( 'underscore' );
+    wp_enqueue_script( 'underscore' ); // WordPress-Core Underscore
     
-    // Externe Libraries
+    // Allgemeine Externe Libraries
     wp_enqueue_media();
-    wp_enqueue_script( 'autonumeric', plugin_dir_url( __FILE__ ) . 'assets/vendor/autonumeric/autoNumeric.min.js', array( 'jquery' ), '4.10.5', true );
     wp_enqueue_style('select2', plugin_dir_url( __FILE__ ).'js/select2/dist/select2.min.css');
     wp_enqueue_script('select2', plugin_dir_url( __FILE__ ).'js/select2/dist/select2.min.js', array('jquery'));
-    wp_enqueue_script( 'parsley', plugin_dir_url( __FILE__ ) . 'assets/vendor/parsley/parsley.min.js', array( 'jquery' ), '2.9.2', true );
+
+    // ===== BEDINGT LADEN: Je nach CRM-Seite =====
+    
+    // Bestimme aktuelle Seite/Modul
+    $page_type = isset($_GET['p']) ? sanitize_text_field($_GET['p']) : 'dashboard';
+    
+    // Seiten, die DataTables brauchen: list.php, dashboard.php
+    $datatable_pages = array(
+        'dokumente/list.php',
+        'kunde/list.php',
+        'artikel/list.php',
+        'scheduler/list.php',
+        'dashboard.php',
+        'dashboard-scheduler.php',
+        'agents/list.php',
+    );
+    
+    // Seiten, die Flatpickr brauchen: form.php, script_*.php
+    $flatpickr_pages = array(
+        'dokumente/form_invoice.php',
+        'dokumente/form_quotation.php',
+        'dokumente/form_credit_note.php',
+        'dokumente/form_invoice_informal.php',
+        'kunde/script_todo.php',
+        'kunde/script_appuntamento.php',
+        'scheduler/form.php',
+    );
+    
+    // Seiten, die AutoNumeric brauchen: Dokument-Formen mit Betrag-Feldern
+    $autonumeric_pages = array(
+        'dokumente/form_invoice.php',
+        'dokumente/form_quotation.php',
+        'dokumente/form_credit_note.php',
+        'dokumente/form_invoice_informal.php',
+    );
+    
+    // Seiten, die Parsley brauchen: Alle Dokumenten-Formen
+    $parsley_pages = array(
+        'dokumente/form_invoice.php',
+        'dokumente/form_quotation.php',
+        'dokumente/form_credit_note.php',
+        'dokumente/form_invoice_informal.php',
+    );
+    
+    // DATATABLES: Nur auf List- und Dashboard-Seiten laden
+    if ( in_array($page_type, $datatable_pages) ) {
+        wp_enqueue_style( 'datatables-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/jquery.dataTables.min.css', array(), '1.13.8' );
+        wp_enqueue_script( 'datatables-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/jquery.dataTables.min.js', array( 'jquery' ), '1.13.8', true );
+        wp_enqueue_style( 'datatables-bootstrap-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/dataTables.bootstrap5.min.css', array( 'datatables-css' ), '1.13.8' );
+        wp_enqueue_script( 'datatables-bootstrap-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/dataTables.bootstrap5.min.js', array( 'datatables-js', 'bootstrap' ), '1.13.8', true );
+        
+        wp_enqueue_script( 'pscrm-grid', plugin_dir_url( __FILE__ ).'js/crm-grid.js', array('pscrm-core', 'datatables-js'), '1.0.0', true );
+        wp_enqueue_script( 'pscrm-customer-grid', plugin_dir_url( __FILE__ ).'js/components/customer-grid.js', array('pscrm-grid'), '1.0.0', true );
+        wp_enqueue_script( 'pscrm-scheduler-grid', plugin_dir_url( __FILE__ ).'js/components/scheduler-grid.js', array('pscrm-grid'), '1.0.0', true );
+        wp_enqueue_script( 'pscrm-documents-grid', plugin_dir_url( __FILE__ ).'js/components/documents-grid.js', array('pscrm-grid'), '1.0.0', true );
+    }
+    
+    // FLATPICKR: Nur auf Datum-bezogenen Seiten laden
+    if ( in_array($page_type, $flatpickr_pages) ) {
+        wp_enqueue_style( 'flatpickr-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/flatpickr.min.css', array(), '4.6.13' );
+        wp_enqueue_script( 'flatpickr-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/flatpickr.min.js', array(), '4.6.13', true );
+        wp_enqueue_script( 'flatpickr-de', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/l10n/de.js', array( 'flatpickr-js' ), '4.6.13', true );
+        
+        // jQuery UI Shim (ersetzt jQuery UI durch Flatpickr)
+        wp_enqueue_script( 'jquery-ui-shim', plugin_dir_url( __FILE__ ).'js/jquery-ui-shim.js', array('jquery', 'flatpickr-js'), '1.0.0', true );
+        wp_enqueue_script( 'pscrm-datepicker', plugin_dir_url( __FILE__ ).'js/crm-datepicker.js', array('pscrm-core', 'flatpickr-js'), '1.0.0', true );
+    }
+    
+    // AUTONUMERIC: Nur auf Formular-Seiten mit Betrag-Eingaben laden
+    if ( in_array($page_type, $autonumeric_pages) ) {
+        wp_enqueue_script( 'autonumeric', plugin_dir_url( __FILE__ ) . 'assets/vendor/autonumeric/autoNumeric.min.js', array( 'jquery' ), '4.10.5', true );
+    }
+    
+    // PARSLEY: Nur auf Validierungs-Seiten laden
+    if ( in_array($page_type, $parsley_pages) ) {
+        wp_enqueue_script( 'parsley', plugin_dir_url( __FILE__ ) . 'assets/vendor/parsley/parsley.min.js', array( 'jquery' ), '2.9.2', true );
+    }
     
     // PSCRM Config für JavaScript
     $pscrm_config = array(
