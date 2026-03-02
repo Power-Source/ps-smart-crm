@@ -2052,10 +2052,11 @@ class CRM_Options_Settings{
 	 */
 	function plugin_options_tabs() {
 		$current_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : $this->general_settings_key;
+		$tabs = apply_filters( 'wpscrm_settings_tabs', $this->plugin_settings_tabs );
 
 		
 		echo '<h2 class="nav-tab-wrapper">';
-		foreach ( $this->plugin_settings_tabs as $tab_key => $tab_caption ) {
+		foreach ( $tabs as $tab_key => $tab_caption ) {
 			$active = $current_tab == $tab_key ? 'nav-tab-active' : '';
 			echo '<a class="nav-tab ' . $active . '" href="?page=' . $this->plugin_options_key . '&tab=' . $tab_key . '">' . $tab_caption . '</a>';	
 		}

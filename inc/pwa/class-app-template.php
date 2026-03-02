@@ -28,6 +28,10 @@ class WPsCRM_App_Template {
 	 * Initialize App Template System
 	 */
 	public static function init() {
+		if ( function_exists( 'register_nav_menu' ) ) {
+			register_nav_menu( 'wpscrm_webapp_menu', __( 'WebApp Template Menü', 'cpsmartcrm' ) );
+		}
+
 		// Prüfe ob App-Modus aktiv
 		add_action( 'template_redirect', array( __CLASS__, 'detect_app_mode' ), 5 );
 	}
@@ -62,7 +66,7 @@ class WPsCRM_App_Template {
 		$user_id = get_current_user_id();
 		
 		// Bestimme Rolle
-		if ( WPsCRM_Check::isAgent( $user_id ) ) {
+		if ( self::is_agent_user( $user_id ) ) {
 			self::$user_role = 'agent';
 		} else {
 			// Prüfe ob User ein Kunde ist
@@ -85,6 +89,8 @@ class WPsCRM_App_Template {
 		// Bestimme spezifische View aus Query-Parameter
 		if ( isset( $_GET['view'] ) ) {
 			self::$current_view = sanitize_key( $_GET['view'] );
+		} elseif ( is_singular() ) {
+			self::$current_view = 'page';
 		} else {
 			self::$current_view = 'dashboard';
 		}
@@ -115,6 +121,9 @@ class WPsCRM_App_Template {
 			case 'access_denied':
 				self::render_access_denied();
 				break;
+				case 'page':
+					self::render_page_container();
+					break;
 			case 'dashboard':
 				self::render_dashboard();
 				break;
@@ -192,6 +201,29 @@ class WPsCRM_App_Template {
 				
 				// Pull-to-refresh disable (optional)
 				document.body.style.overscrollBehavior = 'contain';
+
+				// Halte interne Navigation im App-Container
+				$(document).on('click', 'a[href]', function(e) {
+					var $link = $(this);
+					if ($link.is('[data-no-app]')) return;
+
+					var href = $link.attr('href');
+					if (!href || href.indexOf('#') === 0) return;
+					if (href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0 || href.indexOf('javascript:') === 0) return;
+
+					try {
+						var url = new URL(href, window.location.origin);
+						if (url.origin !== window.location.origin) return;
+						if (url.pathname.indexOf('/wp-admin/') === 0 || url.pathname.indexOf('/wp-login.php') === 0) return;
+						if (url.searchParams.get('app') === '1') return;
+
+						url.searchParams.set('app', '1');
+						e.preventDefault();
+						window.location.href = url.toString();
+					} catch (err) {
+						// ignore invalid URLs
+					}
+				});
 			});
 			</script>
 		</body>
@@ -281,80 +313,285 @@ class WPsCRM_App_Template {
 	 * Render Agent Dashboard
 	 */
 	private static function render_agent_dashboard() {
-		$user_id = get_current_user_id();
-		$user = wp_get_current_user();
-		
 		?>
-		<div class="wpscrm-app-header">
-			<div class="wpscrm-app-header-content">
-				<h1><?php _e( 'Agent Dashboard', 'cpsmartcrm' ); ?></h1>
-				<div class="wpscrm-user-info">
-					<?php echo get_avatar( $user_id, 40 ); ?>
-					<span><?php echo esc_html( $user->display_name ); ?></span>
-				</div>
-			</div>
-		</div>
-		
+		<?php self::render_desktop_app_controls( 'agent-dashboard' ); ?>
 		<div class="wpscrm-app-content">
-			<!-- Hier kommt das bestehende Agent-Dashboard -->
-			<?php do_action( 'wpscrm_app_agent_dashboard', $user_id ); ?>
-			
-			<div class="wpscrm-placeholder">
-				<p><?php _e( 'Agent-Dashboard wird hier geladen...', 'cpsmartcrm' ); ?></p>
-				<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=crmdash' ) ); ?>" class="btn btn-primary">
-					<?php _e( 'Zum Admin-Dashboard', 'cpsmartcrm' ); ?>
-				</a></p>
-			</div>
+			<?php self::render_frontend_dashboard_module( 'agent-dashboard', 'crm_agent-dashboard' ); ?>
 		</div>
-		
-		<?php self::render_app_navigation( 'agent' ); ?>
 		<?php
+		self::render_app_navigation( 'agent' );
 	}
 	
 	/**
 	 * Render Customer Dashboard
 	 */
 	private static function render_customer_dashboard() {
-		$user_id = get_current_user_id();
-		$user = wp_get_current_user();
-		
-		// Hole Kunde-Daten
-		global $wpdb;
-		$kunde_table = WPsCRM_TABLE . 'kunde';
-		$customer = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM $kunde_table WHERE user_id = %d AND eliminato = 0 LIMIT 1",
-			$user_id
-		) );
-		
 		?>
-		<div class="wpscrm-app-header">
-			<div class="wpscrm-app-header-content">
-				<h1><?php echo esc_html( sprintf( __( 'Willkommen, %s', 'cpsmartcrm' ), $customer->nome ?? $user->display_name ) ); ?></h1>
-				<div class="wpscrm-user-info">
-					<?php echo get_avatar( $user_id, 40 ); ?>
+		<?php self::render_desktop_app_controls( 'customer-portal' ); ?>
+		<div class="wpscrm-app-content">
+			<?php self::render_frontend_dashboard_module( 'customer-portal', 'crm_customer-portal' ); ?>
+		</div>
+		<?php
+		self::render_app_navigation( 'customer' );
+	}
+
+	/**
+	 * Render generic page content inside app container
+	 */
+	private static function render_page_container() {
+		self::render_desktop_app_controls( self::$user_role === 'agent' ? 'agent-dashboard' : 'customer-portal' );
+
+		$content_id = get_queried_object_id();
+		$content_post = $content_id ? get_post( $content_id ) : null;
+
+		echo '<div class="wpscrm-app-content">';
+		if ( $content_post instanceof WP_Post && $content_post->post_status === 'publish' ) {
+			global $post;
+			$previous_post = $post;
+			$post = $content_post;
+			setup_postdata( $post );
+
+			echo '<div class="wpscrm-dashboard-page-content">';
+			echo apply_filters( 'the_content', $content_post->post_content );
+			echo '</div>';
+
+			wp_reset_postdata();
+			$post = $previous_post;
+		} else {
+			echo '<div class="wpscrm-error"><p>' . esc_html__( 'Seiteninhalt konnte nicht geladen werden.', 'cpsmartcrm' ) . '</p></div>';
+		}
+		echo '</div>';
+
+	}
+
+	/**
+	 * Render WordPress menu as app-level navigation
+	 */
+	private static function render_wp_app_menu( $inline = false ) {
+		$container_class = $inline ? 'wpscrm-app-topmenu wpscrm-app-topmenu-inline' : 'wpscrm-app-topmenu';
+		$menu_class = $inline ? 'wpscrm-app-topmenu-list wpscrm-app-topmenu-list-inline' : 'wpscrm-app-topmenu-list';
+
+		$menu_html = '';
+		if ( has_nav_menu( 'wpscrm_webapp_menu' ) ) {
+			$menu_html = wp_nav_menu( array(
+				'theme_location' => 'wpscrm_webapp_menu',
+				'container' => 'nav',
+				'container_class' => $container_class,
+				'menu_class' => $menu_class,
+				'echo' => false,
+				'fallback_cb' => false,
+			) );
+		}
+
+		if ( empty( $menu_html ) ) {
+			$menu_location = apply_filters( 'wpscrm_pwa_menu_location', 'primary' );
+			$menu_html = wp_nav_menu( array(
+				'theme_location' => $menu_location,
+				'container' => 'nav',
+				'container_class' => $container_class,
+				'menu_class' => $menu_class,
+				'echo' => false,
+				'fallback_cb' => false,
+			) );
+		}
+
+		if ( empty( $menu_html ) ) {
+			$menus = wp_get_nav_menus();
+			if ( ! empty( $menus ) && isset( $menus[0]->term_id ) ) {
+				$menu_html = wp_nav_menu( array(
+					'menu' => (int) $menus[0]->term_id,
+					'container' => 'nav',
+					'container_class' => $container_class,
+					'menu_class' => $menu_class,
+					'echo' => false,
+					'fallback_cb' => false,
+				) );
+			}
+		}
+
+		if ( ! empty( $menu_html ) ) {
+			echo $menu_html;
+		}
+	}
+
+	/**
+	 * Render Desktop Controls for App View / Push Settings
+	 *
+	 * @param string $module_id Frontend module id
+	 */
+	private static function render_desktop_app_controls( $module_id ) {
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
+		$user_id = get_current_user_id();
+		$web_url = self::get_dashboard_web_url( $module_id );
+		$push_prefs = class_exists( 'WPsCRM_PWA_Manager' )
+			? WPsCRM_PWA_Manager::get_user_push_preferences( $user_id )
+			: array(
+				'enabled' => true,
+				'events' => array(
+					'assignments' => true,
+					'replies' => true,
+					'status' => true,
+				),
+			);
+
+		$nonce = wp_create_nonce( 'wpscrm_pwa' );
+		?>
+		<div class="wpscrm-app-desktop-controls">
+			<div class="wpscrm-app-desktop-controls-left">
+				<a class="btn btn-secondary btn-sm" href="<?php echo esc_url( $web_url ); ?>">
+					<?php _e( 'Webansicht', 'cpsmartcrm' ); ?>
+				</a>
+			</div>
+			<div class="wpscrm-app-desktop-controls-center">
+				<?php self::render_wp_app_menu( true ); ?>
+			</div>
+			<div class="wpscrm-app-desktop-controls-right">
+			<form class="wpscrm-push-inline-form" data-nonce="<?php echo esc_attr( $nonce ); ?>">
+				<label class="wpscrm-push-master">
+					<input type="checkbox" name="enabled" value="1" <?php checked( ! empty( $push_prefs['enabled'] ) ); ?>>
+					<span><?php _e( 'Push Notifications', 'cpsmartcrm' ); ?></span>
+				</label>
+				<div class="wpscrm-push-events">
+					<label><input type="checkbox" name="events[]" value="assignments" <?php checked( ! empty( $push_prefs['events']['assignments'] ) ); ?>> <?php _e( 'Zuweisungen', 'cpsmartcrm' ); ?></label>
+					<label><input type="checkbox" name="events[]" value="replies" <?php checked( ! empty( $push_prefs['events']['replies'] ) ); ?>> <?php _e( 'Antworten', 'cpsmartcrm' ); ?></label>
+					<label><input type="checkbox" name="events[]" value="status" <?php checked( ! empty( $push_prefs['events']['status'] ) ); ?>> <?php _e( 'Status', 'cpsmartcrm' ); ?></label>
 				</div>
+				<button type="submit" class="btn btn-primary btn-sm"><?php _e( 'Speichern', 'cpsmartcrm' ); ?></button>
+				<span class="wpscrm-push-inline-msg" aria-live="polite"></span>
+			</form>
 			</div>
 		</div>
-		
-		<div class="wpscrm-app-content">
-			<?php
-			// Support-Integration aktiv?
-			if ( class_exists( 'WPsCRM_Support_Integration' ) && WPsCRM_Support_Integration::is_support_active() ) {
-				self::render_support_widget( $user_id, $customer );
+		<script>
+		jQuery(function($) {
+			var $form = $('.wpscrm-push-inline-form').last();
+			if (!$form.length) return;
+
+			var $enabled = $form.find('input[name="enabled"]');
+			var $events = $form.find('.wpscrm-push-events input[type="checkbox"]');
+			var $msg = $form.find('.wpscrm-push-inline-msg');
+
+			function toggleEvents() {
+				$events.prop('disabled', !$enabled.is(':checked'));
 			}
-			
-			// FAQ verfügbar?
-			if ( class_exists( 'PSource_Support_FAQ' ) ) {
-				self::render_faq_widget();
-			}
-			
-			// Weitere Customer-Widgets
-			do_action( 'wpscrm_app_customer_dashboard', $user_id, $customer );
-			?>
-		</div>
-		
-		<?php self::render_app_navigation( 'customer' ); ?>
+			toggleEvents();
+			$enabled.on('change', toggleEvents);
+
+			$form.on('submit', async function(e) {
+				e.preventDefault();
+				$msg.text('...');
+
+				var enabled = $enabled.is(':checked');
+				var events = [];
+				$events.filter(':checked').each(function(){ events.push($(this).val()); });
+
+				try {
+					if (enabled && window.wpscrmPWA && typeof window.wpscrmPWA.subscribe === 'function') {
+						await window.wpscrmPWA.subscribe();
+					}
+					if (!enabled && window.wpscrmPWA && typeof window.wpscrmPWA.unsubscribe === 'function') {
+						await window.wpscrmPWA.unsubscribe();
+					}
+
+					$.post('<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>', {
+						action: 'wpscrm_save_push_prefs',
+						nonce: $form.data('nonce'),
+						enabled: enabled ? 1 : 0,
+						events: events
+					}).done(function(resp) {
+						if (resp && resp.success) {
+							$msg.text('<?php echo esc_js( __( 'Gespeichert', 'cpsmartcrm' ) ); ?>');
+						} else {
+							$msg.text('<?php echo esc_js( __( 'Fehler beim Speichern', 'cpsmartcrm' ) ); ?>');
+						}
+					}).fail(function() {
+						$msg.text('<?php echo esc_js( __( 'Fehler beim Speichern', 'cpsmartcrm' ) ); ?>');
+					});
+				} catch (err) {
+					$msg.text('<?php echo esc_js( __( 'Push nicht verfügbar', 'cpsmartcrm' ) ); ?>');
+				}
+			});
+		});
+		</script>
 		<?php
+	}
+
+	/**
+	 * Get original web dashboard URL (non-app)
+	 *
+	 * @param string $module_id Frontend module id
+	 * @return string
+	 */
+	private static function get_dashboard_web_url( $module_id ) {
+		$page_url = '';
+
+		if ( class_exists( 'WPsCRM_Frontend_Settings' ) && method_exists( 'WPsCRM_Frontend_Settings', 'get_page_url' ) ) {
+			$page_url = WPsCRM_Frontend_Settings::get_page_url( $module_id );
+		}
+
+		if ( ! empty( $page_url ) ) {
+			return $page_url;
+		}
+
+		return remove_query_arg( array( 'app', 'view', 'action', 'ticket_id', 'faq_id', 'status' ), home_url( add_query_arg( array() ) ) );
+	}
+
+	/**
+	 * Render existing Frontend Dashboard module
+	 *
+	 * @param string $module_id Frontend module id
+	 * @param string $shortcode_fallback Shortcode without brackets
+	 */
+	private static function render_frontend_dashboard_module( $module_id, $shortcode_fallback ) {
+		$rendered = false;
+
+		if ( class_exists( 'WPsCRM_Frontend_Settings' ) && method_exists( 'WPsCRM_Frontend_Settings', 'get_option' ) ) {
+			$page_option_key = ( $module_id === 'agent-dashboard' ) ? 'agent_dashboard_page' : 'customer_portal_page';
+			$page_id = absint( WPsCRM_Frontend_Settings::get_option( $page_option_key ) );
+
+			if ( $page_id > 0 ) {
+				$page = get_post( $page_id );
+				if ( $page instanceof WP_Post && $page->post_status === 'publish' ) {
+					global $post;
+					$previous_post = $post;
+					$post = $page;
+					setup_postdata( $post );
+
+					echo '<div class="wpscrm-dashboard-page-content">';
+					echo apply_filters( 'the_content', $page->post_content );
+					echo '</div>';
+
+					wp_reset_postdata();
+					$post = $previous_post;
+					$rendered = true;
+				}
+			}
+		}
+
+		if ( ! $rendered && function_exists( 'wpscrm_get_frontend_manager' ) ) {
+			$manager = wpscrm_get_frontend_manager();
+			if ( $manager && method_exists( $manager, 'get_module' ) ) {
+				$module = $manager->get_module( $module_id );
+				if ( $module && method_exists( $module, 'render' ) ) {
+					echo $module->render();
+					$rendered = true;
+				}
+			}
+		}
+
+		if ( ! $rendered ) {
+			$output = do_shortcode( '[' . $shortcode_fallback . ']' );
+			if ( ! empty( trim( $output ) ) ) {
+				echo $output;
+				$rendered = true;
+			}
+		}
+
+		if ( ! $rendered ) {
+			echo '<div class="wpscrm-error"><p>' . esc_html__( 'Dashboard konnte nicht geladen werden.', 'cpsmartcrm' ) . '</p></div>';
+		}
 	}
 	
 	/**
@@ -604,7 +841,7 @@ class WPsCRM_App_Template {
 	private static function render_ticket_detail( $ticket_id, $user_id ) {
 		$ticket = function_exists( 'psource_support_get_ticket' ) ? psource_support_get_ticket( $ticket_id ) : false;
 		
-		if ( ! $ticket || ( $ticket->user_id != $user_id && ! WPsCRM_Check::isAgent( $user_id ) ) ) {
+		if ( ! $ticket || ( $ticket->user_id != $user_id && ! self::is_agent_user( $user_id ) ) ) {
 			?>
 			<div class="wpscrm-error">
 				<p><?php _e( 'Ticket nicht gefunden oder Sie haben keine Berechtigung.', 'cpsmartcrm' ); ?></p>
@@ -681,7 +918,7 @@ class WPsCRM_App_Template {
 				
 				<!-- Antworten -->
 				<?php foreach ( $replies as $reply ) :
-					$is_agent = WPsCRM_Check::isAgent( $reply->author_id );
+					$is_agent = self::is_agent_user( $reply->author_id );
 					$message_class = $is_agent ? 'wpscrm-message-agent' : 'wpscrm-message-customer';
 				?>
 					<div class="wpscrm-message <?php echo esc_attr( $message_class ); ?>">
@@ -1090,6 +1327,33 @@ class WPsCRM_App_Template {
 		<?php
 	}
 	
+	/**
+	 * Safe agent detection helper
+	 *
+	 * @param int $user_id
+	 * @return bool
+	 */
+	private static function is_agent_user( $user_id ) {
+		$user_id = absint( $user_id );
+		if ( $user_id <= 0 ) {
+			return false;
+		}
+
+		if ( class_exists( 'WPsCRM_Check' ) && method_exists( 'WPsCRM_Check', 'isAgent' ) ) {
+			return (bool) WPsCRM_Check::isAgent( $user_id );
+		}
+
+		$user = get_userdata( $user_id );
+		if ( ! $user instanceof WP_User ) {
+			return false;
+		}
+
+		$roles = (array) $user->roles;
+		$agent_roles = (array) apply_filters( 'wpscrm_agent_role_slugs', array( 'agent', 'administrator', 'editor' ) );
+
+		return ! empty( array_intersect( $roles, $agent_roles ) );
+	}
+
 	/**
 	 * Check if currently in app mode
 	 */

@@ -565,6 +565,116 @@
    PAGE HEADER (für Vollansichten)
    ======================================== */
 
+.wpscrm-app-desktop-controls {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	padding: 0.75rem 1rem;
+	background: white;
+	border-bottom: 1px solid #e5e7eb;
+	position: sticky;
+	top: 0;
+	z-index: 90;
+}
+
+.wpscrm-app-desktop-controls-left,
+.wpscrm-app-desktop-controls-right {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.wpscrm-app-desktop-controls-center {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	min-width: 0;
+}
+
+.wpscrm-push-inline-form {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.wpscrm-push-master {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #374151;
+}
+
+.wpscrm-push-events {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6rem;
+	font-size: 0.8125rem;
+	color: #6b7280;
+}
+
+.wpscrm-push-inline-msg {
+	font-size: 0.75rem;
+	color: #6b7280;
+	min-width: 80px;
+}
+
+.wpscrm-app-topmenu {
+	background: #f9fafb;
+	border-bottom: 1px solid #e5e7eb;
+	overflow-x: auto;
+	padding: 0.5rem 1rem;
+	display: flex;
+	justify-content: center;
+}
+
+.wpscrm-app-topmenu-inline {
+	background: transparent;
+	border-bottom: 0;
+	padding: 0;
+	overflow: visible;
+}
+
+.wpscrm-app-topmenu-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	white-space: nowrap;
+}
+
+.wpscrm-app-topmenu-list-inline {
+	gap: 0.35rem;
+}
+
+.wpscrm-app-topmenu-list li {
+	margin: 0;
+	padding: 0;
+}
+
+.wpscrm-app-topmenu-list a {
+	display: inline-block;
+	padding: 0.45rem 0.75rem;
+	border-radius: 6px;
+	text-decoration: none;
+	color: #374151;
+	font-size: 0.875rem;
+	transition: background 0.2s, color 0.2s;
+}
+
+.wpscrm-app-topmenu-list a:hover,
+.wpscrm-app-topmenu-list .current-menu-item > a,
+.wpscrm-app-topmenu-list .current_page_item > a {
+	background: #e5e7eb;
+	color: #111827;
+}
+
 .wpscrm-page-header {
 	display: flex;
 	justify-content: space-between;

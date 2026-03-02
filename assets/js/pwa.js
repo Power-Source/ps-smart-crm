@@ -37,6 +37,8 @@
 	 * Initialize Install Prompt
 	 */
 	function initInstallPrompt() {
+		$(document).on('click', '.wpscrm-install-app-btn', handleInstallClick);
+
 		// beforeinstallprompt Event
 		window.addEventListener('beforeinstallprompt', (e) => {
 			console.log('[PWA] Install prompt available');
@@ -67,9 +69,9 @@
 	 * Show Install Button
 	 */
 	function showInstallButton() {
-		// Prüfe ob Button bereits existiert
-		if ($('#wpscrm-install-app-btn').length > 0) {
-			$('#wpscrm-install-app-btn').show();
+		// Prüfe ob statischer Button bereits existiert
+		if ($('.wpscrm-install-app-btn').length > 0) {
+			$('.wpscrm-install-app-btn').show();
 			return;
 		}
 		
@@ -136,6 +138,13 @@
 		
 		if (!deferredPrompt) {
 			console.log('[PWA] No install prompt available');
+
+			const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+			if (isiOS) {
+				alert('Installation auf iOS: Im Browser auf Teilen tippen und "Zum Home-Bildschirm" auswählen.');
+			} else {
+				alert('Installationsdialog aktuell nicht verfügbar. Öffne die Seite in Chrome/Edge über HTTPS und versuche es erneut.');
+			}
 			return;
 		}
 		
@@ -425,5 +434,6 @@
 	window.wpscrmPWA.subscribe = subscribeToPush;
 	window.wpscrmPWA.unsubscribe = unsubscribeFromPush;
 	window.wpscrmPWA.isStandalone = isStandaloneMode;
+	window.wpscrmPWA.promptInstall = handleInstallClick;
 	
 })(jQuery);

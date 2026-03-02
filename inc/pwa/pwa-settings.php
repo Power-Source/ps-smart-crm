@@ -18,18 +18,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Füge PWA Tab zur CRM Options-Page hinzu
  */
+add_filter( 'wpscrm_settings_tabs', 'wpscrm_register_pwa_settings_tab', 20 );
 add_action( 'admin_init', 'wpscrm_register_pwa_settings', 11 );
 
+function wpscrm_register_pwa_settings_tab( $tabs ) {
+	$tabs['wpscrm_pwa_settings'] = __( 'Web App (PWA)', 'cpsmartcrm' );
+	return $tabs;
+}
+
 function wpscrm_register_pwa_settings() {
-	global $wpscrmOPT;
-	
-	if ( ! $wpscrmOPT || ! is_object( $wpscrmOPT ) ) {
-		return;
-	}
-	
-	// Tab hinzufügen
-	$wpscrmOPT->plugin_settings_tabs['wpscrm_pwa_settings'] = __( 'Web App (PWA)', 'cpsmartcrm' );
-	
 	// Settings registrieren
 	register_setting( 'wpscrm_pwa_settings', 'wpscrm_pwa_settings', array(
 		'sanitize_callback' => 'wpscrm_sanitize_pwa_settings'
@@ -165,7 +162,7 @@ function wpscrm_render_pwa_settings_fields() {
 				</p>
 			</td>
 		</tr>
-		
+
 		<!-- Icon 512x512 -->
 		<tr>
 			<th scope="row">

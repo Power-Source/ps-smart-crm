@@ -498,26 +498,31 @@ class WPsCRM_Support_Integration {
 		// Notification Daten basierend auf Event-Type
 		$notifications = array(
 			'new_assigned' => array(
+				'event' => 'assignments',
 				'title' => __( 'Neues Support-Ticket', 'cpsmartcrm' ),
 				'body' => sprintf( __( 'Ticket #%d wurde Ihnen zugewiesen: %s', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 10 ) ),
 				'icon' => 'dashicons-sos',
 			),
 			'assigned' => array(
+				'event' => 'assignments',
 				'title' => __( 'Ticket zugewiesen', 'cpsmartcrm' ),
 				'body' => sprintf( __( 'Ticket #%d: %s', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 10 ) ),
 				'icon' => 'dashicons-admin-users',
 			),
 			'reply_customer' => array(
+				'event' => 'replies',
 				'title' => __( 'Neue Antwort zu Ihrem Ticket', 'cpsmartcrm' ),
 				'body' => sprintf( __( 'Ticket #%d: %s - Ein Agent hat geantwortet', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 8 ) ),
 				'icon' => 'dashicons-email',
 			),
 			'reply_agent' => array(
+				'event' => 'replies',
 				'title' => __( 'Neue Kundenantwort', 'cpsmartcrm' ),
 				'body' => sprintf( __( 'Ticket #%d: %s', 'cpsmartcrm' ), $ticket_id, wp_trim_words( $ticket->title, 10 ) ),
 				'icon' => 'dashicons-email-alt',
 			),
 			'status_changed' => array(
+				'event' => 'status',
 				'title' => __( 'Ticket-Status aktualisiert', 'cpsmartcrm' ),
 				'body' => sprintf( __( 'Ticket #%d: Status geändert', 'cpsmartcrm' ), $ticket_id ),
 				'icon' => 'dashicons-info',
@@ -539,6 +544,7 @@ class WPsCRM_Support_Integration {
 		
 		// Push senden
 		WPsCRM_PWA_Manager::send_push_notification( $user_id, array(
+			'event' => isset( $notification_data['event'] ) ? $notification_data['event'] : '',
 			'title' => $notification_data['title'],
 			'body' => $notification_data['body'],
 			'icon' => $icon_url,

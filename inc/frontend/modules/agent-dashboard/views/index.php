@@ -7,6 +7,8 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
+
+$app_url = add_query_arg( 'app', '1' );
 ?>
 
 <div class="crm-agent-dashboard" style="padding: 20px; background: #f5f5f5; min-height: 100vh;">
@@ -52,14 +54,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;"><?php echo date_i18n( 'l, d. F Y' ); ?></p>
             <?php endif; ?>
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div class="crm-top-actions">
+            <a href="<?php echo esc_url( $app_url ); ?>" class="crm-top-action crm-top-action-primary">WebApp öffnen</a>
+            <button type="button" class="crm-top-action crm-top-action-install wpscrm-install-app-btn">Installieren</button>
             <?php if ( 'agent' === $user_type && $user_data['ID'] ) : ?>
-                <a href="<?php echo admin_url( 'user-edit.php?user_id=' . $user_data['ID'] ); ?>" class="button button-small" style="margin-right: 10px;">🔧 Profil bearbeiten</a>
+                <a href="<?php echo admin_url( 'user-edit.php?user_id=' . $user_data['ID'] ); ?>" class="crm-top-action">Profil bearbeiten</a>
             <?php endif; ?>
             <?php if ( $user_data['ID'] ) : ?>
-                <a href="<?php echo wp_logout_url(); ?>" class="button button-secondary">🚪 Logout</a>
+                <a href="<?php echo wp_logout_url(); ?>" class="crm-top-action">Logout</a>
             <?php else : ?>
-                <a href="<?php echo wp_login_url(); ?>" class="button button-primary">🔐 Login</a>
+                <a href="<?php echo wp_login_url(); ?>" class="crm-top-action crm-top-action-primary">Login</a>
             <?php endif; ?>
         </div>
     </div>

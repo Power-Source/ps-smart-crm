@@ -44,6 +44,7 @@ class WPsCRM_PWA_Manager {
 		// Push Notification AJAX handlers
 		add_action( 'wp_ajax_wpscrm_subscribe_push', array( __CLASS__, 'ajax_subscribe_push' ) );
 		add_action( 'wp_ajax_wpscrm_unsubscribe_push', array( __CLASS__, 'ajax_unsubscribe_push' ) );
+		add_action( 'wp_ajax_wpscrm_save_push_prefs', array( __CLASS__, 'ajax_save_push_preferences' ) );
 	}
 	
 	/**
@@ -357,6 +358,101 @@ class WPsCRM_PWA_Manager {
 		
 		wp_send_json_success( array( 'message' => __( 'Push-Benachrichtigungen deaktiviert', 'cpsmartcrm' ) ) );
 	}
+
+	/**
+	 * AJAX: Save push preferences
+	 */
+	public static function ajax_save_push_preferences() {
+		check_ajax_referer( 'wpscrm_pwa', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => __( 'Nicht eingeloggt', 'cpsmartcrm' ) ) );
+		}
+
+		$user_id = get_current_user_id();
+		$enabled = isset( $_POST['enabled'] ) ? (bool) absint( $_POST['enabled'] ) : false;
+		$events_raw = isset( $_POST['events'] ) ? (array) $_POST['events'] : array();
+		$allowed_events = array( 'assignments', 'replies', 'status' );
+
+		$events = array(
+			'assignments' => false,
+			'replies' => false,
+			'status' => false,
+		);
+
+		foreach ( $events_raw as $event ) {
+			$event = sanitize_key( wp_unslash( $event ) );
+			if ( in_array( $event, $allowed_events, true ) ) {
+				$events[ $event ] = true;
+			}
+		}
+
+		$preferences = array(
+			'enabled' => $enabled,
+			'events' => $events,
+			'updated' => current_time( 'mysql' ),
+		);
+
+		update_user_meta( $user_id, '_wpscrm_push_preferences', $preferences );
+
+		wp_send_json_success( array(
+			'message' => __( 'Push-Einstellungen gespeichert', 'cpsmartcrm' ),
+			'preferences' => $preferences,
+		) );
+	}
+
+	/**
+	 * Get user push preferences
+	 *
+	 * @param int $user_id
+	 * @return array
+	 */
+	public static function get_user_push_preferences( $user_id ) {
+		$defaults = array(
+			'enabled' => true,
+			'events' => array(
+				'assignments' => true,
+				'replies' => true,
+				'status' => true,
+			),
+		);
+
+		$prefs = get_user_meta( $user_id, '_wpscrm_push_preferences', true );
+		if ( ! is_array( $prefs ) ) {
+			return $defaults;
+		}
+
+		$prefs = wp_parse_args( $prefs, $defaults );
+		$prefs['events'] = wp_parse_args( is_array( $prefs['events'] ) ? $prefs['events'] : array(), $defaults['events'] );
+
+		return $prefs;
+	}
+
+	/**
+	 * Check if notification is allowed by user preferences
+	 *
+	 * @param int $user_id
+	 * @param array $notification
+	 * @return bool
+	 */
+	private static function is_notification_allowed( $user_id, $notification ) {
+		$prefs = self::get_user_push_preferences( $user_id );
+
+		if ( empty( $prefs['enabled'] ) ) {
+			return false;
+		}
+
+		$event = isset( $notification['event'] ) ? sanitize_key( $notification['event'] ) : '';
+		if ( empty( $event ) ) {
+			return true;
+		}
+
+		if ( isset( $prefs['events'][ $event ] ) && ! $prefs['events'][ $event ] ) {
+			return false;
+		}
+
+		return true;
+	}
 	
 	/**
 	 * Send push notification to user
@@ -365,6 +461,10 @@ class WPsCRM_PWA_Manager {
 	 * @param array $notification - Notification data (title, body, icon, url)
 	 */
 	public static function send_push_notification( $user_id, $notification ) {
+		if ( ! self::is_notification_allowed( $user_id, $notification ) ) {
+			return false;
+		}
+
 		$subscriptions = get_user_meta( $user_id, '_wpscrm_push_subscriptions', true );
 		
 		if ( ! is_array( $subscriptions ) || empty( $subscriptions ) ) {
