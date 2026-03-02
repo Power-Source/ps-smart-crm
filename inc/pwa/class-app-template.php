@@ -32,6 +32,8 @@ class WPsCRM_App_Template {
 			register_nav_menu( 'wpscrm_webapp_menu', __( 'WebApp Template Menü', 'cpsmartcrm' ) );
 		}
 
+		add_action( 'widgets_init', array( __CLASS__, 'register_widget_areas' ) );
+
 		// Prüfe ob App-Modus aktiv
 		add_action( 'template_redirect', array( __CLASS__, 'detect_app_mode' ), 5 );
 	}
@@ -112,6 +114,10 @@ class WPsCRM_App_Template {
 		
 		// Header
 		self::render_header( $settings );
+
+		if ( is_user_logged_in() && ! in_array( self::$current_view, array( 'login', 'access_denied' ), true ) ) {
+			self::render_global_app_header();
+		}
 		
 		// Content basierend auf View
 		switch ( self::$current_view ) {
@@ -153,6 +159,18 @@ class WPsCRM_App_Template {
 		$title = $settings['app_name'];
 		$theme_color = $settings['theme_color'];
 		$plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
+		$frontend_settings = self::get_webapp_frontend_settings();
+		$header_bg = ! empty( $frontend_settings['webapp_header_bg_color'] ) ? $frontend_settings['webapp_header_bg_color'] : $theme_color;
+		$header_text = ! empty( $frontend_settings['webapp_header_text_color'] ) ? $frontend_settings['webapp_header_text_color'] : '#ffffff';
+		$content_bg = ! empty( $frontend_settings['webapp_content_bg_color'] ) ? $frontend_settings['webapp_content_bg_color'] : $settings['background_color'];
+		$container_bg = ! empty( $frontend_settings['webapp_container_bg_color'] ) ? $frontend_settings['webapp_container_bg_color'] : '#ffffff';
+		$container_width = absint( $frontend_settings['webapp_container_max_width'] );
+		$container_width = $container_width > 0 ? $container_width : 1200;
+		$container_padding = absint( $frontend_settings['webapp_container_padding'] );
+		$container_padding = $container_padding > 0 ? $container_padding : 16;
+		$module_radius = absint( $frontend_settings['webapp_module_radius'] );
+		$module_radius = $module_radius >= 0 ? $module_radius : 8;
+		$module_shadow = self::get_module_shadow_value( $frontend_settings['webapp_module_shadow'] );
 		
 		?>
 		<!DOCTYPE html>
@@ -171,7 +189,14 @@ class WPsCRM_App_Template {
 			<style>
 				:root {
 					--app-theme-color: <?php echo esc_attr( $theme_color ); ?>;
-					--app-bg-color: <?php echo esc_attr( $settings['background_color'] ); ?>;
+					--app-bg-color: <?php echo esc_attr( $content_bg ); ?>;
+					--app-header-bg: <?php echo esc_attr( $header_bg ); ?>;
+					--app-header-text: <?php echo esc_attr( $header_text ); ?>;
+					--app-container-bg: <?php echo esc_attr( $container_bg ); ?>;
+					--app-container-max-width: <?php echo esc_attr( $container_width ); ?>px;
+					--app-container-padding: <?php echo esc_attr( $container_padding ); ?>px;
+					--app-module-radius: <?php echo esc_attr( $module_radius ); ?>px;
+					--app-module-shadow: <?php echo esc_attr( $module_shadow ); ?>;
 				}
 			</style>
 		</head>
@@ -179,12 +204,63 @@ class WPsCRM_App_Template {
 			<div id="wpscrm-app-wrapper">
 		<?php
 	}
+
+	/**
+	 * Render optional global app header bar
+	 */
+	private static function render_global_app_header() {
+		$settings = self::get_webapp_frontend_settings();
+		if ( empty( $settings['webapp_enable_custom_design'] ) || empty( $settings['webapp_header_enabled'] ) ) {
+			return;
+		}
+
+		$app_title = ! empty( $settings['webapp_header_title'] ) ? $settings['webapp_header_title'] : get_bloginfo( 'name' );
+		$logo = ! empty( $settings['webapp_header_logo'] ) ? $settings['webapp_header_logo'] : '';
+		$show_logo = ! empty( $settings['webapp_header_show_logo'] ) && ! empty( $logo );
+
+		echo '<div class="wpscrm-global-app-header" role="banner">';
+		echo '<div class="wpscrm-global-app-header-inner">';
+		echo '<div class="wpscrm-global-app-brand">';
+		if ( $show_logo ) {
+			echo '<img class="wpscrm-global-app-logo" src="' . esc_url( $logo ) . '" alt="' . esc_attr( $app_title ) . '">';
+		}
+		echo '<span class="wpscrm-global-app-title">' . esc_html( $app_title ) . '</span>';
+		echo '</div>';
+
+		if ( is_active_sidebar( 'wpscrm_webapp_header_widget' ) ) {
+			echo '<div class="wpscrm-global-app-header-widgets">';
+			dynamic_sidebar( 'wpscrm_webapp_header_widget' );
+			echo '</div>';
+		}
+
+		echo '</div>';
+		echo '</div>';
+	}
 	
 	/**
 	 * Render HTML Footer
 	 */
 	private static function render_footer( $settings ) {
+		$frontend_settings = self::get_webapp_frontend_settings();
 		?>
+			<?php if ( is_active_sidebar( 'wpscrm_webapp_after_content_widget' ) ) : ?>
+				<div class="wpscrm-webapp-after-content-widgets">
+					<?php dynamic_sidebar( 'wpscrm_webapp_after_content_widget' ); ?>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $frontend_settings['webapp_show_footer_notice'] ) ) : ?>
+				<footer class="wpscrm-webapp-footer-note">
+					<?php echo wp_kses_post( wpautop( $frontend_settings['webapp_footer_notice'] ) ); ?>
+				</footer>
+			<?php endif; ?>
+
+			<?php if ( is_active_sidebar( 'wpscrm_webapp_footer_widget' ) ) : ?>
+				<div class="wpscrm-webapp-footer-widgets">
+					<?php dynamic_sidebar( 'wpscrm_webapp_footer_widget' ); ?>
+				</div>
+			<?php endif; ?>
+
 			</div><!-- #wpscrm-app-wrapper -->
 			
 			<?php wp_footer(); ?>
@@ -229,6 +305,42 @@ class WPsCRM_App_Template {
 		</body>
 		</html>
 		<?php
+	}
+
+	/**
+	 * Register widget areas for app template
+	 */
+	public static function register_widget_areas() {
+		if ( ! function_exists( 'register_sidebar' ) ) {
+			return;
+		}
+
+		register_sidebar( array(
+			'name' => __( 'WebApp Header Widgets', 'cpsmartcrm' ),
+			'id' => 'wpscrm_webapp_header_widget',
+			'before_widget' => '<div class="widget %2$s">',
+			'after_widget' => '</div>',
+			'before_title' => '<h3 class="widget-title">',
+			'after_title' => '</h3>',
+		) );
+
+		register_sidebar( array(
+			'name' => __( 'WebApp Content Widgets', 'cpsmartcrm' ),
+			'id' => 'wpscrm_webapp_after_content_widget',
+			'before_widget' => '<div class="widget %2$s">',
+			'after_widget' => '</div>',
+			'before_title' => '<h3 class="widget-title">',
+			'after_title' => '</h3>',
+		) );
+
+		register_sidebar( array(
+			'name' => __( 'WebApp Footer Widgets', 'cpsmartcrm' ),
+			'id' => 'wpscrm_webapp_footer_widget',
+			'before_widget' => '<div class="widget %2$s">',
+			'after_widget' => '</div>',
+			'before_title' => '<h3 class="widget-title">',
+			'after_title' => '</h3>',
+		) );
 	}
 	
 	/**
@@ -368,6 +480,11 @@ class WPsCRM_App_Template {
 	 * Render WordPress menu as app-level navigation
 	 */
 	private static function render_wp_app_menu( $inline = false ) {
+		$frontend_settings = self::get_webapp_frontend_settings();
+		if ( empty( $frontend_settings['webapp_show_top_menu'] ) ) {
+			return;
+		}
+
 		$container_class = $inline ? 'wpscrm-app-topmenu wpscrm-app-topmenu-inline' : 'wpscrm-app-topmenu';
 		$menu_class = $inline ? 'wpscrm-app-topmenu-list wpscrm-app-topmenu-list-inline' : 'wpscrm-app-topmenu-list';
 
@@ -424,6 +541,7 @@ class WPsCRM_App_Template {
 			return;
 		}
 
+		$frontend_settings = self::get_webapp_frontend_settings();
 		$user_id = get_current_user_id();
 		$web_url = self::get_dashboard_web_url( $module_id );
 		$push_prefs = class_exists( 'WPsCRM_PWA_Manager' )
@@ -438,17 +556,27 @@ class WPsCRM_App_Template {
 			);
 
 		$nonce = wp_create_nonce( 'wpscrm_pwa' );
+		$show_webview = self::is_visible_for_current_role( $frontend_settings['webapp_show_webview_roles'] );
+		$show_push = self::is_visible_for_current_role( $frontend_settings['webapp_show_push_roles'] );
+
+		if ( ! $show_webview && ! $show_push && empty( $frontend_settings['webapp_show_top_menu'] ) ) {
+			return;
+		}
+
 		?>
 		<div class="wpscrm-app-desktop-controls">
 			<div class="wpscrm-app-desktop-controls-left">
+				<?php if ( $show_webview ) : ?>
 				<a class="btn btn-secondary btn-sm" href="<?php echo esc_url( $web_url ); ?>">
 					<?php _e( 'Webansicht', 'cpsmartcrm' ); ?>
 				</a>
+				<?php endif; ?>
 			</div>
 			<div class="wpscrm-app-desktop-controls-center">
 				<?php self::render_wp_app_menu( true ); ?>
 			</div>
 			<div class="wpscrm-app-desktop-controls-right">
+			<?php if ( $show_push ) : ?>
 			<form class="wpscrm-push-inline-form" data-nonce="<?php echo esc_attr( $nonce ); ?>">
 				<label class="wpscrm-push-master">
 					<input type="checkbox" name="enabled" value="1" <?php checked( ! empty( $push_prefs['enabled'] ) ); ?>>
@@ -462,6 +590,7 @@ class WPsCRM_App_Template {
 				<button type="submit" class="btn btn-primary btn-sm"><?php _e( 'Speichern', 'cpsmartcrm' ); ?></button>
 				<span class="wpscrm-push-inline-msg" aria-live="polite"></span>
 			</form>
+			<?php endif; ?>
 			</div>
 		</div>
 		<script>
@@ -672,6 +801,11 @@ class WPsCRM_App_Template {
 	 * Render App Navigation
 	 */
 	private static function render_app_navigation( $role ) {
+		$frontend_settings = self::get_webapp_frontend_settings();
+		if ( ! self::is_visible_for_current_role( $frontend_settings['webapp_show_bottom_nav_roles'] ) ) {
+			return;
+		}
+
 		?>
 		<nav class="wpscrm-app-nav">
 			<a href="<?php echo esc_url( add_query_arg( array( 'app' => '1', 'view' => 'dashboard' ), home_url( '/' ) ) ); ?>" class="wpscrm-nav-item <?php echo self::$current_view === 'dashboard' ? 'active' : ''; ?>">
@@ -1352,6 +1486,78 @@ class WPsCRM_App_Template {
 		$agent_roles = (array) apply_filters( 'wpscrm_agent_role_slugs', array( 'agent', 'administrator', 'editor' ) );
 
 		return ! empty( array_intersect( $roles, $agent_roles ) );
+	}
+
+	/**
+	 * Get frontend webapp customization settings
+	 *
+	 * @return array
+	 */
+	private static function get_webapp_frontend_settings() {
+		$defaults = array(
+			'webapp_enable_custom_design' => 0,
+			'webapp_header_enabled' => 0,
+			'webapp_header_show_logo' => 1,
+			'webapp_header_logo' => '',
+			'webapp_header_title' => get_bloginfo( 'name' ),
+			'webapp_header_bg_color' => '',
+			'webapp_header_text_color' => '',
+			'webapp_content_bg_color' => '',
+			'webapp_container_bg_color' => '',
+			'webapp_container_max_width' => 1200,
+			'webapp_container_padding' => 16,
+			'webapp_module_radius' => 8,
+			'webapp_module_shadow' => 'soft',
+			'webapp_show_top_menu' => 1,
+			'webapp_show_webview_roles' => array( 'agent', 'customer' ),
+			'webapp_show_push_roles' => array( 'agent', 'customer' ),
+			'webapp_show_bottom_nav_roles' => array( 'agent', 'customer' ),
+			'webapp_show_footer_notice' => 1,
+			'webapp_footer_notice' => '© ' . gmdate( 'Y' ) . ' ' . get_bloginfo( 'name' ),
+		);
+
+		$settings = get_option( 'CRM_frontend_settings', array() );
+		$settings = is_array( $settings ) ? $settings : array();
+		$merged = wp_parse_args( $settings, $defaults );
+
+		foreach ( array( 'webapp_show_webview_roles', 'webapp_show_push_roles', 'webapp_show_bottom_nav_roles' ) as $roles_key ) {
+			if ( ! isset( $merged[ $roles_key ] ) || ! is_array( $merged[ $roles_key ] ) ) {
+				$merged[ $roles_key ] = $defaults[ $roles_key ];
+			}
+		}
+
+		return $merged;
+	}
+
+	/**
+	 * Check if current role is visible in setting
+	 *
+	 * @param array $allowed_roles
+	 * @return bool
+	 */
+	private static function is_visible_for_current_role( $allowed_roles ) {
+		$allowed_roles = is_array( $allowed_roles ) ? array_map( 'sanitize_key', $allowed_roles ) : array();
+		$current = self::$user_role ? self::$user_role : 'guest';
+
+		return in_array( $current, $allowed_roles, true );
+	}
+
+	/**
+	 * Get module/card shadow value
+	 *
+	 * @param string $shadow_key
+	 * @return string
+	 */
+	private static function get_module_shadow_value( $shadow_key ) {
+		switch ( sanitize_key( $shadow_key ) ) {
+			case 'none':
+				return 'none';
+			case 'medium':
+				return '0 6px 18px rgba(0,0,0,0.12)';
+			case 'soft':
+			default:
+				return '0 2px 8px rgba(0,0,0,0.08)';
+		}
 	}
 
 	/**

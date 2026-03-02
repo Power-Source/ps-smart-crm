@@ -252,9 +252,85 @@ class CRM_Options_Settings{
 	
 	function register_frontend_settings(){
 		$this->plugin_settings_tabs[$this->frontend_settings_key] =  __( 'Frontend', 'cpsmartcrm');
-		register_setting( $this->frontend_settings_key, $this->frontend_settings_key );
+		register_setting( $this->frontend_settings_key, $this->frontend_settings_key, array( &$this, 'sanitize_frontend_settings' ) );
 		add_settings_section( 'section_frontend', __( 'Frontend System - Intranet & Kundenzone', 'cpsmartcrm'), array( &$this, 'section_frontend_desc' ), $this->frontend_settings_key );
 		add_settings_field( 'frontend_pages', __( '', 'cpsmartcrm'), array( &$this, 'smartcrm_frontend_pages_setting' ), $this->frontend_settings_key, 'section_frontend' );
+	}
+
+	function sanitize_frontend_settings( $input ) {
+		$input = is_array( $input ) ? $input : array();
+		$sanitized = $input;
+
+		$sanitized['frontend_intranet_page'] = isset( $input['frontend_intranet_page'] ) ? absint( $input['frontend_intranet_page'] ) : 0;
+		$sanitized['frontend_customer_page'] = isset( $input['frontend_customer_page'] ) ? absint( $input['frontend_customer_page'] ) : 0;
+
+		$checkbox_keys = array(
+			'webapp_enable_custom_design',
+			'webapp_header_enabled',
+			'webapp_header_show_logo',
+			'webapp_show_top_menu',
+			'webapp_show_footer_notice',
+		);
+
+		foreach ( $checkbox_keys as $key ) {
+			$sanitized[ $key ] = isset( $input[ $key ] ) ? 1 : 0;
+		}
+
+		$sanitized['webapp_header_title'] = isset( $input['webapp_header_title'] ) ? sanitize_text_field( $input['webapp_header_title'] ) : '';
+		$sanitized['webapp_header_logo'] = isset( $input['webapp_header_logo'] ) ? esc_url_raw( $input['webapp_header_logo'] ) : '';
+		$sanitized['webapp_header_bg_color'] = isset( $input['webapp_header_bg_color'] ) ? sanitize_hex_color( $input['webapp_header_bg_color'] ) : '';
+		$sanitized['webapp_header_text_color'] = isset( $input['webapp_header_text_color'] ) ? sanitize_hex_color( $input['webapp_header_text_color'] ) : '';
+		$sanitized['webapp_content_bg_color'] = isset( $input['webapp_content_bg_color'] ) ? sanitize_hex_color( $input['webapp_content_bg_color'] ) : '';
+		$sanitized['webapp_container_bg_color'] = isset( $input['webapp_container_bg_color'] ) ? sanitize_hex_color( $input['webapp_container_bg_color'] ) : '';
+		$sanitized['webapp_app_name'] = isset( $input['webapp_app_name'] ) ? sanitize_text_field( $input['webapp_app_name'] ) : '';
+		$sanitized['webapp_app_short_name'] = isset( $input['webapp_app_short_name'] ) ? sanitize_text_field( $input['webapp_app_short_name'] ) : '';
+		$sanitized['webapp_app_description'] = isset( $input['webapp_app_description'] ) ? sanitize_textarea_field( $input['webapp_app_description'] ) : '';
+		$sanitized['webapp_theme_color'] = isset( $input['webapp_theme_color'] ) ? sanitize_hex_color( $input['webapp_theme_color'] ) : '';
+		$sanitized['webapp_background_color'] = isset( $input['webapp_background_color'] ) ? sanitize_hex_color( $input['webapp_background_color'] ) : '';
+		$sanitized['webapp_icon_512'] = isset( $input['webapp_icon_512'] ) ? esc_url_raw( $input['webapp_icon_512'] ) : '';
+		$sanitized['webapp_icon_192'] = isset( $input['webapp_icon_192'] ) ? esc_url_raw( $input['webapp_icon_192'] ) : '';
+		$sanitized['webapp_container_max_width'] = isset( $input['webapp_container_max_width'] ) ? absint( $input['webapp_container_max_width'] ) : 1200;
+		$sanitized['webapp_container_padding'] = isset( $input['webapp_container_padding'] ) ? absint( $input['webapp_container_padding'] ) : 16;
+		$sanitized['webapp_module_radius'] = isset( $input['webapp_module_radius'] ) ? absint( $input['webapp_module_radius'] ) : 8;
+		$sanitized['webapp_module_shadow'] = isset( $input['webapp_module_shadow'] ) ? sanitize_key( $input['webapp_module_shadow'] ) : 'soft';
+		$sanitized['webapp_footer_notice'] = isset( $input['webapp_footer_notice'] ) ? wp_kses_post( $input['webapp_footer_notice'] ) : '';
+
+		$role_keys = array(
+			'webapp_show_webview_roles',
+			'webapp_show_push_roles',
+			'webapp_show_bottom_nav_roles',
+		);
+
+		foreach ( $role_keys as $role_key ) {
+			$roles_raw = isset( $input[ $role_key ] ) && is_array( $input[ $role_key ] ) ? $input[ $role_key ] : array();
+			$roles = array();
+			foreach ( $roles_raw as $role ) {
+				$role = sanitize_key( $role );
+				if ( in_array( $role, array( 'agent', 'customer' ), true ) ) {
+					$roles[] = $role;
+				}
+			}
+			$sanitized[ $role_key ] = array_values( array_unique( $roles ) );
+		}
+
+		$existing_pwa = get_option( 'wpscrm_pwa_settings', array() );
+		if ( ! is_array( $existing_pwa ) ) {
+			$existing_pwa = array();
+		}
+
+		$merged_pwa = wp_parse_args( array(
+			'app_name' => ! empty( $sanitized['webapp_app_name'] ) ? $sanitized['webapp_app_name'] : ( isset( $existing_pwa['app_name'] ) ? $existing_pwa['app_name'] : '' ),
+			'app_short_name' => ! empty( $sanitized['webapp_app_short_name'] ) ? $sanitized['webapp_app_short_name'] : ( isset( $existing_pwa['app_short_name'] ) ? $existing_pwa['app_short_name'] : '' ),
+			'app_description' => ! empty( $sanitized['webapp_app_description'] ) ? $sanitized['webapp_app_description'] : ( isset( $existing_pwa['app_description'] ) ? $existing_pwa['app_description'] : '' ),
+			'theme_color' => ! empty( $sanitized['webapp_theme_color'] ) ? $sanitized['webapp_theme_color'] : ( isset( $existing_pwa['theme_color'] ) ? $existing_pwa['theme_color'] : '#1e3a8a' ),
+			'background_color' => ! empty( $sanitized['webapp_background_color'] ) ? $sanitized['webapp_background_color'] : ( isset( $existing_pwa['background_color'] ) ? $existing_pwa['background_color'] : '#ffffff' ),
+			'icon_512' => ! empty( $sanitized['webapp_icon_512'] ) ? $sanitized['webapp_icon_512'] : ( isset( $existing_pwa['icon_512'] ) ? $existing_pwa['icon_512'] : '' ),
+			'icon_192' => ! empty( $sanitized['webapp_icon_192'] ) ? $sanitized['webapp_icon_192'] : ( isset( $existing_pwa['icon_192'] ) ? $existing_pwa['icon_192'] : '' ),
+		), $existing_pwa );
+
+		update_option( 'wpscrm_pwa_settings', $merged_pwa );
+
+		return $sanitized;
 	}
 	
 	/*
@@ -875,6 +951,176 @@ class CRM_Options_Settings{
                     <?php _e('Die ausgewählten Seiten zeigen automatisch den richtigen Inhalt basierend auf den User-Rollen. Agenten sehen das Dashboard, Kunden das Portal. Nicht angemeldete Nutzer werden zum Login fordert.', 'cpsmartcrm'); ?>
                 </small>
             </div>
+
+			<?php
+			$pwa_options = get_option( 'wpscrm_pwa_settings', array() );
+			$webapp_defaults = array(
+				'webapp_enable_custom_design' => 0,
+				'webapp_header_enabled' => 0,
+				'webapp_header_show_logo' => 1,
+				'webapp_header_logo' => '',
+				'webapp_header_title' => get_bloginfo( 'name' ),
+				'webapp_header_bg_color' => '#1e3a8a',
+				'webapp_header_text_color' => '#ffffff',
+				'webapp_content_bg_color' => '#f5f5f5',
+				'webapp_container_bg_color' => '#ffffff',
+				'webapp_container_max_width' => 1200,
+				'webapp_container_padding' => 16,
+				'webapp_module_radius' => 8,
+				'webapp_module_shadow' => 'soft',
+				'webapp_show_top_menu' => 1,
+				'webapp_show_webview_roles' => array( 'agent', 'customer' ),
+				'webapp_show_push_roles' => array( 'agent', 'customer' ),
+				'webapp_show_bottom_nav_roles' => array( 'agent', 'customer' ),
+				'webapp_show_footer_notice' => 1,
+				'webapp_footer_notice' => '© ' . gmdate( 'Y' ) . ' ' . get_bloginfo( 'name' ),
+				'webapp_app_name' => isset( $pwa_options['app_name'] ) ? $pwa_options['app_name'] : ( get_bloginfo( 'name' ) . ' Dashboard' ),
+				'webapp_app_short_name' => isset( $pwa_options['app_short_name'] ) ? $pwa_options['app_short_name'] : 'CRM Dashboard',
+				'webapp_app_description' => isset( $pwa_options['app_description'] ) ? $pwa_options['app_description'] : 'Kundenmanagement und Support-System',
+				'webapp_theme_color' => isset( $pwa_options['theme_color'] ) ? $pwa_options['theme_color'] : '#1e3a8a',
+				'webapp_background_color' => isset( $pwa_options['background_color'] ) ? $pwa_options['background_color'] : '#ffffff',
+				'webapp_icon_512' => isset( $pwa_options['icon_512'] ) ? $pwa_options['icon_512'] : '',
+				'webapp_icon_192' => isset( $pwa_options['icon_192'] ) ? $pwa_options['icon_192'] : '',
+			);
+			$options = wp_parse_args( (array) $options, $webapp_defaults );
+			?>
+
+			<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:18px;margin-top:24px;">
+				<h3 style="margin:0 0 14px;color:#1d4ed8;display:flex;align-items:center;gap:8px;">
+					<span style="font-size:20px;">📱</span>
+					<span><?php _e('WebApp Basis-Einstellungen', 'cpsmartcrm'); ?></span>
+				</h3>
+				<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+					<div>
+						<label><?php _e('App-Name', 'cpsmartcrm'); ?></label><br>
+						<input type="text" class="regular-text" name="CRM_frontend_settings[webapp_app_name]" value="<?php echo esc_attr( $options['webapp_app_name'] ); ?>">
+					</div>
+					<div>
+						<label><?php _e('App-Kurzname', 'cpsmartcrm'); ?></label><br>
+						<input type="text" class="regular-text" name="CRM_frontend_settings[webapp_app_short_name]" value="<?php echo esc_attr( $options['webapp_app_short_name'] ); ?>">
+					</div>
+					<div style="grid-column:1/-1;">
+						<label><?php _e('App-Beschreibung', 'cpsmartcrm'); ?></label><br>
+						<textarea class="large-text" rows="2" name="CRM_frontend_settings[webapp_app_description]"><?php echo esc_textarea( $options['webapp_app_description'] ); ?></textarea>
+					</div>
+					<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+						<label><?php _e('Theme Color', 'cpsmartcrm'); ?></label>
+						<input type="color" name="CRM_frontend_settings[webapp_theme_color]" value="<?php echo esc_attr( $options['webapp_theme_color'] ); ?>">
+						<label><?php _e('Background Color', 'cpsmartcrm'); ?></label>
+						<input type="color" name="CRM_frontend_settings[webapp_background_color]" value="<?php echo esc_attr( $options['webapp_background_color'] ); ?>">
+					</div>
+					<div>
+						<label><?php _e('Icon 512x512', 'cpsmartcrm'); ?></label><br>
+						<input id="crm-webapp-icon-512" type="text" class="regular-text" name="CRM_frontend_settings[webapp_icon_512]" value="<?php echo esc_url( $options['webapp_icon_512'] ); ?>">
+						<button type="button" class="button crm-webapp-icon-upload" data-target="#crm-webapp-icon-512" style="margin-top:6px;"><?php _e('Aus Mediathek', 'cpsmartcrm'); ?></button>
+					</div>
+					<div>
+						<label><?php _e('Icon 192x192', 'cpsmartcrm'); ?></label><br>
+						<input id="crm-webapp-icon-192" type="text" class="regular-text" name="CRM_frontend_settings[webapp_icon_192]" value="<?php echo esc_url( $options['webapp_icon_192'] ); ?>">
+						<button type="button" class="button crm-webapp-icon-upload" data-target="#crm-webapp-icon-192" style="margin-top:6px;"><?php _e('Aus Mediathek', 'cpsmartcrm'); ?></button>
+					</div>
+				</div>
+			</div>
+
+			<div style="background:#f8fafc;border:1px solid #dbe5ef;border-radius:8px;padding:18px;margin-top:24px;">
+				<h3 style="margin:0 0 14px;color:#0f172a;display:flex;align-items:center;gap:8px;">
+					<span style="font-size:20px;">🎨</span>
+					<span><?php _e('WebApp Design & Layout', 'cpsmartcrm'); ?></span>
+				</h3>
+				<p style="margin:0 0 14px;">
+					<label><input type="checkbox" name="CRM_frontend_settings[webapp_enable_custom_design]" value="1" <?php checked( ! empty( $options['webapp_enable_custom_design'] ) ); ?>> <?php _e('Erweiterte WebApp-Designoptionen aktivieren', 'cpsmartcrm'); ?></label>
+					<span style="display:block;color:#6b7280;font-size:12px;margin-top:4px;"><?php _e('Farbfelder nutzen den nativen Browser-Colorpicker (kein jQuery-UI).', 'cpsmartcrm'); ?></span>
+				</p>
+
+				<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;">
+					<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;">
+						<strong style="display:block;margin-bottom:10px;"><?php _e('App Header', 'cpsmartcrm'); ?></strong>
+						<p><label><input type="checkbox" name="CRM_frontend_settings[webapp_header_enabled]" value="1" <?php checked( ! empty( $options['webapp_header_enabled'] ) ); ?>> <?php _e('Globalen App-Header anzeigen', 'cpsmartcrm'); ?></label></p>
+						<p><label><input type="checkbox" name="CRM_frontend_settings[webapp_header_show_logo]" value="1" <?php checked( ! empty( $options['webapp_header_show_logo'] ) ); ?>> <?php _e('Logo im Header anzeigen', 'cpsmartcrm'); ?></label></p>
+						<p>
+							<label><?php _e('Header Titel', 'cpsmartcrm'); ?></label><br>
+							<input type="text" class="regular-text" name="CRM_frontend_settings[webapp_header_title]" value="<?php echo esc_attr( $options['webapp_header_title'] ); ?>">
+						</p>
+						<p>
+							<label><?php _e('Header Logo URL', 'cpsmartcrm'); ?></label><br>
+							<input id="crm-webapp-header-logo" type="text" class="regular-text" name="CRM_frontend_settings[webapp_header_logo]" value="<?php echo esc_url( $options['webapp_header_logo'] ); ?>">
+							<button type="button" class="button crm-webapp-logo-upload" style="margin-top:6px;"><?php _e('Logo aus Mediathek wählen', 'cpsmartcrm'); ?></button>
+						</p>
+						<p style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+							<label><?php _e('Header Hintergrund', 'cpsmartcrm'); ?></label>
+							<input type="color" name="CRM_frontend_settings[webapp_header_bg_color]" value="<?php echo esc_attr( $options['webapp_header_bg_color'] ); ?>">
+							<label><?php _e('Header Text', 'cpsmartcrm'); ?></label>
+							<input type="color" name="CRM_frontend_settings[webapp_header_text_color]" value="<?php echo esc_attr( $options['webapp_header_text_color'] ); ?>">
+						</p>
+					</div>
+
+					<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;">
+						<strong style="display:block;margin-bottom:10px;"><?php _e('App Content Container', 'cpsmartcrm'); ?></strong>
+						<p style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+							<label><?php _e('Seitenhintergrund', 'cpsmartcrm'); ?></label>
+							<input type="color" name="CRM_frontend_settings[webapp_content_bg_color]" value="<?php echo esc_attr( $options['webapp_content_bg_color'] ); ?>">
+							<label><?php _e('Container Hintergrund', 'cpsmartcrm'); ?></label>
+							<input type="color" name="CRM_frontend_settings[webapp_container_bg_color]" value="<?php echo esc_attr( $options['webapp_container_bg_color'] ); ?>">
+						</p>
+						<p>
+							<label><?php _e('Container Max-Breite (px)', 'cpsmartcrm'); ?></label><br>
+							<input type="number" min="640" max="2200" step="10" name="CRM_frontend_settings[webapp_container_max_width]" value="<?php echo esc_attr( $options['webapp_container_max_width'] ); ?>">
+						</p>
+						<p>
+							<label><?php _e('Container Innenabstand (px)', 'cpsmartcrm'); ?></label><br>
+							<input type="number" min="0" max="80" step="1" name="CRM_frontend_settings[webapp_container_padding]" value="<?php echo esc_attr( $options['webapp_container_padding'] ); ?>">
+						</p>
+					</div>
+
+					<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;">
+						<strong style="display:block;margin-bottom:10px;"><?php _e('Module / Widgets Styling', 'cpsmartcrm'); ?></strong>
+						<p>
+							<label><?php _e('Element-Radius (px)', 'cpsmartcrm'); ?></label><br>
+							<input type="number" min="0" max="40" step="1" name="CRM_frontend_settings[webapp_module_radius]" value="<?php echo esc_attr( $options['webapp_module_radius'] ); ?>">
+						</p>
+						<p>
+							<label><?php _e('Element-Schatten', 'cpsmartcrm'); ?></label><br>
+							<select name="CRM_frontend_settings[webapp_module_shadow]">
+								<option value="none" <?php selected( $options['webapp_module_shadow'], 'none' ); ?>><?php _e('Kein', 'cpsmartcrm'); ?></option>
+								<option value="soft" <?php selected( $options['webapp_module_shadow'], 'soft' ); ?>><?php _e('Soft', 'cpsmartcrm'); ?></option>
+								<option value="medium" <?php selected( $options['webapp_module_shadow'], 'medium' ); ?>><?php _e('Mittel', 'cpsmartcrm'); ?></option>
+							</select>
+						</p>
+						<p style="margin-top:12px;"><label><input type="checkbox" name="CRM_frontend_settings[webapp_show_top_menu]" value="1" <?php checked( ! empty( $options['webapp_show_top_menu'] ) ); ?>> <?php _e('Globales WebApp-Menü in der Kopfzeile anzeigen', 'cpsmartcrm'); ?></label></p>
+					</div>
+
+					<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;">
+						<strong style="display:block;margin-bottom:10px;"><?php _e('Rollenbasierte Sichtbarkeit', 'cpsmartcrm'); ?></strong>
+						<?php $roles = array( 'agent' => __( 'Agent', 'cpsmartcrm' ), 'customer' => __( 'Kunde', 'cpsmartcrm' ) ); ?>
+						<p><label><?php _e('Webansicht-Button anzeigen für', 'cpsmartcrm'); ?></label><br>
+						<?php foreach ( $roles as $role_slug => $role_label ) : ?>
+							<label style="margin-right:10px;"><input type="checkbox" name="CRM_frontend_settings[webapp_show_webview_roles][]" value="<?php echo esc_attr( $role_slug ); ?>" <?php checked( in_array( $role_slug, (array) $options['webapp_show_webview_roles'], true ) ); ?>> <?php echo esc_html( $role_label ); ?></label>
+						<?php endforeach; ?></p>
+
+						<p><label><?php _e('Push-Controls anzeigen für', 'cpsmartcrm'); ?></label><br>
+						<?php foreach ( $roles as $role_slug => $role_label ) : ?>
+							<label style="margin-right:10px;"><input type="checkbox" name="CRM_frontend_settings[webapp_show_push_roles][]" value="<?php echo esc_attr( $role_slug ); ?>" <?php checked( in_array( $role_slug, (array) $options['webapp_show_push_roles'], true ) ); ?>> <?php echo esc_html( $role_label ); ?></label>
+						<?php endforeach; ?></p>
+
+						<p><label><?php _e('Bottom-Navigation anzeigen für', 'cpsmartcrm'); ?></label><br>
+						<?php foreach ( $roles as $role_slug => $role_label ) : ?>
+							<label style="margin-right:10px;"><input type="checkbox" name="CRM_frontend_settings[webapp_show_bottom_nav_roles][]" value="<?php echo esc_attr( $role_slug ); ?>" <?php checked( in_array( $role_slug, (array) $options['webapp_show_bottom_nav_roles'], true ) ); ?>> <?php echo esc_html( $role_label ); ?></label>
+						<?php endforeach; ?></p>
+					</div>
+
+					<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;grid-column:1/-1;">
+						<strong style="display:block;margin-bottom:10px;"><?php _e('Footer / Copyright', 'cpsmartcrm'); ?></strong>
+						<p><label><input type="checkbox" name="CRM_frontend_settings[webapp_show_footer_notice]" value="1" <?php checked( ! empty( $options['webapp_show_footer_notice'] ) ); ?>> <?php _e('Footer-Hinweis anzeigen', 'cpsmartcrm'); ?></label></p>
+						<textarea name="CRM_frontend_settings[webapp_footer_notice]" rows="3" class="large-text"><?php echo esc_textarea( $options['webapp_footer_notice'] ); ?></textarea>
+						<p class="description"><?php _e('HTML erlaubt (z. B. Copyright, Links, Impressum-Hinweis).', 'cpsmartcrm'); ?></p>
+					</div>
+				</div>
+
+				<div style="margin-top:14px;padding:12px;background:#ecfeff;border:1px solid #a5f3fc;border-radius:6px;">
+					<strong><?php _e('Widget-Support in der WebApp', 'cpsmartcrm'); ?></strong>
+					<p style="margin:6px 0 0;"><?php _e('Nutze in WordPress „Design → Widgets“ die Bereiche: WebApp Header Widgets, WebApp Content Widgets und WebApp Footer Widgets.', 'cpsmartcrm'); ?></p>
+				</div>
+			</div>
         </div>
 
         <script>
@@ -952,6 +1198,43 @@ class CRM_Options_Settings{
             // Initial buttons state
             updatePageButtons('intranet', $('#crm-intranet-page-select').val());
             updatePageButtons('customer', $('#crm-customer-page-select').val());
+
+			// Logo aus Mediathek
+			$('.crm-webapp-logo-upload').on('click', function(e) {
+				e.preventDefault();
+				var frame = wp.media({
+					title: '<?php echo esc_js( __( 'WebApp Logo auswählen', 'cpsmartcrm' ) ); ?>',
+					button: { text: '<?php echo esc_js( __( 'Logo verwenden', 'cpsmartcrm' ) ); ?>' },
+					multiple: false,
+					library: { type: 'image' }
+				});
+
+				frame.on('select', function() {
+					var attachment = frame.state().get('selection').first().toJSON();
+					$('#crm-webapp-header-logo').val(attachment.url);
+				});
+
+				frame.open();
+			});
+
+			// App Icons aus Mediathek
+			$('.crm-webapp-icon-upload').on('click', function(e) {
+				e.preventDefault();
+				var target = $(this).data('target');
+				var frame = wp.media({
+					title: '<?php echo esc_js( __( 'WebApp Icon auswählen', 'cpsmartcrm' ) ); ?>',
+					button: { text: '<?php echo esc_js( __( 'Icon verwenden', 'cpsmartcrm' ) ); ?>' },
+					multiple: false,
+					library: { type: 'image' }
+				});
+
+				frame.on('select', function() {
+					var attachment = frame.state().get('selection').first().toJSON();
+					$(target).val(attachment.url);
+				});
+
+				frame.open();
+			});
         });
         </script>
         </div>

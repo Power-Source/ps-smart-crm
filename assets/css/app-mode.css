@@ -86,11 +86,82 @@
 
 .wpscrm-app-content {
 	flex: 1;
-	max-width: 1200px;
+	max-width: var(--app-container-max-width, 1200px);
 	width: 100%;
 	margin: 0 auto;
-	padding: 1rem;
+	padding: var(--app-container-padding, 16px);
 	padding-bottom: 80px; /* Space for nav */
+	background: var(--app-container-bg, transparent);
+}
+
+.wpscrm-global-app-header {
+	position: sticky;
+	top: 0;
+	z-index: 120;
+	background: var(--app-header-bg, var(--app-theme-color, #1e3a8a));
+	color: var(--app-header-text, #fff);
+	border-bottom: 1px solid rgba(255,255,255,0.2);
+	min-height: 0 !important;
+	height: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.wpscrm-global-app-header-inner {
+	max-width: var(--app-container-max-width, 1200px);
+	margin: 0 auto;
+	padding: 0.65rem var(--app-container-padding, 16px);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.wpscrm-global-app-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6rem;
+	min-width: 0;
+}
+
+.wpscrm-global-app-logo {
+	width: 34px;
+	height: 34px;
+	object-fit: contain;
+	border-radius: 6px;
+	background: #fff;
+	padding: 3px;
+}
+
+.wpscrm-global-app-title {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--app-header-text, #fff);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.wpscrm-global-app-header-widgets,
+.wpscrm-webapp-after-content-widgets,
+.wpscrm-webapp-footer-widgets {
+	max-width: var(--app-container-max-width, 1200px);
+	margin: 0 auto;
+	padding: 0 var(--app-container-padding, 16px);
+}
+
+.wpscrm-webapp-after-content-widgets,
+.wpscrm-webapp-footer-widgets {
+	margin-bottom: 1rem;
+}
+
+.wpscrm-webapp-footer-note {
+	max-width: var(--app-container-max-width, 1200px);
+	margin: 0 auto 0.75rem;
+	padding: 0.75rem var(--app-container-padding, 16px);
+	font-size: 0.8125rem;
+	color: #6b7280;
+	border-top: 1px solid #e5e7eb;
 }
 
 /* ========================================
@@ -244,11 +315,24 @@
    ======================================== */
 
 .wpscrm-widget {
-	background: white;
-	border-radius: 0.75rem;
+	background: var(--app-container-bg, white);
+	border-radius: var(--app-module-radius, 8px);
 	margin-bottom: 1rem;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+	box-shadow: var(--app-module-shadow, 0 2px 8px rgba(0,0,0,0.08));
 	overflow: hidden;
+}
+
+.wpscrm-app-content .crm-card,
+.wpscrm-app-content .crm-dashboard-card,
+.wpscrm-app-content .wpscrm-ticket-card,
+.wpscrm-app-content .wpscrm-form-container,
+.wpscrm-app-content .wpscrm-ticket-detail,
+.wpscrm-app-content .wpscrm-faq-item,
+.wpscrm-app-content .wpscrm-faq-single,
+.wpscrm-app-content .wpscrm-empty-state,
+.wpscrm-app-content .wpscrm-error {
+	border-radius: var(--app-module-radius, 8px) !important;
+	box-shadow: var(--app-module-shadow, 0 2px 8px rgba(0,0,0,0.08)) !important;
 }
 
 .wpscrm-widget-header {
