@@ -12,7 +12,7 @@ if ( ! wp_verify_nonce( $nonce, 'delete_customer' ) || ! current_user_can('manag
 	$ID=$_GET["ID"];
 
 	//$wpdb->delete( $table, array( $pk => $ID ) );
-	if ($ID !=1)
+	if ($ID !=1) {
 		$wpdb->update(
 			$table,
 			array(
@@ -24,6 +24,10 @@ if ( ! wp_verify_nonce( $nonce, 'delete_customer' ) || ! current_user_can('manag
 			),
 			array( '%d' )
 		);
+		
+		// Newsletter Integration Hook - Customer Deleted
+		wpscrm_customer_deleted_hook( $ID );
+	}
 }
 ?>
 <script type="text/javascript">

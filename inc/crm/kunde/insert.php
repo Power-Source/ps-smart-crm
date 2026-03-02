@@ -95,6 +95,21 @@ else {
 				)
 			);
 	}
+	
+	// Newsletter Integration Hooks
+	$customer_data = array(
+		'firstname' => $name,
+		'lastname' => $nachname,
+		'email' => $email
+	);
+	
+	if ($ID) {
+		// Customer Updated
+		wpscrm_customer_updated_hook( $ID_ret, $customer_data );
+	} else {
+		// Customer Added
+		wpscrm_customer_added_hook( $ID_ret, $customer_data );
+	}
 }
 header("location: ".admin_url('admin.php?page=smart-crm&p=kunde/form.php')."&ID=$ID_ret&saved=1");
 exit;

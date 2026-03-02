@@ -98,6 +98,7 @@ require_once(__DIR__ . '/inc/classes/CRMcustomer.class.php');
 require_once(__DIR__ . '/inc/classes/CRMdocument.class.php');
 require_once(__DIR__ . '/inc/classes/CRMmail.class.php');
 require_once(__DIR__ . '/inc/classes/CRMpmIntegration.class.php');
+require_once(__DIR__ . '/inc/newsletter-integration.php');
 require_once(__DIR__ . '/inc/classes/CRMtimetracking.class.php');
 require_once(__DIR__ . '/inc/user-profile-integration.php');
 require_once(__DIR__ . '/inc/debug-status.php');
