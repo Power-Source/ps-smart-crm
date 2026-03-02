@@ -37,6 +37,19 @@ $enewsletter_active = function_exists( 'enewsletter_crm_add_subscriber' );
 				WPsCRM_Newsletter_Integration::set_default_groups( $groups );
 			}
 			
+			// Speichere Agenten-Rollen Mapping
+			if ( isset( $_POST['role_group_mapping'] ) && is_array( $_POST['role_group_mapping'] ) ) {
+				$mapping = array();
+				foreach ( $_POST['role_group_mapping'] as $role_id => $groups_csv ) {
+					$role_id = intval( $role_id );
+					$groups = array_filter( array_map( 'intval', explode( ',', $groups_csv ) ) );
+					if ( !empty( $groups ) ) {
+						$mapping[ $role_id ] = $groups;
+					}
+				}
+				WPsCRM_Newsletter_Integration::set_role_group_mapping( $mapping );
+			}
+			
 			// Speichere Auto-Serie Konfiguration
 			if ( isset( $_POST['auto_series_enabled'] ) ) {
 				$series_config = array(
@@ -73,6 +86,7 @@ $enewsletter_active = function_exists( 'enewsletter_crm_add_subscriber' );
 		// Get current settings
 		$default_groups = WPsCRM_Newsletter_Integration::get_default_groups();
 		$auto_series_config = WPsCRM_Newsletter_Integration::get_auto_series_config( 'new_customer' );
+		$role_group_mapping = WPsCRM_Newsletter_Integration::get_role_group_mapping();
 		$all_groups = WPsCRM_Newsletter_Integration::get_all_newsletter_groups();
 		
 		// Get all available newsletters
@@ -82,6 +96,9 @@ $enewsletter_active = function_exists( 'enewsletter_crm_add_subscriber' );
 			$arg = array();
 			$newsletters = $email_newsletter->get_newsletters( $arg );
 		}
+		
+		// Get all CRM agent roles
+		$agent_roles = WPsCRM_Newsletter_Integration::get_all_agent_roles();
 		?>
 		
 		<form method="post" class="crm-settings-form">
@@ -212,6 +229,69 @@ $enewsletter_active = function_exists( 'enewsletter_crm_add_subscriber' );
 				</div>
 			</div>
 			
+			<!-- Sektion 3: Agenten-Rollen Mapping -->
+			<div class="postbox">
+				<h3 class="hndle"><span><?php _e( '👥 Agenten-Rollen Mapping', 'cpsmartcrm' ); ?></span></h3>
+				<div class="inside">
+					<p class="description">
+						<?php _e( 'Definiere, welche Newsletter-Gruppen Agenten einer bestimmten Rolle erhalten.', 'cpsmartcrm' ); ?>
+						<br/>
+						<?php _e( 'Wenn ein Kunde einem Agenten zugewiesen wird, erhält er automatisch die Newsletter dieser Rolle.', 'cpsmartcrm' ); ?>
+					</p>
+					
+					<?php if ( !empty( $agent_roles ) ) : ?>
+						<table class="widefat" style="margin-top: 15px;">
+							<thead>
+								<tr>
+									<th style="width: 25%;"><?php _e( 'Agenten-Rolle', 'cpsmartcrm' ); ?></th>
+									<th><?php _e( 'Newsletter-Gruppen (mehrfach wählbar)', 'cpsmartcrm' ); ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ( $agent_roles as $role ) : ?>
+									<?php 
+										$selected_groups = isset( $role_group_mapping[ $role->id ] ) ? $role_group_mapping[ $role->id ] : array();
+									?>
+									<tr style="background: <?php echo ( $loop = !$loop ) ? '#fff' : '#f9f9f9'; ?>;">
+										<td style="padding: 12px;">
+											<strong><?php echo esc_html( $role->display_name ? $role->display_name : $role->role_name ); ?></strong>
+											<br/>
+											<small style="color: #666;">(<code><?php echo esc_html( $role->role_slug ); ?></code>)</small>
+										</td>
+										<td style="padding: 12px;">
+											<?php if ( !empty( $all_groups ) ) : ?>
+												<select name="role_group_mapping[<?php echo intval( $role->id ); ?>]" 
+														multiple="multiple" 
+														class="widefat" 
+														style="height: 120px; padding: 5px;">
+													<?php foreach ( $all_groups as $group ) : ?>
+														<option value="<?php echo intval( $group['group_id'] ); ?>"
+															<?php if ( in_array( $group['group_id'], $selected_groups ) ) echo 'selected'; ?>>
+															<?php echo esc_html( $group['group_name'] ); ?>
+														</option>
+													<?php endforeach; ?>
+												</select>
+												<small style="display: block; margin-top: 5px; color: #666;">
+													<?php _e( '(Strg+Klick zum Mehrfachauswählen)', 'cpsmartcrm' ); ?>
+												</small>
+											<?php else : ?>
+												<p style="color: #d00; margin: 0;">
+													<?php _e( 'Keine Newsletter-Gruppen verfügbar', 'cpsmartcrm' ); ?>
+												</p>
+											<?php endif; ?>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					<?php else : ?>
+						<p class="description" style="color: #d00; margin: 10px 0;">
+							<?php _e( 'Keine Agenten-Rollen vorhanden. Bitte erstellen Sie zuerst Agenten-Rollen im CRM.', 'cpsmartcrm' ); ?>
+						</p>
+					<?php endif; ?>
+				</div>
+			</div>
+			
 			<!-- Integration Info -->
 			<div class="postbox">
 				<h3 class="hndle"><span><?php _e( 'ℹ️ Integration Status', 'cpsmartcrm' ); ?></span></h3>
@@ -233,6 +313,12 @@ $enewsletter_active = function_exists( 'enewsletter_crm_add_subscriber' );
 							<th scope="row"><?php _e( 'Newsletter:', 'cpsmartcrm' ); ?></th>
 							<td>
 								<?php echo count( $newsletters ); ?> <?php _e( 'Newsletter vorhanden', 'cpsmartcrm' ); ?>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php _e( 'Agenten-Rollen:', 'cpsmartcrm' ); ?></th>
+							<td>
+								<?php echo count( $agent_roles ); ?> <?php _e( 'Rollen konfiguriert', 'cpsmartcrm' ); ?>
 							</td>
 						</tr>
 						<tr>

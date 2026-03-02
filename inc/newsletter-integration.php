@@ -50,8 +50,12 @@ class WPsCRM_Newsletter_Integration {
 		// Newsletter-Daten aus Customer Metadata holen
 		$newsletter_meta = self::get_customer_newsletter_meta( $customer_id );
 		
-		// Standard-Gruppen hinzufügen
-		$groups = (array) self::get_default_groups();
+		// Versuche Gruppen basierend auf Agent-Rolle zu holen, sonst Default-Gruppen
+		$groups = (array) self::get_newsletter_groups_for_customer( $customer_id );
+		
+		if ( empty( $groups ) ) {
+			$groups = (array) self::get_default_groups();
+		}
 		
 		if ( !empty( $newsletter_meta['groups'] ) ) {
 			$groups = array_merge( $groups, (array) $newsletter_meta['groups'] );
@@ -296,6 +300,97 @@ class WPsCRM_Newsletter_Integration {
 		
 		// Send newsletter to group
 		return enewsletter_crm_send_to_groups( $newsletter_id, array( 'group_ids' => array( $group_id ) ) );
+	}
+	
+	/**
+	 * Hole Rollen-zu-Gruppen Mapping
+	 * Maps Agent-Rollen zu Newsletter-Gruppen
+	 */
+	public static function get_role_group_mapping() {
+		$meta = get_option( 'wpscrm_newsletter_role_mapping', array() );
+		return is_array( $meta ) ? $meta : array();
+	}
+
+	/**
+	 * Speichere Rollen-zu-Gruppen Mapping
+	 */
+	public static function set_role_group_mapping( $mapping ) {
+		return update_option( 'wpscrm_newsletter_role_mapping', $mapping );
+	}
+
+	/**
+	 * Get Newsletter-Gruppen für eine bestimmte Agent-Rolle
+	 */
+	public static function get_groups_for_agent_role( $role_id ) {
+		$mapping = self::get_role_group_mapping();
+		return isset( $mapping[ $role_id ] ) ? $mapping[ $role_id ] : array();
+	}
+
+	/**
+	 * Holt alle verfügbaren Agent-Rollen aus CRM
+	 */
+	public static function get_all_agent_roles() {
+		global $wpdb;
+		$table = WPsCRM_TABLE . 'agent_roles';
+		$roles = $wpdb->get_results( "SELECT id, role_slug, role_name, display_name FROM $table ORDER BY sort_order ASC, role_name ASC" );
+		return is_array( $roles ) ? $roles : array();
+	}
+	
+	/**
+	 * Holt alle Agenten für eine bestimmte Rolle
+	 */
+	public static function get_agents_for_role( $role_id ) {
+		global $wpdb;
+		$agents_table = WPsCRM_TABLE . 'agents';
+		$agents = $wpdb->get_results( $wpdb->prepare(
+			"SELECT id, user_id, role_id, status FROM $agents_table WHERE role_id = %d AND status = 'active'",
+			$role_id
+		) );
+		return is_array( $agents ) ? $agents : array();
+	}
+	
+	/**
+	 * Holt die Agent-Rolle eines Kunden basierend auf zugewiesener Agent
+	 */
+	public static function get_customer_agent_role( $customer_id ) {
+		global $wpdb;
+		$customers_table = WPsCRM_TABLE . 'kunde';
+		$agents_table = WPsCRM_TABLE . 'agents';
+		$roles_table = WPsCRM_TABLE . 'agent_roles';
+		
+		$role = $wpdb->get_row( $wpdb->prepare(
+			"SELECT ar.id, ar.role_slug, ar.role_name 
+			 FROM $customers_table c
+			 LEFT JOIN $agents_table a ON c.agente = a.user_id
+			 LEFT JOIN $roles_table ar ON a.role_id = ar.id
+			 WHERE c.ID_kunde = %d",
+			$customer_id
+		) );
+		
+		return $role;
+	}
+	
+	/**
+	 * Holt alle Newsletter-Gruppen für eine Agent-Rolle
+	 * Basiert auf dem Role-Group-Mapping
+	 */
+	public static function get_newsletter_groups_for_customer( $customer_id ) {
+		$role = self::get_customer_agent_role( $customer_id );
+		
+		if ( !$role ) {
+			// Fallback: Default-Gruppen
+			return self::get_default_groups();
+		}
+		
+		// Get mapped groups für diese Rolle
+		$mapped_groups = self::get_groups_for_agent_role( $role->id );
+		
+		if ( empty( $mapped_groups ) ) {
+			// Fallback: Default-Gruppen
+			return self::get_default_groups();
+		}
+		
+		return $mapped_groups;
 	}
 	
 	/**
