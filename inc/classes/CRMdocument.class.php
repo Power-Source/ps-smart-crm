@@ -17,9 +17,9 @@ class CRM_document{
 		$r_table=WPsCRM_TABLE."dokumente_dettaglio";
 		global $wpdb;
 
-		$SQL="SELECT D.id as ID_doc, D.progressivo, D.tipo, D.totale_imponibile, D.totale_imposta, D.totale as totale_doc, D.fk_kunde, R.* FROM $d_table AS D
+		$SQL=$wpdb->prepare("SELECT D.id as ID_doc, D.progressivo, D.tipo, D.totale_imponibile, D.totale_imposta, D.totale as totale_doc, D.fk_kunde, R.* FROM $d_table AS D
 			  INNER JOIN $r_table AS R ON D.id = R.fk_dokumente
-			  WHERE D.id =$id";
+			  WHERE D.id = %d", (int)$id);
 		//echo $SQL;
 		$datas=$wpdb->get_results( $SQL ) ;
 		if(!empty($datas) ){
@@ -59,14 +59,14 @@ class CRM_document{
 		global $wpdb;
 
 
-		$SQL="
+		$SQL=$wpdb->prepare("
 		SELECT A.id_agenda, A.fk_kunde, A.fk_dokumente, A.fk_dokumente_dettaglio, A.fk_subscriptionrules, D.id as ID_doc, D.progressivo, D.tipo, D.totale_imponibile, D.totale_imposta, D.totale as totale_doc,R.*
 		FROM  $a_table AS A
 		JOIN  $d_table AS D
 		ON A.fk_dokumente=D.id
 		JOIN  $r_table AS R
 		ON D.id=R.fk_dokumente
-		WHERE A.id_agenda=$id";
+		WHERE A.id_agenda=%d", (int)$id);
 		$datas=$wpdb->get_results( $SQL ) ;
 
 		if(!empty($datas) ){
@@ -92,13 +92,12 @@ class CRM_document{
 		$r_table=WPsCRM_TABLE."dokumente_dettaglio";
 		$d_table=WPsCRM_TABLE."dokumente";
 		global $wpdb;
-		$SQL="
+		$SQL=$wpdb->prepare("
 			SELECT D.id as ID_doc, D.progressivo, D.tipo, D.totale_imponibile, D.totale_imposta, D.totale as totale_doc, D.fk_kunde, R.* FROM $d_table AS D JOIN $r_table as R ON R.fk_dokumente = D.id
 			WHERE R.fk_dokumente IN
-			(SELECT D1.id FROM $d_table AS D1 JOIN $r_table AS R1 ON D1.id=R1.fk_dokumente WHERE R1.id=$id)
-			";
+			(SELECT D1.id FROM $d_table AS D1 JOIN $r_table AS R1 ON D1.id=R1.fk_dokumente WHERE R1.id=%d)", (int)$id);
 
-		echo $SQL;
+		echo esc_html($SQL);
 
 		$datas=$wpdb->get_results( $SQL ) ;
 		foreach($datas as $docData){
@@ -145,7 +144,7 @@ class CRM_document{
 	}
 	public function get_documentsbyCustomerID($id){
 		global $wpdb;
-		$SQL="SELECT * FROM ".WPsCRM_TABLE."documenti WHERE fk_kunde=".$id." ORDER BY data DESC";
+		$SQL=$wpdb->prepare("SELECT * FROM ".WPsCRM_TABLE."documenti WHERE fk_kunde=%d ORDER BY data DESC", (int)$id);
 		return $documents=$wpdb->get_results($SQL);
 	}
 }

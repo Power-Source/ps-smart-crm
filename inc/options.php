@@ -1256,7 +1256,7 @@ class CRM_Options_Settings{
 			</div>
 			<span style="width:100%;float:left;margin-top:10px;color:#999"><?php _e('Wähle Dein Firmenlogo aus, das in Dokumenten (Rechnungen, Kostenvoranschlägen usw.) verwendet werden soll. Beste Ergebnisse erhätst Du mit einem quadratischen Bild von 100 x 100 Pixel','cpsmartcrm')?></span>
 			</div>
-    <span class="thumbContainer row"><?php if(isset($options['company_logo'])) {?> <img src="<?php echo $options['company_logo'] ?>" /><?php } ?></span>
+    <span class="thumbContainer row"><?php if(isset($options['company_logo'])) {?> <img src="<?php echo esc_url($options['company_logo']) ?>" /><?php } ?></span>
     <script>
 
         var media_uploader = null;
@@ -1618,7 +1618,7 @@ class CRM_Options_Settings{
 						<div>
 							<div class="col-md-4 pull-left">
 								<label style="font-size:1.4em; position:relative;top:-5px"><?php _e('VAT','cpsmartcrm')?> (%) </label>
-								<input class="col-md-4" type="number" id="default_vat" name="<?php echo $this->documents_settings_key ?>[default_vat]" value="<?php echo $document_options['default_vat']?>" />
+								<input class="col-md-4" type="number" id="default_vat" name="<?php echo $this->documents_settings_key ?>[default_vat]" value="<?php echo esc_attr($document_options['default_vat'])?>" />
 							</div>
 							<div class="col-md-6 pull-right">
 								<label style="font-size:1.4em; position:relative;top:-15px"><?php _e('Währung','cpsmartcrm')?> </label>
@@ -1766,7 +1766,7 @@ class CRM_Options_Settings{
 					</div>
 				</div>
 				<div class="responsive-message"></div>
-				<input type="hidden" id="header_alignment" name="<?php echo $this->documents_settings_key ?>[header_alignment]" value="<?php if (isset($document_options['header_alignment'])) echo $document_options['header_alignment']?>"/>
+				<input type="hidden" id="header_alignment" name="<?php echo $this->documents_settings_key ?>[header_alignment]" value="<?php if (isset($document_options['header_alignment'])) echo esc_attr($document_options['header_alignment'])?>"/>
 			</div>
 		</div>
 

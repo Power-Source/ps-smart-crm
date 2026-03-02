@@ -70,7 +70,7 @@
                           <textarea style="width:93%" name="descrizione_<?php echo $i ?>" id="descrizione_<?php echo $i ?>" class="descriptive_row"><?php echo stripslashes($descrizione) ?></textarea>
                       </td>
                       <td>
-                          <a href="#" onclick="elimina_riga(<?php echo $rigad["id"] ?>, <?php echo $i ?>);return false;">
+                          <a href="#" onclick="elimina_riga(<?php echo intval($rigad["id"]) ?>, <?php echo intval($i) ?>);return false;">
                               <?php _e('Löschen', 'cpsmartcrm') ?>
                           </a>
                       </td>
@@ -101,22 +101,22 @@
                           ?>
                       </td>
                       <td>
-                          <input class="numeric" name="qta_<?php echo $i ?>" id="qta_<?php echo $i ?>" value="<?php echo $rigad["qta"] ?>" oninput="aggiornatot();" onblur="aggiornatot()" style="width:80px" />
+                          <input class="numeric" name="qta_<?php echo $i ?>" id="qta_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["qta"]) ?>" oninput="aggiornatot();" onblur="aggiornatot()" style="width:80px" />
                       </td>
                       <td>
-                          <input class="numeric" name="prezzo_<?php echo $i ?>" id="prezzo_<?php echo $i ?>" value="<?php echo $rigad["prezzo"] ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:130px" />
+                          <input class="numeric" name="prezzo_<?php echo $i ?>" id="prezzo_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["prezzo"]) ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:130px" />
                       </td>
                       <td>
-                          <input class="numeric" name="sconto_<?php echo $i ?>" id="sconto_<?php echo $i ?>" value="<?php echo $rigad["sconto"] ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:80px" />
+                          <input class="numeric" name="sconto_<?php echo $i ?>" id="sconto_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["sconto"]) ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:80px" />
                       </td>
                       <td>
-                          <input class="numeric" name="iva_<?php echo $i ?>" id="iva_<?php echo $i ?>" value="<?php echo $rigad["iva"] ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:80px" />
+                          <input class="numeric" name="iva_<?php echo $i ?>" id="iva_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["iva"]) ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:80px" />
                       </td>
                       <td>
-                          <input class="numeric" size="10" name="totale_<?php echo $i ?>" id="totale_<?php echo $i ?>" value="<?php echo $rigad["totale"] ?>" style="width:130px" />
+                          <input class="numeric" size="10" name="totale_<?php echo $i ?>" id="totale_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["totale"]) ?>" style="width:130px" />
                       </td>
                       <td>
-                          <button type="button" onclick="elimina_riga(<?php echo $rigad["id"] ?>, <?php echo $i ?>)">
+                          <button type="button" onclick="elimina_riga(<?php echo intval($rigad["id"]) ?>, <?php echo intval($i) ?>)">
                               <?php _e('Löschen', 'cpsmartcrm') ?>
                           </button>
                       </td>

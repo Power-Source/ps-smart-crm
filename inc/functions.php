@@ -416,21 +416,28 @@ add_action('wp_ajax_WPsCRM_get_clients3', 'WPsCRM_get_clients3');
 
 //get json client contacts for grid in clients/form.php
 function WPsCRM_get_client_contacts() {
-  global $wpdb;
-  $table = WPsCRM_TABLE . "contatti";
-  $client_id = $_REQUEST["client_id"];
-  $where = "fk_kunde=$client_id";
-  $arr = array();
+  if (check_ajax_referer('pscrm_ajax_nonce', 'nonce', false) && current_user_can('manage_crm')) {
+    global $wpdb;
+    $table = WPsCRM_TABLE . "contatti";
+    $client_id = isset($_REQUEST["client_id"]) ? intval($_REQUEST["client_id"]) : 0;
+    if (!$client_id) {
+      wp_send_json_error(array('message' => 'Invalid client ID'));
+      return;
+    }
+    $arr = array();
 
-  $sql = "select id, name, nachname, email, telefono, qualifica from $table where $where order by nachname";
+    $sql = $wpdb->prepare("select id, name, nachname, email, telefono, qualifica from $table where fk_kunde=%d order by nachname", $client_id);
 
-  foreach ($wpdb->get_results($sql) as $record) {
-    $arr[] = $record;
+    foreach ($wpdb->get_results($sql) as $record) {
+      $arr[] = $record;
+    }
+
+    header("Content-type: application/json");
+    echo "{\"contacts\":" . json_encode($arr) . "}";
+    die();
+  } else {
+    wp_send_json_error(array('message' => 'Security Issue'));
   }
-
-  header("Content-type: application/json");
-  echo "{\"contacts\":" . json_encode($arr) . "}";
-  die();
 }
 
 add_action('wp_ajax_WPsCRM_get_client_contacts', 'WPsCRM_get_client_contacts');
@@ -1161,18 +1168,27 @@ add_action('wp_ajax_WPsCRM_get_client_scheduler', 'WPsCRM_get_client_scheduler')
 
 //get main info for chosen client
 function WPsCRM_get_client_info() {
-  global $wpdb;
-  $id_kunde = $_GET["id_kunde"];
-  $table = WPsCRM_TABLE."kunde";
-  $ID_azienda = 1;
-  $sql = "select firmenname, name, nachname, adresse, cap, standort, provinz, cod_fis, p_iva, tipo_cliente from $table where ID_kunde=$id_kunde";
-  foreach ($wpdb->get_results($sql) as $record) {
-    $arr[] = stripslashes_deep($record);
-  }
+  if (check_ajax_referer('pscrm_ajax_nonce', 'nonce', false) && current_user_can('manage_crm')) {
+    global $wpdb;
+    $id_kunde = isset($_GET['id_kunde']) ? intval($_GET['id_kunde']) : 0;
+    if (!$id_kunde) {
+      wp_send_json_error(array('message' => 'Invalid customer ID'));
+      die();
+    }
+    $table = WPsCRM_TABLE."kunde";
+    $sql = $wpdb->prepare("select firmenname, name, nachname, adresse, cap, standort, provinz, cod_fis, p_iva, tipo_cliente from $table where ID_kunde=%d", $id_kunde);
+    $arr = array();
+    foreach ($wpdb->get_results($sql) as $record) {
+      $arr[] = stripslashes_deep($record);
+    }
 
-  header("Content-type: application/json");
-  echo "{\"info\":" . json_encode($arr) . "}";
-  die();
+    header("Content-type: application/json");
+    echo "{\"info\":" . json_encode($arr) . "}";
+    die();
+  } else {
+    wp_send_json_error(array('message' => 'Security Issue'));
+    die();
+  }
 }
 
 add_action('wp_ajax_WPsCRM_get_client_info', 'WPsCRM_get_client_info');
@@ -3157,11 +3173,20 @@ add_action('wp_ajax_WPsCRM_view_activity_modal', 'WPsCRM_view_activity_modal', 1
 
 function WPsCRM_update_options_modal() {
   if (check_ajax_referer('update_document', 'security', false) && current_user_can('manage_crm')) {
-    $options = get_option($_POST['option_section']);
-    $option = $_POST['option'];
-    $options[$option] = $_POST['val'];
+    // SECURITY: Only allow whitelisted option keys
+    $allowed_options = array('CRM_general_settings', 'CRM_documents_settings', 'CRM_clients_settings', 'CRM_accounting_settings');
+    $option_section = isset($_POST['option_section']) ? sanitize_text_field($_POST['option_section']) : '';
+    
+    if (!in_array($option_section, $allowed_options)) {
+      wp_send_json_error(array('message' => 'Invalid option section'));
+      return;
+    }
+    
+    $options = get_option($option_section);
+    $option = sanitize_text_field($_POST['option']);
+    $options[$option] = sanitize_text_field($_POST['val']);
 
-    update_option($_POST['option_section'], $options);
+    update_option($option_section, $options);
 
     if (gettype($options[$option]) != "array")
       echo ( $options[$option] );

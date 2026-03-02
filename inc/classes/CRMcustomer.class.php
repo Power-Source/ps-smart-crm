@@ -9,11 +9,13 @@
 		$d_table=WPsCRM_TABLE."dokumente";
 		global $wpdb;
 
-		$SQL=
+		$SQL=$wpdb->prepare(
 			"SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email
 			FROM $c_table AS C
 			INNER JOIN $d_table AS D ON C.ID_kunde = D.fk_kunde
-			WHERE D.id =$id";
+			WHERE D.id = %d",
+			(int)$id
+		);
 
 		$data=$wpdb->get_row( $SQL ) ;
 
@@ -28,11 +30,13 @@
 		$a_table=WPsCRM_TABLE."agenda";
 		global $wpdb;
 
-		$SQL=
+		$SQL=$wpdb->prepare(
 			"SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email
 			FROM $c_table AS C
 			INNER JOIN $a_table AS A ON C.ID_kunde = A.fk_kunde
-			WHERE A.id_agenda =$id";
+			WHERE A.id_agenda = %d",
+			(int)$id
+		);
 
 		$data=$wpdb->get_row( $SQL ) ;
 
@@ -48,15 +52,17 @@
 		$r_table=WPsCRM_TABLE."dokumente_dettaglio";
 		global $wpdb;
 
-		$SQL=
+		$SQL=$wpdb->prepare(
 			"SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email
 			FROM $c_table AS C
 			WHERE C.ID_kunde IN (SELECT D.fk_kunde FROM $d_table AS D
-									JOIN  $r_table AS R
-								   ON
-								   D.id = R.fk_dokumente
-								   WHERE R.id = $id
-								  )";
+								JOIN  $r_table AS R
+							ON
+							D.id = R.fk_dokumente
+							WHERE R.id = %d
+						  )",
+			(int)$id
+		);
 
 		$data=$wpdb->get_row( $SQL ) ;
 		$data->firmenname !="" ? $this->business_name=$data->firmenname : $this->business_name=$data->name. " ". $data->nachname;
@@ -68,7 +74,7 @@
 	public function set_customer($id){
 		$table=WPsCRM_TABLE."kunde";
 		global $wpdb;
-		$SQL="SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email from $table AS C WHERE C.ID_kunde =$id";
+		$SQL=$wpdb->prepare("SELECT C.ID_kunde, C.name, C.nachname, C.firmenname, C.email from $table AS C WHERE C.ID_kunde = %d", (int)$id);
 		//echo $SQL;
 		$data=$wpdb->get_row( $SQL ) ;
 		$data->firmenname !="" ? $this->business_name=$data->firmenname : $this->business_name=$data->name. " ". $data->nachname;

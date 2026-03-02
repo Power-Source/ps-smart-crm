@@ -119,9 +119,10 @@ class CRM_mail{
 	public function get_customerMail($id,$print=0){
 		$table=WPsCRM_TABLE."kunde";
 		global $wpdb;
+		$result = $wpdb->get_var( $wpdb->prepare("SELECT email FROM $table WHERE ID_kunde = %d", (int)$id) );
 		if($print ==1)
-			echo $wpdb->get_var( "SELECT email FROM $table WHERE ID_kunde =$id" );
-		return $wpdb->get_var( "SELECT email FROM $table WHERE ID_kunde =$id" );
+			echo esc_html($result);
+		return $result;
 	}
 
 	/**
@@ -133,12 +134,12 @@ class CRM_mail{
 		$table=WPsCRM_TABLE."kunde";
 		global $wpdb;
 
-		$data=$wpdb->get_row( "SELECT name, nachname, firmenname FROM $table WHERE ID_kunde =$id" ) ;
+		$data=$wpdb->get_row( $wpdb->prepare("SELECT name, nachname, firmenname FROM $table WHERE ID_kunde = %d", (int)$id) ) ;
 
 		$data->firmenname !="" ? $name=$data->firmenname : $name=$data->name. " ". $data->nachname;
 
 		if($print ==1)
-			echo $name;
+			echo esc_html($name);
 
 		return $name;
 	}
@@ -168,7 +169,7 @@ class CRM_mail{
 		global $wpdb;
 		$culture=get_locale();
 		$table=WPsCRM_TABLE."agenda";
-		$SQL="select * from $table where id_agenda= $id";
+		$SQL=$wpdb->prepare("select * from $table where id_agenda= %d", (int)$id);
 		//echo $SQL;
 		$datas=$wpdb->get_results( $SQL ) ;
 		$activity=array();
@@ -292,7 +293,7 @@ class CRM_mail{
 	public function get_rule($id){
 		$table=WPsCRM_TABLE."subscriptionrules";
 		global $wpdb;
-		$sql="SELECT steps from $table where ID=$id";
+		$sql=$wpdb->prepare("SELECT steps from $table where ID=%d", (int)$id);
 		$riga=$wpdb->get_row($sql,ARRAY_A);
 		$rule=(object) array("id"=>$id);
 		foreach($riga as $key=>$val){

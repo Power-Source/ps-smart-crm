@@ -132,7 +132,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
 
               <h4 class="page-header" style="margin: 10px 0 20px;"><?php _e('DOKUMENTENDATEN', 'cpsmartcrm') ?></span>
                   <span style="float:right;margin-top: -7px;">
-                      <label class="col-sm-2 control-label"><?php _e('Nummer', 'cpsmartcrm') ?></label><span class="col-sm-2"><input id="progressivo" name="progressivo" class="form-control" data-placement="bottom" title="<?php _e('Nummer', 'cpsmartcrm') ?>" value="<?php if (isset($riga)) echo $riga["progressivo"] ?>" readonly disabled/>
+                      <label class="col-sm-2 control-label"><?php _e('Nummer', 'cpsmartcrm') ?></label><span class="col-sm-2"><input id="progressivo" name="progressivo" class="form-control" data-placement="bottom" title="<?php _e('Nummer', 'cpsmartcrm') ?>" value="<?php if (isset($riga)) echo esc_attr($riga["progressivo"]) ?>" readonly disabled/>
                       </span></span></h4>
 
               <div class="row form-group">
@@ -145,7 +145,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                   </div>
                   <label class="control-label" style="margin-left:20px"><?php _e('Akzeptiert', 'cpsmartcrm') ?>?</label>
                   <div class="col-sm-1">
-                      <input type="checkbox" name="pagato" value="1" <?php if (isset($riga)) echo $riga["pagato"] ? "checked" : "" ?>>
+                      <input type="checkbox" name="pagato" value="1" <?php if (isset($riga)) echo $riga["pagato"] ? 'checked="checked"' : "" ?>>
                   </div>
               </div>
               <div class="row form-group">
@@ -154,7 +154,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                   </div>
                   <!--<div class="col-sm-2 hide_sm"></div>-->
                   <label class="col-sm-2 control-label"><?php _e('Referenz', 'cpsmartcrm') ?></label>
-                  <div class="col-sm-4"><input type="text" class="form-control" name="riferimento" id="riferimento" maxlength='55' value="<?php if (isset($riga)) echo $riga["riferimento"] ?>">
+                  <div class="col-sm-4"><input type="text" class="form-control" name="riferimento" id="riferimento" maxlength='55' value="<?php if (isset($riga)) echo esc_attr($riga["riferimento"]) ?>">
                   </div>
               </div>
               <div class="row form-group">
@@ -312,7 +312,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
               <div class="row form-group">
                   <label class="col-sm-2 control-label"><?php _e('Angebotswert (erforderlich)', 'cpsmartcrm') ?> *</label>
                   <div class="col-sm-6">
-                      <input class="numeric" id="quotation_value" name="quotation_value" value="<?php if (isset($riga)) echo $riga["valore_preventivo"] ?>" />
+                      <input class="numeric" id="quotation_value" name="quotation_value" value="<?php if (isset($riga)) echo esc_attr($riga["valore_preventivo"]) ?>" />
 
                   </div>
               </div>
