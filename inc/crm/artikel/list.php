@@ -49,7 +49,7 @@ jQuery(document).ready(function ($) {
         info: true,
         autoWidth: false,
         language: {
-            url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/de-DE.json"
+            url: "<?php echo esc_url( WPsCRM_URL . 'assets/vendor/datatables/i18n-de-DE.json' ); ?>"
         }
     });
 

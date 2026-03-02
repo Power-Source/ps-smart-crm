@@ -188,16 +188,16 @@ function WPsCRM_add_smartcrm_scripts(){
     wp_deregister_script( 'jquery-ui-mouse' );
     wp_deregister_script( 'jquery-ui-sortable' );
 
-    // DataTables für Grid-Funktionalität
-    wp_enqueue_style( 'datatables-css', 'https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css', array(), '1.13.8' );
-    wp_enqueue_script( 'datatables-js', 'https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js', array('jquery'), '1.13.8', true );
-    wp_enqueue_style( 'datatables-bootstrap-css', 'https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css', array('datatables-css'), '1.13.8' );
-    wp_enqueue_script( 'datatables-bootstrap-js', 'https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js', array('datatables-js', 'bootstrap'), '1.13.8', true );
-    
-    // Flatpickr für Datepicker
-    wp_enqueue_style( 'flatpickr-css', 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css', array(), '4.6.13' );
-    wp_enqueue_script( 'flatpickr-js', 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js', array(), '4.6.13', true );
-    wp_enqueue_script( 'flatpickr-de', 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/de.js', array('flatpickr-js'), '4.6.13', true );
+    // DataTables für Grid-Funktionalität (lokal eingebunden, ohne CDN)
+    wp_enqueue_style( 'datatables-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/jquery.dataTables.min.css', array(), '1.13.8' );
+    wp_enqueue_script( 'datatables-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/jquery.dataTables.min.js', array( 'jquery' ), '1.13.8', true );
+    wp_enqueue_style( 'datatables-bootstrap-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/dataTables.bootstrap5.min.css', array( 'datatables-css' ), '1.13.8' );
+    wp_enqueue_script( 'datatables-bootstrap-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/dataTables.bootstrap5.min.js', array( 'datatables-js', 'bootstrap' ), '1.13.8', true );
+
+    // Flatpickr für Datepicker (lokal eingebunden, ohne CDN)
+    wp_enqueue_style( 'flatpickr-css', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/flatpickr.min.css', array(), '4.6.13' );
+    wp_enqueue_script( 'flatpickr-js', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/flatpickr.min.js', array(), '4.6.13', true );
+    wp_enqueue_script( 'flatpickr-de', plugin_dir_url( __FILE__ ) . 'assets/vendor/flatpickr/l10n/de.js', array( 'flatpickr-js' ), '4.6.13', true );
     
     // jQuery UI Shim (ersetzt jQuery UI durch Flatpickr)
     wp_enqueue_script( 'jquery-ui-shim', plugin_dir_url( __FILE__ ).'js/jquery-ui-shim.js', array('jquery', 'flatpickr-js'), '1.0.0', true );
@@ -229,14 +229,15 @@ function WPsCRM_add_smartcrm_scripts(){
     wp_enqueue_script( 'signature',  plugin_dir_url( __FILE__ ).'js/signature.js',array('jquery'),"1.3",false );
     wp_enqueue_script( 'noty',  plugin_dir_url( __FILE__ ).'js/noty-2.3.8/js/noty/packaged/jquery.noty.packaged.min.js', array('jquery'),"1.4",false );
     wp_enqueue_script( 'pako',  plugin_dir_url( __FILE__ ).'js/pako/pako.min.js', array('jquery'),"1.4",false );
-    wp_enqueue_script('underscore',plugin_dir_url( __FILE__ ).'js/underscore.js',array('jquery'),false);
+    // WordPress-Core Underscore verwenden (vermeidet doppelte/dreifache Library-Ladung)
+    wp_enqueue_script( 'underscore' );
     
     // Externe Libraries
     wp_enqueue_media();
-    wp_enqueue_script( 'autonumeric', 'https://cdn.jsdelivr.net/npm/autonumeric@4.10.5/dist/autoNumeric.min.js', array('jquery'), null, true );
+    wp_enqueue_script( 'autonumeric', plugin_dir_url( __FILE__ ) . 'assets/vendor/autonumeric/autoNumeric.min.js', array( 'jquery' ), '4.10.5', true );
     wp_enqueue_style('select2', plugin_dir_url( __FILE__ ).'js/select2/dist/select2.min.css');
     wp_enqueue_script('select2', plugin_dir_url( __FILE__ ).'js/select2/dist/select2.min.js', array('jquery'));
-    wp_enqueue_script('parsley', 'https://cdn.jsdelivr.net/npm/parsleyjs@2.9.2/dist/parsley.min.js', array('jquery'));
+    wp_enqueue_script( 'parsley', plugin_dir_url( __FILE__ ) . 'assets/vendor/parsley/parsley.min.js', array( 'jquery' ), '2.9.2', true );
     
     // PSCRM Config für JavaScript
     $pscrm_config = array(
@@ -247,7 +248,8 @@ function WPsCRM_add_smartcrm_scripts(){
         'currencySymbol' => html_entity_decode(WPsCRM_DEFAULT_CURRENCY_SYMBOL),
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('pscrm_ajax_nonce'),
-        'debug' => defined('WP_DEBUG') && WP_DEBUG
+        'debug' => defined('WP_DEBUG') && WP_DEBUG,
+        'dataTablesI18nUrl' => plugin_dir_url( __FILE__ ) . 'assets/vendor/datatables/i18n-de-DE.json'
     );
     
     wp_localize_script('pscrm-core', 'PSCRMConfig', $pscrm_config);

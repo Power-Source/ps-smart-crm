@@ -2036,7 +2036,6 @@ class CRM_Options_Settings{
         
         
     </div>
-	<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.6/dist/signature_pad.umd.min.js"></script>
 <!--SIGNATURE SCRIPT-->
 <script>
     var wrapper = document.getElementById("signature-pad"),

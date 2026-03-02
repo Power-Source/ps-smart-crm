@@ -83,7 +83,7 @@
             searching: true,
             ordering: true,
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.8/i18n/de-DE.json'
+                url: (window.PSCRMConfig && PSCRMConfig.dataTablesI18nUrl) ? PSCRMConfig.dataTablesI18nUrl : ''
             },
             footerCallback: function(row, data, start, end, display) {
                 const api = this.api();

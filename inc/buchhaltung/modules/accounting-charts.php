@@ -215,9 +215,10 @@ function wpscrm_enqueue_chart_js() {
     if (!wp_script_is('chart-js', 'registered')) {
         wp_register_script(
             'chart-js',
-            'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js',
+            WPsCRM_URL . 'js/chart.umd.min.js',
             array(),
-            '3.9.1'
+            '3.9.1',
+            true
         );
     }
     wp_enqueue_script('chart-js');
