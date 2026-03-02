@@ -563,12 +563,21 @@ class WPsCRM_App_Template {
 			return;
 		}
 
+		// App-Name für Anzeige vorbereiten
+		$app_name = ! empty( $frontend_settings['webapp_app_name'] ) ? $frontend_settings['webapp_app_name'] : get_bloginfo( 'name' ) . ' Dashboard';
+		$app_short_name = ! empty( $frontend_settings['webapp_app_short_name'] ) ? $frontend_settings['webapp_app_short_name'] : '';
+
 		?>
 		<div class="wpscrm-app-desktop-controls">
 			<div class="wpscrm-app-desktop-controls-left">
 				<?php if ( $show_webview ) : ?>
 				<a class="btn btn-secondary btn-sm" href="<?php echo esc_url( $web_url ); ?>">
-					<?php _e( 'Webansicht', 'cpsmartcrm' ); ?>
+					<?php if ( $app_short_name ) : ?>
+						<strong><?php echo esc_html( $app_short_name ); ?></strong><br>
+						<small><?php echo esc_html( $app_name ); ?></small>
+					<?php else : ?>
+						<?php echo esc_html( $app_name ); ?>
+					<?php endif; ?>
 				</a>
 				<?php endif; ?>
 			</div>
