@@ -12,6 +12,23 @@ title: "PSOURCE"
 	<a href="https://github.com/Power-Source/ps-smart-crm/releases" style="color:#38c2bb;">⬇️ Releases</a>
 </div>
 
+## Dokumentations-Navigation
+
+**Priorisiert (verwandte Kapitel):**
+
+- [Übersicht](index.html)
+- [Allgemeine Dokumentation](dokumentation.html)
+- [Einrichtung & Berechtigungen](einrichtung-berechtigungen.html)
+- [CRM & Prozessmanagement](crm-prozessmanagement.html)
+- [Dokumente, Angebote & Rechnungen](dokumente-rechnungen.html)
+- [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
+- [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
+- [PWA & Frontend-Module](pwa-frontend-module.html)
+- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
+- [PS-Bloghosting Integrations-README](README.html)
+- [Über das Projekt](about.html)
+
 ## PSOURCE ist eine Sammlung von Plugins und Themes für Classic/ClassicPress, die kostenlos nutzbar sind. Es gibt keine Premium-Features, Abo-Kosten oder ähnliches. Alles ist komplett kostenlos in vollem Umfang nutzbar. Die Community ist eingeladen, zu ihren Favoriten beizutragen und diese gemeinsam weiterzuentwickeln
 
 Wir haben eine große Auswahl an Plugins und Themes für ClassicPress. Insbesondere sind viele unserer Plugins/Themes für den Einsatz in einer Multisite-Umgebung und für den professionellen Einsatz konzipiert.

@@ -12,6 +12,23 @@ title: "CRM & Prozessmanagement"
 	<a href="https://github.com/Power-Source/ps-smart-crm/releases" style="color:#38c2bb;">⬇️ Releases</a>
 </div>
 
+## Dokumentations-Navigation
+
+**Priorisiert (verwandte Kapitel):**
+
+- [Übersicht](index.html)
+- [Allgemeine Dokumentation](dokumentation.html)
+- [Einrichtung & Berechtigungen](einrichtung-berechtigungen.html)
+- [CRM & Prozessmanagement](crm-prozessmanagement.html)
+- [Dokumente, Angebote & Rechnungen](dokumente-rechnungen.html)
+- [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
+- [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
+- [PWA & Frontend-Module](pwa-frontend-module.html)
+- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
+- [PS-Bloghosting Integrations-README](README.html)
+- [Über das Projekt](about.html)
+
 # CRM & Prozessmanagement
 
 Hier dokumentierst du den operativen Alltag: Kontakte, Aufgaben, Termine, Timeline und Follow-up.

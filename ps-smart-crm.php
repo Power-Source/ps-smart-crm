@@ -3,7 +3,7 @@
 Plugin Name: PS Smart Business
 Plugin URI: https://power-source.github.io/ps-smart-crm/
 Description: Fügt ClassicPress eine leistungsstarkes Business-Suite hinzu. Du erältst CRM, Dokumentenmanagement, Zeiterfassung, Newsletter-Integration, Webapp deiner Homepage und vieles mehr – alles in einem benutzerfreundlichen Plugin.
-Version: 1.0.1
+Version: 1.1.0
 Author: PSOURCE
 Author URI: https://github.com/Power-Source
 Text Domain: cpsmartcrm
@@ -33,42 +33,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 **************************************************************************/
-// PS Update Manager - Hinweis wenn nicht installiert
-add_action( 'admin_notices', function() {
-    // Prüfe ob Update Manager aktiv ist
-    if ( ! function_exists( 'ps_register_product' ) && current_user_can( 'install_plugins' ) ) {
-        $screen = get_current_screen();
-        if ( $screen && in_array( $screen->id, array( 'plugins', 'plugins-network' ) ) ) {
-            // Prüfe ob bereits installiert aber inaktiv
-            $plugin_file = 'ps-update-manager/ps-update-manager.php';
-            $all_plugins = get_plugins();
-            $is_installed = isset( $all_plugins[ $plugin_file ] );
-            
-            echo '<div class="notice notice-warning is-dismissible"><p>';
-            echo '<strong>PS Chat:</strong> ';
-            
-            if ( $is_installed ) {
-                // Installiert aber inaktiv - Aktivierungs-Link
-                $activate_url = wp_nonce_url(
-                    admin_url( 'plugins.php?action=activate&plugin=' . urlencode( $plugin_file ) ),
-                    'activate-plugin_' . $plugin_file
-                );
-                echo sprintf(
-                    __( 'Aktiviere den <a href="%s">PS Update Manager</a> für automatische Updates von GitHub.', 'psource-chat' ),
-                    esc_url( $activate_url )
-                );
-            } else {
-                // Nicht installiert - Download-Link
-                echo sprintf(
-                    __( 'Installiere den <a href="%s" target="_blank">PS Update Manager</a> für automatische Updates aller PSource Plugins & Themes.', 'psource-chat' ),
-                    'https://github.com/Power-Source/ps-update-manager/releases/latest'
-                );
-            }
-            
-            echo '</p></div>';
-        }
-    }
-});
+
 /**
  * @@@@@@@@@@@@@@@@@ LOCALIZATION @@@@@@@@@@@
  *
@@ -86,7 +51,7 @@ define('WPsCRM_TABLE',$wpdb->prefix .'smartcrm_');
 define('WPsCRM_PATH',__FILE__);
 define('WPsCRM_DIR',dirname(__FILE__ ) );
 define('WPsCRM_URL',plugin_dir_url( __FILE__ ) );
-define('WPSCRM_VERSION', '1.0.1');
+define('WPSCRM_VERSION', '1.1.0');
 $upload_dir = wp_upload_dir();
 define('WPsCRM_UPLOADS', $upload_dir['basedir'] . '/CRMdocuments');
 define('WPsCRM_IMPORT_FILE',WPsCRM_DIR.'/logs/import.txt');

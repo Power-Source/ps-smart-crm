@@ -4,7 +4,7 @@ Tags: crm, invoices, todo
 Requires at least: 4.2
 Tested up to: 6.8.1
 ClassicPress: 2.6.0
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
  
@@ -63,7 +63,7 @@ Wichtig: Wenn Sie .mo/.po-Dateien im Plugin-Ordner "languages" ändern, können 
 
 == Changelog ==
 
-= 1.1.0 (next) =
+= 1.1.0 =
 
 * Positionierung als Business Suite statt reinem CRM geschärft
 * Dokumentationsstruktur gestartet und Übersicht ausgebaut
