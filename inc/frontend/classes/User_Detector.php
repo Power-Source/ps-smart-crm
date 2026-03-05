@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - User Detector
+ * PS Smart Business - User Detector
  * 
  * Zentralisierte User-Typ-Erkennung
  * Bestimmt Benutzerrolle und Berechtigungen

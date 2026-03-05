@@ -6,7 +6,7 @@
  * - Ticket erstellen
  * - Ticket-Antwort hinzufügen
  * 
- * @package PS Smart CRM
+ * @package PS Smart Business
  * @subpackage PWA
  */
 

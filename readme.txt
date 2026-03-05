@@ -1,4 +1,4 @@
-﻿=== PS Smart CRM ===
+﻿=== PS Smart Business ===
 Author: PSOURCE
 Tags: crm, invoices, todo
 Requires at least: 4.2
@@ -8,12 +8,12 @@ Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
  
-PS Smart CRM ist die smarte Business Suite für Classic/ClassicPress: Kunden, Dokumente, Buchhaltung, Prozesse und Team-Workflows in einem System.
+PS Smart Business ist die smarte Business Suite für Classic/ClassicPress: Kunden, Dokumente, Buchhaltung, Prozesse und Team-Workflows in einem System.
 
 == Description ==
 
 
-PS Smart CRM deckt eine Vielzahl moderner Büro- und Geschäftsprozesse ab und wächst vom klassischen CRM zur modularen Business Suite.
+PS Smart Business deckt eine Vielzahl moderner Büro- und Geschäftsprozesse ab und wächst vom klassischen CRM zur modularen Business Suite.
 
 CRM-Verwaltung:
 

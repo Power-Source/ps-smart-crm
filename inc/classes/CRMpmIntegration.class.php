@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Private Messaging Integration
+ * PS Smart Business - Private Messaging Integration
  * 
  * Eigenständige PM-Integration für interne Agent-Kommunikation
  * unabhängig vom Terminmanager Plugin

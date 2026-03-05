@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Customer Grid Component
+ * PS Smart Business - Customer Grid Component
  * 
  * Kundenliste Grid Implementation
  * Version: 1.0.0

@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Core JavaScript Module
+ * PS Smart Business - Core JavaScript Module
  * 
  * Zentrale Initialisierung und Utility-Funktionen
  * Version: 1.0.0
@@ -18,7 +18,7 @@
     };
 
     /**
-     * Hauptobjekt für PS Smart CRM
+     * Hauptobjekt für PS Smart Business
      */
     window.PSCRM = window.PSCRM || {
         version: '1.0.0',

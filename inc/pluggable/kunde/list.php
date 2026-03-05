@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
- * PS Smart CRM - Vanilla.js Customer List
+ * PS Smart Business - Vanilla.js Customer List
  * 
  * Moderne Kundenliste mit Vanilla.js statt Kendo UI
  */

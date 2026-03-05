@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Debug & Statusprüfung
+ * PS Smart Business - Debug & Statusprüfung
  * Shortcode: [crm_debug_status]
  */
 

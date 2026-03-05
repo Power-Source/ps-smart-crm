@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Dropdown Component
+ * PS Smart Business - Dropdown Component
  * 
  * Wrapper für Select2 oder natives Select
  * Version: 1.0.0

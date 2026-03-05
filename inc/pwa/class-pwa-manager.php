@@ -8,7 +8,7 @@
  * - Push Notifications (Ticket-Updates, Nachrichten)
  * - Standalone Template-Modus (kein WordPress-Theme)
  * 
- * @package PS Smart CRM
+ * @package PS Smart Business
  * @subpackage PWA
  * @since 1.0.0
  */

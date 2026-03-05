@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Grid Component
+ * PS Smart Business - Grid Component
  * 
  * Universeller Grid-Wrapper für DataTables/Tabulator
  * Version: 1.0.0

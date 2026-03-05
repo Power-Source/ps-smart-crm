@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Guest View Module
+ * PS Smart Business - Guest View Module
  * 
  * Einfache Gast-Ansicht (nicht angemeldet)
  * 

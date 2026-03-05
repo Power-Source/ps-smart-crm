@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Support System Integration für PS Smart CRM
+ * PS Support System Integration für PS Smart Business
  * 
  * Integriert Support-Tickets in das CRM:
  * - Support-Tickets werden automatisch als TODOs im CRM-Planer angezeigt
@@ -8,7 +8,7 @@
  * - Status-Synchronisation zwischen Support und CRM
  * - Verknüpfung von Tickets mit CRM-Kunden
  * 
- * @package PS Smart CRM
+ * @package PS Smart Business
  * @subpackage Support Integration
  * @since 1.0.0
  */

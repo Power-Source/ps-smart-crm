@@ -1,3 +1,17 @@
+---
+layout: psource-theme
+title: "PS-Bloghosting Integration"
+---
+
+<h2 align="center" style="color:#38c2bb;">📚 PS Smart Business</h2>
+
+<div class="menu">
+   <a href="index.html" style="color:#38c2bb;">🏠 Übersicht</a>
+   <a href="dokumentation.html" style="color:#38c2bb;">📝 Dokumentation</a>
+   <a href="https://github.com/cp-psource/ps-smart-crm/discussions" style="color:#38c2bb;">💬 Forum</a>
+   <a href="https://github.com/Power-Source/ps-smart-crm/releases" style="color:#38c2bb;">⬇️ Releases</a>
+</div>
+
 # PS-Bloghosting & PS-Smart-CRM Integration - Dokumentations-Index
 
 Willkommen zur umfassenden Dokumentation für die Integration von **PS-Bloghosting Zahlungssystem** mit dem **PS-Smart-CRM Plugin**.
@@ -299,3 +313,9 @@ Diese Dokumentation ist für das PS-Bloghosting und PS-Smart-CRM Plugin erstellt
 ---
 
 **Fragen zur Dokumentation? Siehe ZAHLUNGS_INTEGRATIONS_ANLEITUNG.md oder Debug-Tipps in ZAHLUNGS_HOOKS_SCHNELLREFERENZ.md**
+
+---
+
+## Seiten-Navigation
+
+<p><a href="dokumentation.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="about.html">Weiter ➡️</a></p>

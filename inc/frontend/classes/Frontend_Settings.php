@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Frontend Settings Management
+ * PS Smart Business - Frontend Settings Management
  * 
  * Verwaltet Frontend-Settings für Seitenauswahl
  * und Konfiguration

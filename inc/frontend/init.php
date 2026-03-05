@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Frontend System Initialization (Modular)
+ * PS Smart Business - Frontend System Initialization (Modular)
  * 
  * Modulares Frontend System mit:
  * - Agent Dashboard (Zeiterfassung, Aufgaben, Postfach)

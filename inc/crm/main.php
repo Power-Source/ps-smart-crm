@@ -29,7 +29,7 @@ if ( in_array( 'wp-smart-crm-agents/wp-smart-crm-agents.php', apply_filters( 'ac
 <?php } ?>
     </script>
 <div class="wrap">
-<h1 style="text-align:center">PS Smart CRM<?php if(! isset($_GET['p'])){ ?><?php } ?></h1>
+<h1 style="text-align:center">PS Smart Business<?php if(! isset($_GET['p'])){ ?><?php } ?></h1>
 		<?php include("c_menu.php")?>
 	<?php
     if(isset($_GET['p']))

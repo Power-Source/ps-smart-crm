@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Timer Widget JavaScript
+ * PS Smart Business - Timer Widget JavaScript
  * 
  * Handles timer functionality, AJAX communication, and UI updates
  * 

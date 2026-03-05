@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Zeiterfassung System
+ * PS Smart Business - Zeiterfassung System
  * 
  * Time-Tracking für Agents mit:
  * - Start/Stop/Pause Timer

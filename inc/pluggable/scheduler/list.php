@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
- * PS Smart CRM - Vanilla.js Scheduler List
+ * PS Smart Business - Vanilla.js Scheduler List
  * 
  * Moderne Planerliste mit Vanilla.js statt Kendo UI
  */

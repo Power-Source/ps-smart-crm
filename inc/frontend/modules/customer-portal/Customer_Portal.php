@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Customer Portal Module
+ * PS Smart Business - Customer Portal Module
  * 
  * Kundenportal mit Rechnungen, Angeboten, Postfach
  * 

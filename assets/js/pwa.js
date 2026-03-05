@@ -6,7 +6,7 @@
  * - Offline-Status Detection
  * - Quick Actions
  * 
- * @package PS Smart CRM
+ * @package PS Smart Business
  * @subpackage PWA
  */
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - User Profile Integration
+ * PS Smart Business - User Profile Integration
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

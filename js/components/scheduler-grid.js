@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Scheduler Grid Component
+ * PS Smart Business - Scheduler Grid Component
  * 
  * Planer/Aktivitäten Grid Implementation
  * Version: 1.0.0

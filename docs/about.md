@@ -3,6 +3,15 @@ layout: psource-theme
 title: "PSOURCE"
 ---
 
+<h2 align="center" style="color:#38c2bb;">📚 PS Smart Business</h2>
+
+<div class="menu">
+	<a href="index.html" style="color:#38c2bb;">🏠 Übersicht</a>
+	<a href="dokumentation.html" style="color:#38c2bb;">📝 Dokumentation</a>
+	<a href="https://github.com/cp-psource/ps-smart-crm/discussions" style="color:#38c2bb;">💬 Forum</a>
+	<a href="https://github.com/Power-Source/ps-smart-crm/releases" style="color:#38c2bb;">⬇️ Releases</a>
+</div>
+
 ## PSOURCE ist eine Sammlung von Plugins und Themes für Classic/ClassicPress, die kostenlos nutzbar sind. Es gibt keine Premium-Features, Abo-Kosten oder ähnliches. Alles ist komplett kostenlos in vollem Umfang nutzbar. Die Community ist eingeladen, zu ihren Favoriten beizutragen und diese gemeinsam weiterzuentwickeln
 
 Wir haben eine große Auswahl an Plugins und Themes für ClassicPress. Insbesondere sind viele unserer Plugins/Themes für den Einsatz in einer Multisite-Umgebung und für den professionellen Einsatz konzipiert.
@@ -43,3 +52,9 @@ All of our plugins/themes are licensed under the GPLv2 license. This means that 
 If you have any questions or problems with one of our plugins/themes, you can contact us via the forum or on our homepage. We are happy to help you.
 
 Thank you for visiting PSOURCE. We hope that our plugins/themes are useful to you and we are happy to welcome you to the community.
+
+---
+
+## Seiten-Navigation
+
+<p><a href="README.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="index.html">Weiter ➡️</a></p>

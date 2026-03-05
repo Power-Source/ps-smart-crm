@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Frontend Manager
+ * PS Smart Business - Frontend Manager
  * 
  * Orchestriert alle Frontend-Module
  * Verwaltet Shortcodes, Assets und Rendering

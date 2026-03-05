@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Modal Component
+ * PS Smart Business - Modal Component
  * 
  * Leichtgewichtiges Modal-System (Vanilla JS)
  * Version: 1.0.0

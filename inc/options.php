@@ -145,10 +145,10 @@ class CRM_Options_Settings{
             $privileges=null;
 ?>
         <div class="wrap">
-            <h1 class="WPsCRM_plugin_title" style="text-align:center">PS Smart CRM<?php if(! isset($_GET['p'])){ ?><!--<span class="crmHelp" data-help="main"></span>--><?php } ?></h1>
+            <h1 class="WPsCRM_plugin_title" style="text-align:center">PS Smart Business<?php if(! isset($_GET['p'])){ ?><!--<span class="crmHelp" data-help="main"></span>--><?php } ?></h1>
 		    <?php include(WPsCRM_DIR."/inc/crm/c_menu.php")?> 
         <?php
-		echo '<h1>'.__('PS Smart CRM Optionen und Einstellungen','cpsmartcrm').'</h1>';
+		echo '<h1>'.__('PS Smart Business Optionen und Einstellungen','cpsmartcrm').'</h1>';
 	}
 	function footer(){
 		echo '<small style="text-align:center;top:30px;position:relative">ENTWICKELT VON PSOURCE <a href="https://cp-psource.github.io/ps-smart-crm">https://cp-psource.github.io/ps-smart-crm</a></small></div>';

@@ -1,6 +1,6 @@
 <?php
 /**
- * Newsletter Integration Settings für PS Smart CRM
+ * Newsletter Integration Settings für PS Smart Business
  * Verwaltet die Newsletter-Integration mit e-Newsletter Plugin
  */
 

@@ -11,7 +11,7 @@
  * - Routing zu passendem Dashboard
  * - Clean HTML ohne Theme-Overhead
  * 
- * @package PS Smart CRM
+ * @package PS Smart Business
  * @subpackage PWA
  * @since 1.0.0
  */

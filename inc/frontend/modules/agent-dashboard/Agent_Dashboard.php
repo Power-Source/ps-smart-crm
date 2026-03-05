@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Agent Dashboard Module
+ * PS Smart Business - Agent Dashboard Module
  * 
  * Haupt-Modul für Agent Dashboard
  * Zeigt Zeiterfassung, Aufgaben, Postfach, Profil

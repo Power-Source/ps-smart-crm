@@ -806,8 +806,8 @@ function smart_crm_menu(){
     else
         $privileges=null;
 
-    add_menu_page( 'CP SMART CRM', 'PS Smart CRM', 'manage_crm', 'smart-crm', 'WPsCRM_smartcrm', 'dashicons-analytics', 71 );
-    add_submenu_page('SMART CRM', 'PS Smart CRM', 'manage_crm', 'smart-crm', 'WPsCRM_smartcrm', 'dashicons-analytics', 71);
+    add_menu_page( 'CP SMART CRM', 'PS Smart Business', 'manage_crm', 'smart-crm', 'WPsCRM_smartcrm', 'dashicons-analytics', 71 );
+    add_submenu_page('SMART CRM', 'PS Smart Business', 'manage_crm', 'smart-crm', 'WPsCRM_smartcrm', 'dashicons-analytics', 71);
 	add_submenu_page(
 			'smart-crm',
 			__('CP SMART CRM BENACHRICHTIGUNGSREGELN', 'cpsmartcrm'),

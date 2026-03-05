@@ -1,15 +1,16 @@
 ---
 layout: psource-theme
-title: "PS Smart CRM"
+title: "PS Smart Business"
 ---
 
-<h2 align="center" style="color:#38c2bb;">📚 PS Smart CRM</h2>
+<h2 align="center" style="color:#38c2bb;">📚 PS Smart Business</h2>
 
 <p align="center"><strong>Von CRM zu Smart Business Suite</strong><br>Kunden, Dokumente, Prozesse, Buchhaltung und Automatisierung in einem Plugin.</p>
 
 <div class="menu">
-  <a href="https://github.com/cp-psource/ps-smart-crm/discussions" style="color:#38c2bb;">💬 Forum</a>
+  <a href="index.html" style="color:#38c2bb;">🏠 Übersicht</a>
   <a href="dokumentation.html" style="color:#38c2bb;">📝 Dokumentation</a>
+  <a href="https://github.com/cp-psource/ps-smart-crm/discussions" style="color:#38c2bb;">💬 Forum</a>
   <a href="https://github.com/Power-Source/ps-smart-crm/releases" style="color:#38c2bb;">⬇️ Releases</a>
 </div>
 
@@ -17,7 +18,7 @@ title: "PS Smart CRM"
 
 ## Willkommen in der Suite-Dokumentation
 
-PS Smart CRM ist nicht mehr nur ein CRM, sondern eine modulare Business Suite für Classic/ClassicPress. Diese Seite ist dein zentraler Einstieg in Funktionen, Module und den laufenden Ausbau der Doku.
+PS Smart Business ist nicht mehr nur ein CRM, sondern eine modulare Business Suite für Classic/ClassicPress. Diese Seite ist dein zentraler Einstieg in Funktionen, Module und den laufenden Ausbau der Doku.
 
 ## Schnellstart
 
@@ -60,6 +61,12 @@ PS Smart CRM ist nicht mehr nur ein CRM, sondern eine modulare Business Suite f�
 
 - [Projektüberblick](README.html)
 - [Allgemeine Dokumentation](dokumentation.html)
+- [Einrichtung & Berechtigungen](einrichtung-berechtigungen.html)
+- [CRM & Prozessmanagement](crm-prozessmanagement.html)
+- [Dokumente, Angebote & Rechnungen](dokumente-rechnungen.html)
+- [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
+- [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [PWA & Frontend-Module](pwa-frontend-module.html)
 - [Über das Projekt](about.html)
 - [GitHub Discussions](https://github.com/cp-psource/ps-smart-crm/discussions)
 - [Releases / Changelog](https://github.com/Power-Source/ps-smart-crm/releases)
@@ -68,16 +75,22 @@ PS Smart CRM ist nicht mehr nur ein CRM, sondern eine modulare Business Suite f�
 
 Die Dokumentation wird ab jetzt schrittweise entlang der Suite-Module aufgebaut:
 
-- Einrichtung & Berechtigungen
-- Kunden- und Prozessmanagement
-- Dokumente, Angebote, Rechnungen
-- Buchhaltung & Abrechnung
-- Integrationen, API, Erweiterbarkeit
-- PWA- und Frontend-Bausteine
+- [Einrichtung & Berechtigungen](einrichtung-berechtigungen.html)
+- [Kunden- und Prozessmanagement](crm-prozessmanagement.html)
+- [Dokumente, Angebote, Rechnungen](dokumente-rechnungen.html)
+- [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
+- [Integrationen, API, Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [PWA- und Frontend-Bausteine](pwa-frontend-module.html)
 
 ## Mitwirken
 
 Feedback, Fragen und Verbesserungsvorschläge sind willkommen. Nutze das Forum/Discussions, um Anforderungen, Workflows und Best Practices zu teilen.
 
 Wenn du Übersetzungen anpasst, lege eigene `.mo/.po` Dateien bitte unter `/wp-content/languages/plugins` ab, damit sie bei Updates nicht überschrieben werden.
+
+---
+
+## Seiten-Navigation
+
+<p><a href="about.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="einrichtung-berechtigungen.html">Weiter ➡️</a></p>
 

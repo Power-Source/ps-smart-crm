@@ -1,15 +1,30 @@
 ---
 layout: psource-theme
-title: "PS Smart CRM"
+title: "PS Smart Business"
 ---
 
-<h2 align="center" style="color:#38c2bb;">📚 PS Smart CRM</h2>
+<h2 align="center" style="color:#38c2bb;">📚 PS Smart Business</h2>
 
 <div class="menu">
-  <a href="https://github.com/cp-psource/ps-smart-crm/discussions" style="color:#38c2bb;">💬 Forum</a>
+  <a href="index.html" style="color:#38c2bb;">🏠 Übersicht</a>
   <a href="dokumentation.html" style="color:#38c2bb;">📝 Dokumentation</a>
-  <a href="https://github.com/cp-psource/ps-smart-crm/releases" style="color:#38c2bb;">📝 Download</a>
+  <a href="https://github.com/cp-psource/ps-smart-crm/discussions" style="color:#38c2bb;">💬 Forum</a>
+  <a href="https://github.com/Power-Source/ps-smart-crm/releases" style="color:#38c2bb;">⬇️ Releases</a>
 </div>
+
+## Dokumentations-Navigation (neu)
+
+- [Übersicht](index.html)
+- [Einrichtung & Berechtigungen](einrichtung-berechtigungen.html)
+- [CRM & Prozessmanagement](crm-prozessmanagement.html)
+- [Dokumente, Angebote & Rechnungen](dokumente-rechnungen.html)
+- [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
+- [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [PWA & Frontend-Module](pwa-frontend-module.html)
+
+## Bestanddokumentation
+
+Die nachfolgenden Abschnitte enthalten die bestehende, detaillierte Beschreibung zentraler Einstellungen und bleiben als Referenz erhalten.
 
 ## 1. Grundeinstellungen
 
@@ -17,7 +32,7 @@ Nach der Aktivierung des Plugins siehst Du eine Benachrichtigung, in der Du eini
 
 ![crm-einrichtung.jpeg](assets/images/crm-einrichtung.jpeg)
 
-## 2. PS Smart CRM-Optionen
+## 2. PS Smart Business-Optionen
 
 Im Menü "DIENSTPROGRAMME"->Einstellungen findest Du als ersten Punkt des Untermenüs die Konfigurationseinstellungen des Managementsystems, die in Abschnitte unterteilt sind:
 ![ps-smart-crm-optionen.jpeg](assets/images/ps-smart-crm-optionen.jpeg)
@@ -85,3 +100,9 @@ Höhen der Raster Stammdaten und Dokumente: Der Standardwert ist 600px, Sie kön
 Es ist möglich, Taxonomiebegriffe mit Stammdaten zu verknüpfen, um die Archivierung und statistische Berechnungen zu verbessern.
 Die in diesem Abschnitt zugeordneten Begriffe stehen Ihnen beim Anlegen/Bearbeiten von Stammsätzen zur Auswahl. Es ist auch möglich zu wählen, ob die Begriffe im Stammdatenraster angezeigt werden sollen, um Suchfilter anzuwenden.
 Es stehen 3 Arten von Taxonomien zur Verfügung: Kategorie (z. B. Kunden, Lieferanten), Interessen (um ein Profil eines Datensatzes zu einem oder mehreren spezifischen Interessen zu erstellen) und Herkunft (um einen möglichen Kanal zu identifizieren, aus dem der Kontakt gekommen ist). In Wirklichkeit ist die Benennung von Taxonomien rein konventionell, sie können für die Erstellung von Kontaktprofilen auf eine Weise verwendet werden, die Ihren Geschäftsanforderungen entspricht
+
+---
+
+## Seiten-Navigation
+
+<p><a href="pwa-frontend-module.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="README.html">Weiter ➡️</a></p>

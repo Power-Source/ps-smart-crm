@@ -1,4 +1,4 @@
-# PS Smart CRM - Frontend System (Modular)
+# PS Smart Business - Frontend System (Modular)
 
 ## 📁 Architektur
 

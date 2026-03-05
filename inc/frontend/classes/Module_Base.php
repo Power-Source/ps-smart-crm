@@ -1,6 +1,6 @@
 <?php
 /**
- * PS Smart CRM - Frontend Module Base Class
+ * PS Smart Business - Frontend Module Base Class
  * 
  * Basisklasse für alle Frontend-Module
  * Stellt gemeinsame Funktionalität und Struktur bereit

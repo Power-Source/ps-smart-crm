@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: PS Smart CRM
+Plugin Name: PS Smart Business
 Plugin URI: https://power-source.github.io/ps-smart-crm/
-Description: Fügt ClassicPress ein leistungsstarkes CRM hinzu. Verwalten Sie Kunden, Rechnungen, TODO, Termine und zukünftige Benachrichtigungen an Agenten, Benutzer und Kunden
+Description: Fügt ClassicPress eine leistungsstarkes Business-Suite hinzu. Du erältst CRM, Dokumentenmanagement, Zeiterfassung, Newsletter-Integration, Webapp deiner Homepage und vieles mehr – alles in einem benutzerfreundlichen Plugin.
 Version: 1.0.1
 Author: PSOURCE
 Author URI: https://github.com/Power-Source
@@ -505,7 +505,7 @@ function WPsCRM_notify_CRM_SETTINGS(){
         <a href="<?php echo admin_url("admin.php?page=smartcrm_settings&tab=CRM_business_settings" )?>">
             <?php _e('auf dieser Seite','cpsmartcrm');?>
         </a>
-        <?php _e('um PS Smart CRM zu verwenden ','cpsmartcrm')?>!
+        <?php _e('um PS Smart Business zu verwenden ','cpsmartcrm')?>!
     </p>
 </div>
 <?php

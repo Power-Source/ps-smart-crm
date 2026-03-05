@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - Documents Grid Component
+ * PS Smart Business - Documents Grid Component
  * Vanilla.js Implementation für Dokumenten-Listen (Rechnungen & Angebote)
  */
 

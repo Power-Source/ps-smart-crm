@@ -1,5 +1,5 @@
 /**
- * PS Smart CRM - DatePicker Component
+ * PS Smart Business - DatePicker Component
  * 
  * Wrapper für Flatpickr (oder Fallback auf jQuery UI)
  * Version: 1.0.0

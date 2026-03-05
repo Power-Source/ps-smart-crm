@@ -287,7 +287,7 @@ $income_by_source = $wpdb->get_results($wpdb->prepare(
 
 // Prepare source breakdown - only include integration sources
 $sources_breakdown = array();
-$sources_breakdown['PS Smart CRM'] = array(
+$sources_breakdown['PS Smart Business'] = array(
     'count' => (int)($revenue_data->count ?? 0),
     'net' => (float)($revenue_data->paid_net ?? 0),
     'tax' => (float)($revenue_data->paid_tax ?? 0),

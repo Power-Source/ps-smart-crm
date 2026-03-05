@@ -8,7 +8,7 @@
  * - Theme-Farben (Theme Color, Background Color)
  * - Push Notifications (VAPID Keys)
  * 
- * @package PS Smart CRM
+ * @package PS Smart Business
  * @subpackage PWA
  * @since 1.0.0
  */

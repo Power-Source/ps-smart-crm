@@ -8,7 +8,7 @@
  * - Push-Benachrichtigungen empfangen
  * - Background Sync für Ticket-Antworten
  * 
- * @package PS Smart CRM
+ * @package PS Smart Business
  * @subpackage PWA
  */
 
