@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $cache_version = 'wpscrm-v' . WPSCRM_VERSION;
 $home_url = home_url( '/' );
-$plugin_url = plugin_dir_url( dirname( __FILE__ ) );
+$plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
 
 ?>
 // Service Worker für PS CRM Dashboard

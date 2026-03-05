@@ -15,6 +15,11 @@
 	
 	let deferredPrompt = null;
 	let pushSubscription = null;
+	let pushFeatureAvailable = false;
+
+	function isPushSecureContext() {
+		return window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+	}
 	
 	/**
 	 * Initialize PWA features
@@ -172,9 +177,19 @@
 	function initPushNotifications() {
 		// Prüfe Browser-Support
 		if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-			console.log('[PWA] Push notifications not supported');
+			console.info('[PWA] Push wird von diesem Browser nicht unterstützt.');
 			return;
 		}
+
+		if (!isPushSecureContext()) {
+			console.info('[PWA] Push ist nur über HTTPS (oder localhost) verfügbar.');
+			$('.wpscrm-enable-notifications-btn')
+				.prop('disabled', true)
+				.attr('title', 'Push-Benachrichtigungen erfordern HTTPS oder localhost.');
+			return;
+		}
+
+		pushFeatureAvailable = true;
 		
 		// Prüfe aktuellen Permission-Status
 		checkNotificationPermission();
@@ -201,6 +216,11 @@
 	 */
 	async function handleNotificationToggle(e) {
 		e.preventDefault();
+
+		if (!pushFeatureAvailable) {
+			console.info('[PWA] Push ist in der aktuellen Umgebung nicht verfügbar.');
+			return;
+		}
 		
 		const $btn = $(this);
 		

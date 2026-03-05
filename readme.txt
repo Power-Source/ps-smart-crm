@@ -8,17 +8,17 @@ Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
  
-PS Smart CRM erweitert Classic/ClassicPress um ein leistungsstarkes CRM mit vielen Funktionen. Verwalte Kunden, Rechnungen, TODO, Termine und Benachrichtigungen.
+PS Smart CRM ist die smarte Business Suite für Classic/ClassicPress: Kunden, Dokumente, Buchhaltung, Prozesse und Team-Workflows in einem System.
 
 == Description ==
 
 
-PS Smart CRM deckt eine Vielzahl von "Büroverwaltungsfunktionen" ab. 
+PS Smart CRM deckt eine Vielzahl moderner Büro- und Geschäftsprozesse ab und wächst vom klassischen CRM zur modularen Business Suite.
 
-CRM-Verwaltung: 
+CRM-Verwaltung:
 
 - Kundenarchiv-Raster
-- Benutzerdefinierte Rolle "CRM-Agent
+- Benutzerdefinierte Rolle "CRM-Agent"
 - Terminplaner für Aufgaben und Termine
 - Zeitleiste für Notizen
 - TODO / Termin Status Update
@@ -27,10 +27,11 @@ CRM-Verwaltung:
 - Benachrichtigung an bestimmte WP-Rolle(n)
 - Benutzerdefinierte Benachrichtigungsregeln
 - Aufeinanderfolgende Benachrichtigungsschritte (für mittel-/langfristig auslaufende Dienstleistungen)
-- Kunden CSV-Import 
+- Kunden CSV-Import
+- Dashboard- und Grid-basierte Arbeitsoberfläche für schnelle Team-Prozesse
 
 
-Verwaltung von Rechnungen/Angebote
+Verwaltung von Rechnungen/Angeboten
 
 - Dynamische Erstellung von Rechnungen/Angebote mit mehrzeiligen Produkten
 - Erstellung von Rechnungen/Angebote im .pdf-Format
@@ -43,7 +44,14 @@ Verwaltung von Rechnungen/Angebote
 - Benutzerdefinierte Canvas-Signatur im Angebot (Touch-kompatibel)
 - Registrierung von Rechnungen
 - Benutzerdefinierter Startwert für die Nummerierung (Sie können zu jedem beliebigen Zeitpunkt des Jahres mit einer von 1 abweichenden Startnummer beginnen, in Übereinstimmung mit Ihrer Buchhaltung)
-- Buchaltung - Verbinde andere Plugins mit dem CRM und erfasse alle Umsätze in deiner Buchhaltung
+- Buchhaltung - Verbinde andere Plugins mit dem CRM und erfasse alle Umsätze in deiner Buchhaltung
+
+Suite-Erweiterungen:
+
+- Erweiterbare Integrationen und API-Module
+- PWA-Bausteine für App-ähnliche Nutzung
+- Frontend-Module für kundennahe Prozesse
+- Pluggable Architektur für projektspezifische Erweiterungen
 
 Alle Datensätze in den Rastern sind mit Filter-/Gruppierungs-/Sortierfunktionen für eine schnelle Nutzung ausgestattet.
 
@@ -54,6 +62,13 @@ Wichtig: Wenn Sie .mo/.po-Dateien im Plugin-Ordner "languages" ändern, können 
 
 
 == Changelog ==
+
+= 1.1.0 (next) =
+
+* Positionierung als Business Suite statt reinem CRM geschärft
+* Dokumentationsstruktur gestartet und Übersicht ausgebaut
+* Fokus auf modulare Bereiche: CRM, Dokumente, Buchhaltung, PWA und Integrationen
+* Basis für weiteren Ausbau der Anwender- und Admin-Dokumentation gelegt
 
 = 1.0.1 =
 

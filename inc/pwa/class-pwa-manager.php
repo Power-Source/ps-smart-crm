@@ -23,6 +23,7 @@ class WPsCRM_PWA_Manager {
 	public static function init() {
 		// Manifest endpoint
 		add_action( 'init', array( __CLASS__, 'register_endpoints' ) );
+		add_action( 'init', array( __CLASS__, 'maybe_flush_rewrite_rules' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'handle_manifest_request' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'handle_service_worker_request' ) );
 		
@@ -58,10 +59,25 @@ class WPsCRM_PWA_Manager {
 	}
 	
 	/**
+	 * Maybe flush rewrite rules if needed
+	 */
+	public static function maybe_flush_rewrite_rules() {
+		// Prüfe ob ein Flush benötigt wird (nach Pfad-Fix vom 2026-03-05)
+		if ( ! get_option( 'wpscrm_pwa_paths_fixed_20260305' ) ) {
+			flush_rewrite_rules();
+			update_option( 'wpscrm_pwa_paths_fixed_20260305', true );
+		}
+	}
+	
+	/**
 	 * Handle manifest.json request
 	 */
 	public static function handle_manifest_request() {
-		if ( ! get_query_var( 'crm_manifest' ) ) {
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+		$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+		$is_manifest_request = get_query_var( 'crm_manifest' ) || basename( trim( $request_path, '/' ) ) === 'crm-manifest.json';
+
+		if ( ! $is_manifest_request ) {
 			return;
 		}
 		
@@ -77,7 +93,11 @@ class WPsCRM_PWA_Manager {
 	 * Handle service-worker.js request
 	 */
 	public static function handle_service_worker_request() {
-		if ( ! get_query_var( 'crm_sw' ) ) {
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+		$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+		$is_service_worker_request = get_query_var( 'crm_sw' ) || basename( trim( $request_path, '/' ) ) === 'crm-service-worker.js';
+
+		if ( ! $is_service_worker_request ) {
 			return;
 		}
 		
@@ -274,7 +294,7 @@ class WPsCRM_PWA_Manager {
 		
 		wp_enqueue_script(
 			'wpscrm-pwa',
-			plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/pwa.js',
+			plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'assets/js/pwa.js',
 			array( 'jquery' ),
 			WPSCRM_VERSION,
 			true

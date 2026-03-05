@@ -113,6 +113,14 @@ require_once(__DIR__ . '/inc/pwa/pwa-ajax-handlers.php');
 require_once(__DIR__ . '/inc/integrations/marketpress.php');
 require_once(__DIR__ . '/inc/integrations/ps-bloghosting.php');
 
+if ( class_exists( 'WPsCRM_PWA_Manager' ) ) {
+    WPsCRM_PWA_Manager::init();
+}
+
+if ( class_exists( 'WPsCRM_App_Template' ) ) {
+    WPsCRM_App_Template::init();
+}
+
 // Load Buchhaltung modules (must be loaded early for admin-ajax.php)
 if (file_exists(__DIR__ . '/inc/buchhaltung/accounting-logger.php')) {
     require_once(__DIR__ . '/inc/buchhaltung/accounting-logger.php');
