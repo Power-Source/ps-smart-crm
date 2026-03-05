@@ -67,6 +67,7 @@ PS Smart Business ist nicht mehr nur ein CRM, sondern eine modulare Business Sui
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
 - [PWA & Frontend-Module](pwa-frontend-module.html)
+- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 - [Über das Projekt](about.html)
 - [GitHub Discussions](https://github.com/cp-psource/ps-smart-crm/discussions)
 - [Releases / Changelog](https://github.com/Power-Source/ps-smart-crm/releases)
@@ -81,6 +82,7 @@ Die Dokumentation wird ab jetzt schrittweise entlang der Suite-Module aufgebaut:
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API, Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
 - [PWA- und Frontend-Bausteine](pwa-frontend-module.html)
+- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 
 ## Mitwirken
 

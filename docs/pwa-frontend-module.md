@@ -65,4 +65,4 @@ Ein Agent nutzt die PWA unterwegs für Termin-Updates und Kundenkommentare. Nach
 
 ## Seiten-Navigation
 
-<p><a href="integrationen-api-erweiterbarkeit.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="dokumentation.html">Weiter ➡️</a></p>
+<p><a href="integrationen-api-erweiterbarkeit.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="webapp-funktion.html">Weiter ➡️</a></p>
