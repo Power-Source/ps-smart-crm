@@ -20,6 +20,7 @@ title: "PS Smart Business"
 - [Dokumente, Angebote & Rechnungen](dokumente-rechnungen.html)
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
 - [PWA & Frontend-Module](pwa-frontend-module.html)
 - [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 

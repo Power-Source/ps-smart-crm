@@ -71,4 +71,4 @@ Eine externe Zahlungsquelle liefert neue Transaktionen. Das Team definiert Trigg
 
 ## Seiten-Navigation
 
-<p><a href="buchhaltung-abrechnung.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="pwa-frontend-module.html">Weiter ➡️</a></p>
+<p><a href="buchhaltung-abrechnung.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="dev-hooks-actions.html">Weiter ➡️</a></p>

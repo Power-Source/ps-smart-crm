@@ -66,6 +66,7 @@ PS Smart Business ist nicht mehr nur ein CRM, sondern eine modulare Business Sui
 - [Dokumente, Angebote & Rechnungen](dokumente-rechnungen.html)
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
 - [PWA & Frontend-Module](pwa-frontend-module.html)
 - [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 - [Über das Projekt](about.html)
@@ -81,6 +82,7 @@ Die Dokumentation wird ab jetzt schrittweise entlang der Suite-Module aufgebaut:
 - [Dokumente, Angebote, Rechnungen](dokumente-rechnungen.html)
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API, Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
+- [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
 - [PWA- und Frontend-Bausteine](pwa-frontend-module.html)
 - [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 
