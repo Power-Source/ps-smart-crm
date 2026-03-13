@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: PS Smart Business
+Plugin Name: PS SmartBusiness
 Plugin URI: https://power-source.github.io/ps-smart-crm/
 Description: Fügt ClassicPress eine leistungsstarkes Business-Suite hinzu. Du erältst CRM, Dokumentenmanagement, Zeiterfassung, Newsletter-Integration, Webapp deiner Homepage und vieles mehr – alles in einem benutzerfreundlichen Plugin.
 Version: 1.1.1

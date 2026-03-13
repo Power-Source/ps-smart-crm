@@ -1,4 +1,4 @@
-﻿=== PS Smart Business ===
+﻿=== PS SmartBusiness ===
 Author: PSOURCE
 Tags: crm, invoices, todo
 Requires at least: 4.2
