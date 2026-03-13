@@ -205,6 +205,7 @@ if ( $edit_role ) {
 
 $is_editing_chef = $edit_role && 'chef' === $edit_role->role_slug;
 $chef_edit_locked = $is_editing_chef && ! $current_user_can_manage_chef;
+$show_role_form = (bool) $edit_role;
 ?>
 
 <style>
@@ -231,10 +232,19 @@ $chef_edit_locked = $is_editing_chef && ! $current_user_can_manage_chef;
 .role-users-box ul { margin: 8px 0 0; padding-left: 20px; }
 .inline-list { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 .inline-pill { display: inline-block; background: #eef4ff; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+.role-form-toggle-wrap { margin-bottom: 12px; }
 </style>
 
 <div class="crm-roles-container">
-	<h2><?php echo $edit_role ? esc_html__( 'Rolle bearbeiten', 'cpsmartcrm' ) : esc_html__( 'Neue Agent-Rolle erstellen', 'cpsmartcrm' ); ?></h2>
+	<?php if ( $edit_role ) : ?>
+		<h2><?php esc_html_e( 'Rolle bearbeiten', 'cpsmartcrm' ); ?></h2>
+	<?php else : ?>
+		<div class="role-form-toggle-wrap">
+			<button type="button" class="button button-primary" id="toggle-role-form" aria-expanded="false" aria-controls="crm-role-form-wrapper">
+				<?php esc_html_e( 'Neue Agent-Rolle erstellen', 'cpsmartcrm' ); ?>
+			</button>
+		</div>
+	<?php endif; ?>
 
 	<?php if ( $edit_role ) : ?>
 		<div class="role-users-box" id="role-users">
@@ -251,7 +261,10 @@ $chef_edit_locked = $is_editing_chef && ! $current_user_can_manage_chef;
 		</div>
 	<?php endif; ?>
 
-	<div class="crm-roles-form">
+	<div class="crm-roles-form" id="crm-role-form-wrapper"<?php echo $show_role_form ? '' : ' style="display:none;"'; ?>>
+		<?php if ( ! $edit_role ) : ?>
+			<h2><?php esc_html_e( 'Neue Agent-Rolle erstellen', 'cpsmartcrm' ); ?></h2>
+		<?php endif; ?>
 		<form method="post">
 			<?php wp_nonce_field( 'crm_agent_roles' ); ?>
 			<input type="hidden" name="action" value="<?php echo $edit_role ? 'edit' : 'add'; ?>" />
@@ -497,6 +510,18 @@ jQuery(function($) {
 		var selectedIcon = $('#role-icon-select').val();
 		$('#icon-preview').html('<span class="dashicons ' + selectedIcon + '"></span>');
 	}
+
+	var $toggleBtn = $('#toggle-role-form');
+	var $formWrapper = $('#crm-role-form-wrapper');
+	if ($toggleBtn.length && $formWrapper.length) {
+		$toggleBtn.on('click', function() {
+			var isVisible = $formWrapper.is(':visible');
+			$formWrapper.slideToggle(150);
+			$toggleBtn.attr('aria-expanded', isVisible ? 'false' : 'true');
+			$toggleBtn.text(isVisible ? '<?php echo esc_js( __( 'Neue Agent-Rolle erstellen', 'cpsmartcrm' ) ); ?>' : '<?php echo esc_js( __( 'Formular schließen', 'cpsmartcrm' ) ); ?>');
+		});
+	}
+
 	$('#role-icon-select').on('change', updateIconPreview);
 	updateIconPreview();
 });
