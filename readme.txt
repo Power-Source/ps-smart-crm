@@ -63,6 +63,12 @@ Wichtig: Wenn Sie .mo/.po-Dateien im Plugin-Ordner "languages" ändern, können 
 
 == Changelog ==
 
+= 1.1.1 =
+
+* Multisite-Fix: Tabellenanlage verwendet jetzt konsistent den Site-Prefix (`$wpdb->prefix`) statt des globalen Präfixes
+* Fehlerbehebung: Fehlende Tabelle `smartcrm_agent_roles` wird bei DB-Check erkannt und Setup erneut ausgeführt
+* Stabilität: Schutz vor wiederholten DB-Fehlern, wenn Agentenrollen-Tabelle auf einer Site noch nicht existiert
+
 = 1.1.0 =
 
 * Positionierung als Business Suite statt reinem CRM geschärft

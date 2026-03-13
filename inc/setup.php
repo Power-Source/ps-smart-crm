@@ -4,8 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 $WPsCRM_db_version = '1.6.4';
 function WPsCRM_crm_install() {
 	global $wpdb;
-	global $table_prefix;
-	define ('WPsCRM_SETUP_TABLE',$table_prefix.'smartcrm_');
+  if ( ! defined( 'WPsCRM_SETUP_TABLE' ) ) {
+    define( 'WPsCRM_SETUP_TABLE', $wpdb->prefix . 'smartcrm_' );
+  }
 	global $WPsCRM_db_version;
 
 	$charset_collate = $wpdb->get_charset_collate();
@@ -405,6 +406,11 @@ function WPsCRM_crm_install() {
 function WPsCRM_install_default_agent_roles() {
 	global $wpdb;
 	$table = WPsCRM_TABLE . 'agent_roles';
+
+  $table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+  if ( ! $table_exists ) {
+    return;
+  }
 	
 	// Prüfen ob bereits Rollen existieren
 	$count = $wpdb->get_var( "SELECT COUNT(*) FROM $table" );
@@ -480,6 +486,11 @@ function WPsCRM_assign_site_admin_as_chef() {
   global $wpdb;
 
   $table = WPsCRM_TABLE . 'agent_roles';
+  $table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+  if ( ! $table_exists ) {
+    return;
+  }
+
   $chef_exists = (int) $wpdb->get_var( $wpdb->prepare(
     "SELECT COUNT(*) FROM {$table} WHERE role_slug = %s",
     'chef'
@@ -639,10 +650,18 @@ function WPsCRM_upgrade_taxonomies()
 
 
 function WPsCRM_update_db_check() {
+  global $wpdb;
     global $WPsCRM_db_version;
     if ( get_option( 'WPsCRM_db_version' ) != $WPsCRM_db_version ) {
         WPsCRM_crm_install();
     }
+
+  $roles_table = WPsCRM_TABLE . 'agent_roles';
+  $roles_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $roles_table ) );
+  if ( ! $roles_table_exists ) {
+    WPsCRM_crm_install();
+  }
+
     if ( get_option( 'WPsCRM_upgrade_taxonomies' ) == false ) {
         WPsCRM_upgrade_taxonomies();
     }
