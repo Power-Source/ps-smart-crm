@@ -1,7 +1,7 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
 //global $WPsCRM_db_version;
-$WPsCRM_db_version = '1.6.6';
+$WPsCRM_db_version = '1.6.7';
 
 function WPsCRM_table_exists( $table_name ) {
   global $wpdb;
@@ -15,19 +15,50 @@ function WPsCRM_get_table_engine( $table_name ) {
   return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLE STATUS LIKE %s', $table_name ), 1 );
 }
 
+function WPsCRM_get_agent_role_fk_name( $agents_table ) {
+  return 'fk_scrm_role_' . substr( md5( $agents_table . '_role_id' ), 0, 16 );
+}
+
 function WPsCRM_agent_role_fk_exists( $agents_table ) {
   global $wpdb;
 
   return (bool) $wpdb->get_var( $wpdb->prepare(
+    "SELECT kcu.CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE kcu
+    INNER JOIN information_schema.TABLE_CONSTRAINTS tc
+      ON tc.CONSTRAINT_SCHEMA = kcu.CONSTRAINT_SCHEMA
+     AND tc.TABLE_NAME = kcu.TABLE_NAME
+     AND tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+    WHERE kcu.CONSTRAINT_SCHEMA = DATABASE()
+      AND kcu.TABLE_NAME = %s
+      AND kcu.COLUMN_NAME = %s
+      AND kcu.REFERENCED_TABLE_NAME = %s
+      AND kcu.REFERENCED_COLUMN_NAME = %s
+      AND tc.CONSTRAINT_TYPE = 'FOREIGN KEY'",
+    $agents_table,
+    'role_id',
+    str_replace( 'smartcrm_agents', 'smartcrm_agent_roles', $agents_table ),
+    'id'
+  ) );
+}
+
+function WPsCRM_drop_agent_role_fk_constraints( $agents_table ) {
+  global $wpdb;
+
+  $constraint_names = $wpdb->get_col( $wpdb->prepare(
     "SELECT CONSTRAINT_NAME
-    FROM information_schema.TABLE_CONSTRAINTS
+    FROM information_schema.KEY_COLUMN_USAGE
     WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = %s
-      AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-      AND CONSTRAINT_NAME = %s",
+      AND COLUMN_NAME = %s
+      AND REFERENCED_TABLE_NAME IS NOT NULL",
     $agents_table,
-    'fk_agent_role'
+    'role_id'
   ) );
+
+  foreach ( $constraint_names as $constraint_name ) {
+    $wpdb->query( "ALTER TABLE `{$agents_table}` DROP FOREIGN KEY `{$constraint_name}`" );
+  }
 }
 
 function WPsCRM_maybe_convert_agent_role_table_to_innodb() {
@@ -51,6 +82,7 @@ function WPsCRM_repair_agent_tables() {
 
   $roles_table = $wpdb->prefix . 'smartcrm_agent_roles';
   $agents_table = $wpdb->prefix . 'smartcrm_agents';
+  $constraint_name = WPsCRM_get_agent_role_fk_name( $agents_table );
 
   if ( ! WPsCRM_table_exists( $roles_table ) ) {
     return;
@@ -85,9 +117,11 @@ function WPsCRM_repair_agent_tables() {
 
   delete_option( 'WPsCRM_agent_fk_repair_blocked' );
 
+  WPsCRM_drop_agent_role_fk_constraints( $agents_table );
+
   $wpdb->query(
     "ALTER TABLE `{$agents_table}`
-    ADD CONSTRAINT `fk_agent_role`
+    ADD CONSTRAINT `{$constraint_name}`
     FOREIGN KEY (`role_id`) REFERENCES `{$roles_table}` (`id`)
     ON DELETE RESTRICT ON UPDATE CASCADE"
   );
@@ -396,8 +430,7 @@ function WPsCRM_crm_install() {
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id` (`user_id`),
   KEY `role_id` (`role_id`),
-  KEY `status` (`status`),
-  CONSTRAINT `fk_agent_role` FOREIGN KEY (`role_id`) REFERENCES `".WPsCRM_SETUP_TABLE."agent_roles` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  KEY `status` (`status`)
 ) ENGINE=InnoDB ".$charset_collate." AUTO_INCREMENT=1;";
 
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."timetracking` (
