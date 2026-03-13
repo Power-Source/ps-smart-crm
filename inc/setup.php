@@ -1,7 +1,98 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
 //global $WPsCRM_db_version;
-$WPsCRM_db_version = '1.6.4';
+$WPsCRM_db_version = '1.6.6';
+
+function WPsCRM_table_exists( $table_name ) {
+  global $wpdb;
+
+  return (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) );
+}
+
+function WPsCRM_get_table_engine( $table_name ) {
+  global $wpdb;
+
+  return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLE STATUS LIKE %s', $table_name ), 1 );
+}
+
+function WPsCRM_agent_role_fk_exists( $agents_table ) {
+  global $wpdb;
+
+  return (bool) $wpdb->get_var( $wpdb->prepare(
+    "SELECT CONSTRAINT_NAME
+    FROM information_schema.TABLE_CONSTRAINTS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = %s
+      AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+      AND CONSTRAINT_NAME = %s",
+    $agents_table,
+    'fk_agent_role'
+  ) );
+}
+
+function WPsCRM_maybe_convert_agent_role_table_to_innodb() {
+  global $wpdb;
+
+  $table = $wpdb->prefix . 'smartcrm_agent_roles';
+  if ( ! WPsCRM_table_exists( $table ) ) {
+    return;
+  }
+
+  $engine = WPsCRM_get_table_engine( $table );
+  if ( ! $engine || 'InnoDB' === $engine ) {
+    return;
+  }
+
+  $wpdb->query( "ALTER TABLE {$table} ENGINE=InnoDB" );
+}
+
+function WPsCRM_repair_agent_tables() {
+  global $wpdb;
+
+  $roles_table = $wpdb->prefix . 'smartcrm_agent_roles';
+  $agents_table = $wpdb->prefix . 'smartcrm_agents';
+
+  if ( ! WPsCRM_table_exists( $roles_table ) ) {
+    return;
+  }
+
+  WPsCRM_maybe_convert_agent_role_table_to_innodb();
+
+  if ( ! WPsCRM_table_exists( $agents_table ) ) {
+    return;
+  }
+
+  $agents_engine = WPsCRM_get_table_engine( $agents_table );
+  if ( $agents_engine && 'InnoDB' !== $agents_engine ) {
+    $wpdb->query( "ALTER TABLE {$agents_table} ENGINE=InnoDB" );
+  }
+
+  if ( WPsCRM_agent_role_fk_exists( $agents_table ) ) {
+    return;
+  }
+
+  $orphan_count = (int) $wpdb->get_var(
+    "SELECT COUNT(*)
+    FROM {$agents_table} a
+    LEFT JOIN {$roles_table} r ON a.role_id = r.id
+    WHERE r.id IS NULL"
+  );
+
+  if ( $orphan_count > 0 ) {
+    update_option( 'WPsCRM_agent_fk_repair_blocked', $orphan_count );
+    return;
+  }
+
+  delete_option( 'WPsCRM_agent_fk_repair_blocked' );
+
+  $wpdb->query(
+    "ALTER TABLE `{$agents_table}`
+    ADD CONSTRAINT `fk_agent_role`
+    FOREIGN KEY (`role_id`) REFERENCES `{$roles_table}` (`id`)
+    ON DELETE RESTRICT ON UPDATE CASCADE"
+  );
+}
+
 function WPsCRM_crm_install() {
 	global $wpdb;
   if ( ! defined( 'WPsCRM_SETUP_TABLE' ) ) {
@@ -293,7 +384,7 @@ function WPsCRM_crm_install() {
   UNIQUE KEY `role_slug` (`role_slug`),
   KEY `show_in_contact` (`show_in_contact`),
   KEY `sort_order` (`sort_order`)
-) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1;";
+) ENGINE=InnoDB ".$charset_collate." AUTO_INCREMENT=1;";
 
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."agents` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -381,6 +472,7 @@ function WPsCRM_crm_install() {
 	$namefile="error_setup_".date("YmdHi").".txt";
 	$myFile = WPsCRM_DIR."/logs/".$namefile;
 	$msg="";
+  WPsCRM_maybe_convert_agent_role_table_to_innodb();
 	foreach($sql as $q)
     {
 		dbDelta( $q );
@@ -394,6 +486,7 @@ function WPsCRM_crm_install() {
 	
 	// Install default agent roles
 	WPsCRM_install_default_agent_roles();
+  WPsCRM_repair_agent_tables();
 
   // Standard: Seitenadmin automatisch als Chef setzen (wenn noch keine Rolle vorhanden)
   WPsCRM_assign_site_admin_as_chef();
@@ -657,9 +750,14 @@ function WPsCRM_update_db_check() {
     }
 
   $roles_table = WPsCRM_TABLE . 'agent_roles';
-  $roles_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $roles_table ) );
-  if ( ! $roles_table_exists ) {
+  $agents_table = WPsCRM_TABLE . 'agents';
+  $roles_table_exists = WPsCRM_table_exists( $roles_table );
+  $agents_table_exists = WPsCRM_table_exists( $agents_table );
+
+  if ( ! $roles_table_exists || ! $agents_table_exists ) {
     WPsCRM_crm_install();
+  } else {
+    WPsCRM_repair_agent_tables();
   }
 
     if ( get_option( 'WPsCRM_upgrade_taxonomies' ) == false ) {

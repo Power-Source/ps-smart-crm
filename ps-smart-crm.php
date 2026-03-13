@@ -3,7 +3,7 @@
 Plugin Name: PS SmartBusiness
 Plugin URI: https://power-source.github.io/ps-smart-crm/
 Description: Fügt ClassicPress eine leistungsstarkes Business-Suite hinzu. Du erältst CRM, Dokumentenmanagement, Zeiterfassung, Newsletter-Integration, Webapp deiner Homepage und vieles mehr – alles in einem benutzerfreundlichen Plugin.
-Version: 1.1.1
+Version: 1.1.2
 Author: PSOURCE
 Author URI: https://github.com/Power-Source
 Text Domain: cpsmartcrm
@@ -51,7 +51,7 @@ define('WPsCRM_TABLE',$wpdb->prefix .'smartcrm_');
 define('WPsCRM_PATH',__FILE__);
 define('WPsCRM_DIR',dirname(__FILE__ ) );
 define('WPsCRM_URL',plugin_dir_url( __FILE__ ) );
-define('WPSCRM_VERSION', '1.1.1');
+define('WPSCRM_VERSION', '1.1.2');
 $upload_dir = wp_upload_dir();
 define('WPsCRM_UPLOADS', $upload_dir['basedir'] . '/CRMdocuments');
 define('WPsCRM_IMPORT_FILE',WPsCRM_DIR.'/logs/import.txt');

@@ -4,7 +4,7 @@ Tags: crm, invoices, todo
 Requires at least: 4.2
 Tested up to: 6.8.1
 ClassicPress: 2.6.0
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
  
@@ -62,6 +62,12 @@ Wichtig: Wenn Sie .mo/.po-Dateien im Plugin-Ordner "languages" ändern, können 
 
 
 == Changelog ==
+
+= 1.1.2 =
+
+* Multisite-Reparatur: Bestehende Tabellen `smartcrm_agent_roles` und `smartcrm_agents` werden bei Bedarf auf InnoDB umgestellt
+* Fehlerbehebung: Foreign Key `fk_agent_role` wird für bestehende Agenten-Tabellen automatisch nachgezogen, wenn die Daten konsistent sind
+* Stabilität: Reparatur läuft jetzt auch im DB-Check für bereits aktivierte Subsites und verhindert wiederkehrende FK-Fehler im Log
 
 = 1.1.1 =
 
