@@ -68,6 +68,8 @@ Wichtig: Wenn Sie .mo/.po-Dateien im Plugin-Ordner "languages" ändern, können 
 * Multisite-Reparatur: Bestehende Tabellen `smartcrm_agent_roles` und `smartcrm_agents` werden bei Bedarf auf InnoDB umgestellt
 * Fehlerbehebung: Foreign Key `fk_agent_role` wird für bestehende Agenten-Tabellen automatisch nachgezogen, wenn die Daten konsistent sind
 * Stabilität: Reparatur läuft jetzt auch im DB-Check für bereits aktivierte Subsites und verhindert wiederkehrende FK-Fehler im Log
+* Admin-Fix: DataTables wird auf der CRM-Startseite wieder korrekt geladen, sodass Dashboard-Tabellen ohne JavaScript-Fehler initialisieren
+* Rollen-Fix: Bestehende Standardrollen erhalten fehlende Rechte-Capabilities automatisch nachträglich, ohne individuelle Einstellungen zu überschreiben
 
 = 1.1.1 =
 

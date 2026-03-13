@@ -880,8 +880,7 @@ function WPsCRM_get_scheduler() {
     $user_role = implode(',', $user_info->roles);
     $is_admin = in_array('administrator', $user_info->roles);
     
-    error_log("WPsCRM_get_scheduler: tipo=$tipo, user_id=$user_id, is_admin=" . ($is_admin ? 'yes' : 'no'));
-    
+
     $a_table = WPsCRM_TABLE . "agenda";
     $k_table = WPsCRM_TABLE . "kunde";
     $arr_results = array();
@@ -922,10 +921,9 @@ function WPsCRM_get_scheduler() {
             WHERE {$where}
             ORDER BY a.fatto ASC, a.start_date DESC";
     
-    error_log("WPsCRM_get_scheduler SQL: $sql");
-    
+
     $results = $wpdb->get_results($sql);
-    error_log("WPsCRM_get_scheduler: found " . count($results) . " records");
+
     
     foreach ($results as $r_scheduler) {
       // Determine customer name
@@ -1015,8 +1013,7 @@ function WPsCRM_get_scheduler() {
       );
     }
 
-    error_log("WPsCRM_get_scheduler: returning " . count($arr_results) . " results");
-    
+
     header("Content-type: application/json");
     echo "{\"scheduler\":" . json_encode($arr_results) . "}";
     die();

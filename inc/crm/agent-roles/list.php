@@ -141,7 +141,7 @@ if ( isset( $_POST['action'], $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_
 			$role_id = absint( $_POST['role_id'] ?? 0 );
 			$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $role_id ) );
 			if ( $role ) {
-				$selected_users = isset( $_POST['role_users'] ) ? array_map( 'absint', (array) $_POST['role_users'] ) : array();
+				$selected_users = isset( $_POST['role_users'] ) ? array_values( array_unique( array_map( 'absint', (array) $_POST['role_users'] ) ) ) : array();
 
 					if ( 'chef' === $role->role_slug && ! $current_user_can_manage_chef ) {
 						echo '<div class="alert alert-danger">' . esc_html__( 'Nur der aktuelle Chef darf die Chef-Rolle übergeben.', 'cpsmartcrm' ) . '</div>';
@@ -430,10 +430,13 @@ $chef_edit_locked = $is_editing_chef && ! $current_user_can_manage_chef;
 				<?php foreach ( $roles as $role ) : ?>
 					<?php
 					$role_users = array();
-					$all_users_for_count = get_users( array( 'fields' => array( 'ID', 'display_name' ) ) );
+					$all_users_for_count = get_users( array( 'fields' => array( 'ID', 'display_name', 'user_email' ) ) );
 					foreach ( $all_users_for_count as $user ) {
 						if ( get_user_meta( $user->ID, '_crm_agent_role', true ) === $role->role_slug ) {
-							$role_users[] = $user->display_name;
+							$role_users[ $user->ID ] = array(
+								'display_name' => $user->display_name,
+								'user_email' => $user->user_email,
+							);
 						}
 					}
 					$caps = wp_parse_args( json_decode( $role->capabilities, true ), $default_caps );
@@ -447,8 +450,8 @@ $chef_edit_locked = $is_editing_chef && ! $current_user_can_manage_chef;
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=smart-crm&p=agent-roles/list.php&edit=' . $role->id ) ); ?>#role-users"><strong><?php echo (int) count( $role_users ); ?></strong> <?php esc_html_e( 'Benutzer', 'cpsmartcrm' ); ?></a>
 							<?php if ( ! empty( $role_users ) ) : ?>
 								<div class="inline-list" style="margin-top:4px;">
-									<?php foreach ( $role_users as $name ) : ?>
-										<span class="inline-pill"><?php echo esc_html( $name ); ?></span>
+									<?php foreach ( $role_users as $role_user ) : ?>
+										<span class="inline-pill"><?php echo esc_html( $role_user['display_name'] . ' (' . $role_user['user_email'] . ')' ); ?></span>
 									<?php endforeach; ?>
 								</div>
 							<?php endif; ?>

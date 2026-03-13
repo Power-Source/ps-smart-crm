@@ -193,7 +193,7 @@ function WPsCRM_add_smartcrm_scripts(){
     // ===== BEDINGT LADEN: Je nach CRM-Seite =====
     
     // Bestimme aktuelle Seite/Modul
-    $page_type = isset($_GET['p']) ? sanitize_text_field($_GET['p']) : 'dashboard';
+    $page_type = isset($_GET['p']) ? sanitize_text_field($_GET['p']) : 'dashboard.php';
     
     // Seiten, die DataTables brauchen: list.php, dashboard.php
     $datatable_pages = array(

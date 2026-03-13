@@ -1075,6 +1075,20 @@ function WPsCRM_init_capabilities() {
 	}
 }
 
+function WPsCRM_get_standard_agent_role_capabilities( $role_slug ) {
+  return array(
+    'wp_role' => '',
+    'can_view_accounting' => 'buchhaltung' === $role_slug ? 1 : 0,
+    'can_edit_accounting' => 'chef' === $role_slug ? 1 : 0,
+    'can_view_all_accounting' => 'chef' === $role_slug ? 1 : 0,
+    'can_view_documents' => 1,
+    'can_edit_documents' => 'chef' === $role_slug || 'projektleiter' === $role_slug ? 1 : 0,
+    'can_view_all_documents' => 1,
+    'can_view_customers' => 1,
+    'can_edit_customers' => 'vertrieb' === $role_slug || 'chef' === $role_slug ? 1 : 0,
+  );
+}
+
 /**
  * Initialize standard agent roles if not present
  */
@@ -1143,20 +1157,10 @@ function WPsCRM_init_standard_agent_roles() {
 			"SELECT id FROM $table WHERE role_slug = %s",
 			$role_data['role_slug']
 		) );
+
+    $capabilities = WPsCRM_get_standard_agent_role_capabilities( $role_data['role_slug'] );
 		
 		if ( ! $exists ) {
-			$capabilities = array(
-				'wp_role' => '',
-				'can_view_accounting' => 'buchhaltung' === $role_data['role_slug'] ? 1 : 0,
-				'can_edit_accounting' => 'chef' === $role_data['role_slug'] ? 1 : 0,
-				'can_view_all_accounting' => 'chef' === $role_data['role_slug'] ? 1 : 0,
-				'can_view_documents' => 1,
-				'can_edit_documents' => 'chef' === $role_data['role_slug'] || 'projektleiter' === $role_data['role_slug'] ? 1 : 0,
-				'can_view_all_documents' => 1,
-				'can_view_customers' => 1,
-				'can_edit_customers' => 'vertrieb' === $role_data['role_slug'] || 'chef' === $role_data['role_slug'] ? 1 : 0,
-			);
-			
 			$wpdb->insert(
 				$table,
 				array(
@@ -1173,7 +1177,38 @@ function WPsCRM_init_standard_agent_roles() {
 				),
 				array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s' )
 			);
+      continue;
 		}
+
+    $existing_role = $wpdb->get_row( $wpdb->prepare(
+      "SELECT id, capabilities FROM $table WHERE id = %d",
+      $exists
+    ) );
+
+    if ( ! $existing_role ) {
+      continue;
+    }
+
+    $existing_capabilities = json_decode( $existing_role->capabilities, true );
+    if ( ! is_array( $existing_capabilities ) ) {
+      $existing_capabilities = array();
+    }
+
+    $merged_capabilities = wp_parse_args( $existing_capabilities, $capabilities );
+    if ( $merged_capabilities === $existing_capabilities ) {
+      continue;
+    }
+
+    $wpdb->update(
+      $table,
+      array(
+        'capabilities' => wp_json_encode( $merged_capabilities ),
+        'updated_at' => current_time( 'mysql' ),
+      ),
+      array( 'id' => (int) $existing_role->id ),
+      array( '%s', '%s' ),
+      array( '%d' )
+    );
 	}
 }
 
