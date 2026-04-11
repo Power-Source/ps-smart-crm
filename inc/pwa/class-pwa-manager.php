@@ -24,8 +24,10 @@ class WPsCRM_PWA_Manager {
 		// Manifest endpoint
 		add_action( 'init', array( __CLASS__, 'register_endpoints' ) );
 		add_action( 'init', array( __CLASS__, 'maybe_flush_rewrite_rules' ) );
+		add_action( 'parse_request', array( __CLASS__, 'handle_endpoint_request' ), 0 );
 		add_action( 'template_redirect', array( __CLASS__, 'handle_manifest_request' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'handle_service_worker_request' ) );
+		add_filter( 'redirect_canonical', array( __CLASS__, 'prevent_endpoint_redirects' ), 10, 2 );
 		
 		// Add manifest link to head
 		add_action( 'wp_head', array( __CLASS__, 'add_manifest_link' ), 1 );
@@ -68,45 +70,116 @@ class WPsCRM_PWA_Manager {
 			update_option( 'wpscrm_pwa_paths_fixed_20260305', true );
 		}
 	}
+
+	/**
+	 * Prevent WordPress canonical redirects for PWA endpoints.
+	 *
+	 * Requests like /crm-service-worker.js must stay exact; a redirect to a
+	 * trailing-slash URL makes Service Worker registration fail in browsers.
+	 *
+	 * @param string|false $redirect_url Redirect target.
+	 * @param string       $requested_url Current requested URL.
+	 * @return string|false
+	 */
+	public static function prevent_endpoint_redirects( $redirect_url, $requested_url ) {
+		if ( self::is_manifest_request_path() || self::is_service_worker_request_path() ) {
+			return false;
+		}
+
+		return $redirect_url;
+	}
+
+	/**
+	 * Handle PWA endpoints early before canonical redirects or theme output.
+	 *
+	 * @return void
+	 */
+	public static function handle_endpoint_request() {
+		if ( self::is_manifest_request_path() || get_query_var( 'crm_manifest' ) ) {
+			self::output_manifest();
+		}
+
+		if ( self::is_service_worker_request_path() || get_query_var( 'crm_sw' ) ) {
+			self::output_service_worker();
+		}
+	}
+
+	/**
+	 * Check whether the current request targets the manifest endpoint.
+	 *
+	 * @return bool
+	 */
+	private static function is_manifest_request_path() {
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+		$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+
+		return basename( trim( $request_path, '/' ) ) === 'crm-manifest.json';
+	}
+
+	/**
+	 * Check whether the current request targets the service-worker endpoint.
+	 *
+	 * @return bool
+	 */
+	private static function is_service_worker_request_path() {
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+		$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+
+		return basename( trim( $request_path, '/' ) ) === 'crm-service-worker.js';
+	}
+
+	/**
+	 * Output the manifest response.
+	 *
+	 * @return void
+	 */
+	private static function output_manifest() {
+		header( 'Content-Type: application/json; charset=utf-8' );
+		header( 'Cache-Control: max-age=3600' );
+
+		$manifest = self::generate_manifest();
+		echo wp_json_encode( $manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+		exit;
+	}
+
+	/**
+	 * Output the service worker response.
+	 *
+	 * @return void
+	 */
+	private static function output_service_worker() {
+		header( 'Content-Type: application/javascript; charset=utf-8' );
+		header( 'Service-Worker-Allowed: /' );
+		header( 'Cache-Control: max-age=0' );
+
+		include plugin_dir_path( __FILE__ ) . 'service-worker.js.php';
+		exit;
+	}
 	
 	/**
 	 * Handle manifest.json request
 	 */
 	public static function handle_manifest_request() {
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
-		$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
-		$is_manifest_request = get_query_var( 'crm_manifest' ) || basename( trim( $request_path, '/' ) ) === 'crm-manifest.json';
+		$is_manifest_request = get_query_var( 'crm_manifest' ) || self::is_manifest_request_path();
 
 		if ( ! $is_manifest_request ) {
 			return;
 		}
-		
-		header( 'Content-Type: application/json; charset=utf-8' );
-		header( 'Cache-Control: max-age=3600' ); // 1 Stunde Cache
-		
-		$manifest = self::generate_manifest();
-		echo wp_json_encode( $manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
-		exit;
+
+		self::output_manifest();
 	}
 	
 	/**
 	 * Handle service-worker.js request
 	 */
 	public static function handle_service_worker_request() {
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
-		$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
-		$is_service_worker_request = get_query_var( 'crm_sw' ) || basename( trim( $request_path, '/' ) ) === 'crm-service-worker.js';
+		$is_service_worker_request = get_query_var( 'crm_sw' ) || self::is_service_worker_request_path();
 
 		if ( ! $is_service_worker_request ) {
 			return;
 		}
-		
-		header( 'Content-Type: application/javascript; charset=utf-8' );
-		header( 'Service-Worker-Allowed: /' );
-		header( 'Cache-Control: max-age=0' ); // Kein Cache für SW
-		
-		include plugin_dir_path( __FILE__ ) . 'service-worker.js.php';
-		exit;
+
+		self::output_service_worker();
 	}
 	
 	/**
