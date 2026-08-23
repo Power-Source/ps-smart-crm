@@ -6,7 +6,7 @@ $tipo_agenda=$_GET["tipo_agenda"];
 $a_table=WPsCRM_TABLE."agenda";
 $c_table=WPsCRM_TABLE."kunde";
 $s_table=WPsCRM_TABLE."subscriptionrules";
-$data_scadenza=date("d-m-Y");
+$data_scadenza = date( 'Y-m-d\TH:i' );
 
 $where="1";
 switch ($tipo_agenda)
@@ -55,7 +55,8 @@ switch ($tipo_agenda)
 window.PSCRM_INLINE_FORM = true;
 window.PSCRM_TIPO_AGENDA = <?php echo intval($tipo_agenda); ?>;
 
-if (typeof jQuery !== 'undefined') { window.$ = window.jQuery; }
+//if (typeof jQuery !== 'undefined') { window.$ = window.jQuery; }
+jQuery(function($) {
 <?php 
 switch ($tipo_agenda) {
     case 1:
@@ -71,4 +72,5 @@ switch ($tipo_agenda) {
         break;
 }
 ?>
+});
 </script>

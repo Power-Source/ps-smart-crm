@@ -44,7 +44,7 @@
         };
 
         const config = Object.assign({}, defaults, options);
-        const container = document.getElementById(containerId);
+        const container = document.querySelector(containerId);
         
         if (!container) {
             console.error('Container not found:', containerId);
@@ -238,7 +238,7 @@
      * Event-Handler initialisieren
      */
     function _initEventHandlers(gridId, grid, config) {
-        const container = document.getElementById(gridId);
+        const container = document.getElementById(gridId.replace('#', ''));
         const docType = config.type === 'invoice' ? 'invoice' : 'quotation';
         
         // Datepicker initialisieren
@@ -297,21 +297,25 @@
         }
         
         // Row Click Events
-        container.addEventListener('click', function(e) {
-            const target = e.target.closest('button');
-            if (!target) return;
-            
-            const id = target.dataset.id;
-            const baseUrl = window.location.pathname + window.location.search.split('&p=')[0];
-            
-            if (target.classList.contains('btn-edit')) {
-                _handleEdit(id, docType, baseUrl);
-            } else if (target.classList.contains('btn-delete')) {
-                _handleDelete(id, grid, config);
-            } else if (target.classList.contains('btn-print')) {
-                _handlePrint(id, docType, baseUrl);
-            }
-        });
+        if (container) {
+            container.addEventListener('click', function(e) {
+                const target = e.target.closest('button');
+                if (!target) {
+                    return;
+                }
+
+                const id = target.dataset.id;
+                const baseUrl = window.location.pathname + window.location.search.split('&p=')[0];
+
+                if (target.classList.contains('btn-edit')) {
+                    _handleEdit(id, docType, baseUrl);
+                } else if (target.classList.contains('btn-delete')) {
+                    _handleDelete(id, grid, config);
+                } else if (target.classList.contains('btn-print')) {
+                    _handlePrint(id, docType, baseUrl);
+                }
+            });
+        }
     }
 
     /**

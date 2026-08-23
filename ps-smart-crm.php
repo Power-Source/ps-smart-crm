@@ -208,6 +208,7 @@ function WPsCRM_add_smartcrm_scripts(){
     
     // Seiten, die Flatpickr brauchen: form.php, script_*.php
     $flatpickr_pages = array(
+        'dokumente/list.php',
         'dokumente/form_invoice.php',
         'dokumente/form_quotation.php',
         'dokumente/form_credit_note.php',
@@ -231,6 +232,8 @@ function WPsCRM_add_smartcrm_scripts(){
         'dokumente/form_quotation.php',
         'dokumente/form_credit_note.php',
         'dokumente/form_invoice_informal.php',
+        'kunde/form.php',
+        'scheduler/form.php'
     );
     
     // DATATABLES: Nur auf List- und Dashboard-Seiten laden
@@ -243,7 +246,7 @@ function WPsCRM_add_smartcrm_scripts(){
         wp_enqueue_script( 'pscrm-grid', plugin_dir_url( __FILE__ ).'js/crm-grid.js', array('pscrm-core', 'datatables-js'), '1.0.0', true );
         wp_enqueue_script( 'pscrm-customer-grid', plugin_dir_url( __FILE__ ).'js/components/customer-grid.js', array('pscrm-grid'), '1.0.0', true );
         wp_enqueue_script( 'pscrm-scheduler-grid', plugin_dir_url( __FILE__ ).'js/components/scheduler-grid.js', array('pscrm-grid'), '1.0.0', true );
-        wp_enqueue_script( 'pscrm-documents-grid', plugin_dir_url( __FILE__ ).'js/components/documents-grid.js', array('pscrm-grid'), '1.0.0', true );
+        wp_enqueue_script( 'pscrm-documents-grid', plugin_dir_url( __FILE__ ).'js/components/documents-grid.js', array('pscrm-grid', 'pscrm-datepicker'), '1.0.0', true );
     }
     
     // FLATPICKR: Nur auf Datum-bezogenen Seiten laden
@@ -447,9 +450,34 @@ add_action('admin_footer','WPsCRM_hide_admin_bar');
 function WPsCRM_redirect_to_CRM($redirectTo, $request, $user) {
     if(!is_admin())
         return $redirectTo;
-    $options=get_option('CRM_general_settings');
 
-    if($options['smartcrm_redirect-'.$user->ID] ==1 && ! defined('DOING_AJAX')){
+    if ( ! ( $user instanceof WP_User ) ) {
+        return $redirectTo;
+    }
+
+    if ( ! empty( $request ) ) {
+        return $redirectTo;
+    }
+
+    if ( ! empty( $redirectTo ) ) {
+        $normalized_redirect = untrailingslashit( set_url_scheme( $redirectTo, 'https' ) );
+        $default_admin = untrailingslashit( set_url_scheme( admin_url(), 'https' ) );
+        $default_profile = untrailingslashit( set_url_scheme( admin_url( 'profile.php' ), 'https' ) );
+        $default_home = untrailingslashit( set_url_scheme( home_url( '/' ), 'https' ) );
+
+        if ( $normalized_redirect !== $default_admin && $normalized_redirect !== $default_profile && $normalized_redirect !== $default_home ) {
+            return $redirectTo;
+        }
+    }
+
+    $options=get_option('CRM_general_settings');
+    $option_key = 'smartcrm_redirect-' . $user->ID;
+
+    if ( ! is_array( $options ) || ! isset( $options[ $option_key ] ) ) {
+        return $redirectTo;
+    }
+
+    if($options[ $option_key ] ==1 && ! defined('DOING_AJAX')){
 
         return(admin_url( ).'admin.php?page=smart-crm' );
     }
