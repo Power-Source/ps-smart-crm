@@ -30,9 +30,6 @@ function WPsCRM_display_documents_list() {
 		<b><?php _e('NEUE FORMLOSE RECHNUNG','cpsmartcrm')?></b>
 	</li>
 	<?php } ?>
-	<li class="btn  btn-sm _flat" style="background:#ccc;">
-		<span class="crmHelp" data-help="section-documents" style="position:relative;top:-3px"></span>
-	</li>
 	<span style="float:right;">
 		<li class="no-link" style="margin-top:4px">
 			<?php _e('Registrierte Rechnungen (unterstrichen) können nicht bearbeitet oder gelöscht werden.','cpsmartcrm')?>

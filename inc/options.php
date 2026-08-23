@@ -151,7 +151,7 @@ class CRM_Options_Settings{
 		echo '<h1>'.__('PS Smart Business Optionen und Einstellungen','cpsmartcrm').'</h1>';
 	}
 	function footer(){
-		echo '<small style="text-align:center;top:30px;position:relative">ENTWICKELT VON PSOURCE <a href="https://cp-psource.github.io/ps-smart-crm">https://cp-psource.github.io/ps-smart-crm</a></small></div>';
+		echo '<small style="text-align:center;top:30px;position:relative">ENTWICKELT VON PSOURCE <a href="https://psource.eimen.net/wiki/ps-smart-business/">https://psource.eimen.net/wiki/ps-smart-business/</a></small></div>';
 	}
 	
 	/*

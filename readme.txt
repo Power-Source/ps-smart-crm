@@ -1,10 +1,10 @@
-﻿=== PS SmartBusiness ===
+﻿=== PS Smart Business ===
 Author: PSOURCE
 Tags: crm, invoices, todo
 Requires at least: 4.2
-Tested up to: 6.8.1
-ClassicPress: 2.6.0
-Stable tag: 1.1.2
+Tested up to: 7.1.0
+ClassicPress: 2.7.1
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
  
@@ -62,6 +62,9 @@ Wichtig: Wenn Sie .mo/.po-Dateien im Plugin-Ordner "languages" ändern, können 
 
 
 == Changelog ==
+
+= 1.1.3 =
+* Fix: Fehlende Abhängigkeiten ergänzt
 
 = 1.1.2 =
 

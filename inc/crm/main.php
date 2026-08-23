@@ -47,7 +47,7 @@ if ( in_array( 'wp-smart-crm-agents/wp-smart-crm-agents.php', apply_filters( 'ac
             include(plugin_dir_path(__FILE__ ))."$p";
         }
     }
-    echo '<small style="text-align:center;top:30px;position:relative">ENTWICKELT VON PSOURCE <a href="https://cp-psource.github.io/ps-smart-crm">https://cp-psource.github.io/ps-smart-crm</a></small></div>';
+    echo '<small style="text-align:center;top:30px;position:relative">ENTWICKELT VON PSOURCE <a href="https://psource.eimen.net/wiki/ps-smart-business/">https://psource.eimen.net/wiki/ps-smart-business/</a></small></div>';
 	?>
 
 <!--CUSTOM POPUP EDITOR TEMPLATE-->

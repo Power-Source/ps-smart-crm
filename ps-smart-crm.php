@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: PS SmartBusiness
-Plugin URI: https://power-source.github.io/ps-smart-crm/
-Description: Fügt ClassicPress eine leistungsstarkes Business-Suite hinzu. Du erältst CRM, Dokumentenmanagement, Zeiterfassung, Newsletter-Integration, Webapp deiner Homepage und vieles mehr – alles in einem benutzerfreundlichen Plugin.
-Version: 1.1.2
+Plugin Name: PS Smart Business
+Plugin URI: https://psource.eimen.net/wiki/ps-smart-business/
+Description: Fügt Classic/WordPress eine leistungsstarkes Business-Suite hinzu. Du erältst CRM, Dokumentenmanagement, Zeiterfassung, Newsletter-Integration, Webapp deiner Homepage und vieles mehr – alles in einem benutzerfreundlichen Plugin.
+Version: 1.1.3
 Author: PSOURCE
-Author URI: https://github.com/Power-Source
+Author URI: https://psource.eimen.net/
 Text Domain: cpsmartcrm
 Domain Path: /languages
  **************************************************************************
@@ -51,7 +51,7 @@ define('WPsCRM_TABLE',$wpdb->prefix .'smartcrm_');
 define('WPsCRM_PATH',__FILE__);
 define('WPsCRM_DIR',dirname(__FILE__ ) );
 define('WPsCRM_URL',plugin_dir_url( __FILE__ ) );
-define('WPSCRM_VERSION', '1.1.2');
+define('WPSCRM_VERSION', '1.1.3');
 $upload_dir = wp_upload_dir();
 define('WPsCRM_UPLOADS', $upload_dir['basedir'] . '/CRMdocuments');
 define('WPsCRM_IMPORT_FILE',WPsCRM_DIR.'/logs/import.txt');
