@@ -2,8 +2,8 @@
 /*
 Plugin Name: PS Smart Business
 Plugin URI: https://psource.eimen.net/wiki/ps-smart-business/
-Description: Fügt Classic/WordPress eine leistungsstarkes Business-Suite hinzu. Du erältst CRM, Dokumentenmanagement, Zeiterfassung, Newsletter-Integration, Webapp deiner Homepage und vieles mehr – alles in einem benutzerfreundlichen Plugin.
-Version: 1.1.3
+Description: PS Smart Business ist eine modulare Business-Suite für WordPress und ClassicPress. Verwalte Kunden, Aufgaben, Angebote, Rechnungen und Buchhaltung zentral in deinem eigenen System.
+Version: 1.1.4
 Author: PSOURCE
 Author URI: https://psource.eimen.net/
 Text Domain: cpsmartcrm
@@ -51,7 +51,7 @@ define('WPsCRM_TABLE',$wpdb->prefix .'smartcrm_');
 define('WPsCRM_PATH',__FILE__);
 define('WPsCRM_DIR',dirname(__FILE__ ) );
 define('WPsCRM_URL',plugin_dir_url( __FILE__ ) );
-define('WPSCRM_VERSION', '1.1.3');
+define('WPSCRM_VERSION', '1.1.4');
 $upload_dir = wp_upload_dir();
 define('WPsCRM_UPLOADS', $upload_dir['basedir'] . '/CRMdocuments');
 define('WPsCRM_IMPORT_FILE',WPsCRM_DIR.'/logs/import.txt');
@@ -193,7 +193,9 @@ function WPsCRM_add_smartcrm_scripts(){
     // ===== BEDINGT LADEN: Je nach CRM-Seite =====
     
     // Bestimme aktuelle Seite/Modul
-    $page_type = isset($_GET['p']) ? sanitize_text_field($_GET['p']) : 'dashboard.php';
+    $page_type = isset($_GET['p'])
+    ? sanitize_text_field($_GET['p'])
+    : (isset($_GET['page']) ? sanitize_text_field($_GET['page']) : 'dashboard.php');
     
     // Seiten, die DataTables brauchen: list.php, dashboard.php
     $datatable_pages = array(
@@ -233,7 +235,8 @@ function WPsCRM_add_smartcrm_scripts(){
         'dokumente/form_credit_note.php',
         'dokumente/form_invoice_informal.php',
         'kunde/form.php',
-        'scheduler/form.php'
+        'scheduler/form.php',
+        'smartcrm_settings',
     );
     
     // DATATABLES: Nur auf List- und Dashboard-Seiten laden
@@ -549,12 +552,12 @@ add_action('admin_menu', 'WPsCRM_documentation_link',99);
 function WPsCRM_documentation_link(){
 	if(class_exists('sitepress')){
 		if(ICL_LANGUAGE_CODE =="de")
-			$link='https://power-source.github.io/ps-smart-crm/';
+			$link='https://psource.eimen.net/wiki/ps-smart-business/';
 		else
-			$link='https://power-source.github.io/ps-smart-crm/';
+			$link='https://psource.eimen.net/wiki/ps-smart-business/';
 		}
 		else{
-			$link='https://power-source.github.io/ps-smart-crm/';
+			$link='https://psource.eimen.net/wiki/ps-smart-business/';
 		}
 	add_submenu_page(
 	'smart-crm',

@@ -1044,10 +1044,21 @@ foreach ($income_by_source as $source) {
                                    style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
                         </div>
                         <div>
-                            <label for="expense_amount"><small><?php _e('Betrag (netto)', 'cpsmartcrm'); ?></small></label>
+                            <label for="expense_amount">
+                                <small>
+                                    <?php
+                                    if ( $is_kleinunternehmer ) {
+                                        _e('Betrag (brutto)', 'cpsmartcrm');
+                                    } else {
+                                        _e('Betrag (netto)', 'cpsmartcrm');
+                                    }
+                                    ?>
+                                </small>
+                            </label>
                             <input type="text" id="expense_amount" name="expense_amount" placeholder="90,45" 
                                    required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
                         </div>
+                        <?php if ( ! $is_kleinunternehmer ) : ?>
                         <div>
                             <label for="expense_tax_rate">
                                 <small><?php _e('Vorsteuer (VSt)', 'cpsmartcrm'); ?></small>
@@ -1071,6 +1082,7 @@ foreach ($income_by_source as $source) {
                             </select>
                         </div>
                     </div>
+                    <?php endif; ?>
 
                     <div style="display: flex; gap: 8px;">
                         <button type="submit" class="button button-primary" style="font-size: 13px; padding: 6px 12px;">
@@ -1488,14 +1500,14 @@ foreach ($income_by_source as $source) {
                         <th style="width: 100px;"><?php _e('Datum', 'cpsmartcrm'); ?></th>
                         <th style="width: 80px; text-align: center;"><?php _e('Typ', 'cpsmartcrm'); ?></th>
                         <th style="width: 150px;"><?php _e('Kategorie', 'cpsmartcrm'); ?></th>
-                        <th><?php _e('Beschreibung', 'cpsmartcrm'); ?></th>
-                        <th style="width: 120px; text-align: right;"><?php _e('Netto', 'cpsmartcrm'); ?></th>
+                        <th style="width: 200px;"><?php _e('Beschreibung', 'cpsmartcrm'); ?></th>
+                        <th style="width: 100px; text-align: right;"><?php _e('Netto', 'cpsmartcrm'); ?></th>
                         <?php if (!$is_kleinunternehmer) : ?>
                         <th style="width: 100px; text-align: right;"><?php _e('USt./Vorst.', 'cpsmartcrm'); ?></th>
                         <?php endif; ?>
                         <th style="width: 140px; text-align: right;"><?php _e('Betrag', 'cpsmartcrm'); ?></th>
                         <th style="width: 80px; text-align: center;"><?php _e('Belege', 'cpsmartcrm'); ?></th>
-                        <th style="width: 60px; text-align: center;"><?php _e('Aktionen', 'cpsmartcrm'); ?></th>
+                        <th style="width: 100px; text-align: center;"><?php _e('Aktionen', 'cpsmartcrm'); ?></th>
                     </tr>
                 </thead>
                 <tbody>

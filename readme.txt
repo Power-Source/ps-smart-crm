@@ -1,67 +1,102 @@
 ﻿=== PS Smart Business ===
-Author: PSOURCE
-Tags: crm, invoices, todo
+Contributors: PSOURCE
+Tags: crm, invoices, accounting, business, customers, quotes
 Requires at least: 4.2
 Tested up to: 7.1.0
+Requires PHP: 7.4
 ClassicPress: 2.7.1
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
- 
-PS Smart Business ist die smarte Business Suite für Classic/ClassicPress: Kunden, Dokumente, Buchhaltung, Prozesse und Team-Workflows in einem System.
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+PS Smart Business ist eine modulare Business-Suite für WordPress und ClassicPress. Verwalte Kunden, Aufgaben, Angebote, Rechnungen und Buchhaltung zentral in deinem eigenen System.
 
 == Description ==
 
+PS Smart Business verbindet CRM, Dokumentenverwaltung und betriebliche Prozesse in einer übersichtlichen Oberfläche.
 
-PS Smart Business deckt eine Vielzahl moderner Büro- und Geschäftsprozesse ab und wächst vom klassischen CRM zur modularen Business Suite.
+Statt verschiedene Systeme für Kundenverwaltung, Termine, Rechnungen und interne Abläufe zu verwenden, kannst du deine wichtigsten Geschäftsprozesse direkt in WordPress oder ClassicPress verwalten.
 
-CRM-Verwaltung:
+== Funktionen ==
 
-- Kundenarchiv-Raster
-- Benutzerdefinierte Rolle "CRM-Agent"
-- Terminplaner für Aufgaben und Termine
-- Zeitleiste für Notizen
-- TODO / Termin Status Update
-- Benachrichtigungssystem (E-Mail und Dashboard)
-- Benachrichtigung an einzelne Benutzer(innen)
-- Benachrichtigung an bestimmte WP-Rolle(n)
-- Benutzerdefinierte Benachrichtigungsregeln
-- Aufeinanderfolgende Benachrichtigungsschritte (für mittel-/langfristig auslaufende Dienstleistungen)
-- Kunden CSV-Import
-- Dashboard- und Grid-basierte Arbeitsoberfläche für schnelle Team-Prozesse
+= CRM =
 
+* Kundenverwaltung mit übersichtlichem Raster
+* Eigene CRM-Agent-Rolle für Teammitglieder
+* Aufgaben- und Terminverwaltung
+* Kundenbezogene Zeitleiste für Notizen und Aktivitäten
+* TODO- und Terminstatus
+* E-Mail- und Dashboard-Benachrichtigungen
+* Benachrichtigungen für einzelne Benutzer oder WordPress-Rollen
+* Individuelle Benachrichtigungsregeln
+* Mehrstufige Benachrichtigungen für langfristige Vorgänge
+* Kundenimport per CSV
+* Filter-, Sortier- und Gruppierungsfunktionen
 
-Verwaltung von Rechnungen/Angeboten
+= Angebote & Rechnungen =
 
-- Dynamische Erstellung von Rechnungen/Angebote mit mehrzeiligen Produkten
-- Erstellung von Rechnungen/Angebote im .pdf-Format
-- PDF herunterladen und auf dem Server speichern
-- Benutzerdefiniertes LOGO
-- Benutzerdefinierte Ausrichtung der Kopfelemente in der PDF-Vorlage
-- Konfigurierbare Fälligkeitsdaten für Zahlungen
-- Benachrichtigung bei Ablauf der Zahlung
-- Interne Kommentare und Angebote
-- Benutzerdefinierte Canvas-Signatur im Angebot (Touch-kompatibel)
-- Registrierung von Rechnungen
-- Benutzerdefinierter Startwert für die Nummerierung (Sie können zu jedem beliebigen Zeitpunkt des Jahres mit einer von 1 abweichenden Startnummer beginnen, in Übereinstimmung mit Ihrer Buchhaltung)
-- Buchhaltung - Verbinde andere Plugins mit dem CRM und erfasse alle Umsätze in deiner Buchhaltung
+* Angebote und Rechnungen mit beliebig vielen Positionen
+* PDF-Erstellung
+* PDF-Download und Speicherung auf dem Server
+* Eigenes Logo und anpassbare PDF-Kopfbereiche
+* Konfigurierbare Zahlungsfristen
+* Benachrichtigungen bei fälligen Zahlungen
+* Interne Kommentare
+* Touch-fähige Unterschrift für Angebote
+* Registrierung von Rechnungen
+* Individueller Startwert für die Rechnungsnummerierung
+* Buchhaltungsfunktionen und Erweiterungsmöglichkeiten
 
-Suite-Erweiterungen:
+= Buchhaltung =
 
-- Erweiterbare Integrationen und API-Module
-- PWA-Bausteine für App-ähnliche Nutzung
-- Frontend-Module für kundennahe Prozesse
-- Pluggable Architektur für projektspezifische Erweiterungen
+PS Smart Business bietet grundlegende Funktionen für die Erfassung und Auswertung geschäftlicher Vorgänge.
 
-Alle Datensätze in den Rastern sind mit Filter-/Gruppierungs-/Sortierfunktionen für eine schnelle Nutzung ausgestattet.
+Die Buchhaltung kann über Erweiterungen und Integrationen mit anderen Plugins verbunden werden, sodass Umsätze und weitere Geschäftsdaten zentral weiterverarbeitet werden können.
 
-Alle Informationen in den Rastern sind mit Symbolen/Farben visuell aufgewertet, um immer einen schnellen Überblick zu gewährleisten.
+= Erweiterbar =
 
-Wenn Sie uns Feedback schicken möchten, benutzen Sie das Support-Forum, wenn Sie an der Übersetzung in weitere Sprachen teilnehmen möchten, schreiben Sie uns eine Nachricht an info [at] smart-cms.smart-cms.n3rds.work/
-Wichtig: Wenn Sie .mo/.po-Dateien im Plugin-Ordner "languages" ändern, können Ihre Änderungen beim nächsten Update verloren gehen. Um dies zu verhindern, kopieren Sie Ihre .mo/.po-Dateien in den Ordner "/wp-content/languages/plugins".
+PS Smart Business ist modular aufgebaut und lässt sich an individuelle Anforderungen anpassen.
 
+* Erweiterbare Integrationen
+* API- und Erweiterungsmodule
+* Frontend-Module
+* PWA-Komponenten
+* Projektspezifische Erweiterungen
+* Pluggable Architektur
+
+== Installation ==
+
+1. Lade PS Smart Business herunter.
+2. Installiere das Plugin über den WordPress-/ClassicPress-Adminbereich oder kopiere es nach `/wp-content/plugins/`.
+3. Aktiviere das Plugin.
+4. Öffne den neuen Bereich von PS Smart Business im Adminbereich.
+5. Passe die Einstellungen an deine Anforderungen an.
+
+== Unterstützung ==
+
+Du hast einen Fehler gefunden, eine Idee für eine Verbesserung oder möchtest bei der Weiterentwicklung helfen?
+
+Dann schau im PSOURCE-Projekt vorbei oder eröffne ein Issue im Repository.
+
+== Übersetzungen ==
+
+PS Smart Business ist für Übersetzungen vorbereitet.
+
+Eigene Übersetzungen solltest du nicht direkt im Plugin-Verzeichnis bearbeiten. Änderungen dort können bei einem Plugin-Update überschrieben werden.
+
+Lege deine Übersetzungsdateien stattdessen unter:
+
+`/wp-content/languages/plugins/`
+
+ab.
 
 == Changelog ==
+
+= 1.1.4 =
+* Parsley Fehler auf Einstellungsseite behoben
+* Dokumentationslinks auf neues PSOURCE Wiki umgelegt
+* Fix: Vorsteueranzeige bei Kleinunternehmern korrigiert
+* Buchhaltungs UI angepasst
 
 = 1.1.3 =
 * Fix: Fehlende Abhängigkeiten ergänzt
