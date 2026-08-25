@@ -490,10 +490,6 @@ class WPsCRM_Support_Integration {
 	 * @param object $ticket - Ticket Object
 	 */
 	private static function send_ticket_notification( $user_id, $event_type, $ticket_id, $ticket ) {
-		// Prüfe ob PWA Manager aktiv ist
-		if ( ! class_exists( 'WPsCRM_PWA_Manager' ) ) {
-			return;
-		}
 		
 		// Notification Daten basierend auf Event-Type
 		$notifications = array(
@@ -541,21 +537,6 @@ class WPsCRM_Support_Integration {
 			'view' => 'support',
 			'ticket_id' => $ticket_id,
 		), home_url( '/' ) );
-		
-		// Push senden
-		WPsCRM_PWA_Manager::send_push_notification( $user_id, array(
-			'event' => isset( $notification_data['event'] ) ? $notification_data['event'] : '',
-			'title' => $notification_data['title'],
-			'body' => $notification_data['body'],
-			'icon' => $icon_url,
-			'badge' => $icon_url,
-			'tag' => 'ticket-' . $ticket_id,
-			'requireInteraction' => false,
-			'data' => array(
-				'url' => $ticket_url,
-				'ticket_id' => $ticket_id,
-			),
-		) );
 	}
 	
 }

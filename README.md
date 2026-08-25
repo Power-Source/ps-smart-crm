@@ -119,7 +119,6 @@ Mögliche Erweiterungen sind unter anderem:
 
 - 🔌 Integrationen
 - 🔗 API-Module
-- 📱 PWA-Komponenten
 - 🌐 Frontend-Module
 - 🧱 Projektspezifische Erweiterungen
 - ⚙️ Eigene Business-Workflows
