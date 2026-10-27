@@ -3,7 +3,7 @@
 Plugin Name: PS Smart Business
 Plugin URI: https://psource.eimen.net/wiki/ps-smart-business/
 Description: PS Smart Business ist eine modulare Business-Suite für WordPress und ClassicPress. Verwalte Kunden, Aufgaben, Angebote, Rechnungen und Buchhaltung zentral in deinem eigenen System.
-Version: 1.1.4
+Version: 1.1.5
 Author: PSOURCE
 Author URI: https://psource.eimen.net/
 Text Domain: cpsmartcrm
@@ -51,7 +51,7 @@ define('WPsCRM_TABLE',$wpdb->prefix .'smartcrm_');
 define('WPsCRM_PATH',__FILE__);
 define('WPsCRM_DIR',dirname(__FILE__ ) );
 define('WPsCRM_URL',plugin_dir_url( __FILE__ ) );
-define('WPSCRM_VERSION', '1.1.4');
+define('WPSCRM_VERSION', '1.1.5');
 $upload_dir = wp_upload_dir();
 define('WPsCRM_UPLOADS', $upload_dir['basedir'] . '/CRMdocuments');
 define('WPsCRM_IMPORT_FILE',WPsCRM_DIR.'/logs/import.txt');
@@ -129,14 +129,6 @@ function WPsCRM_add_smartcrm_scripts(){
 			$style="light";
     }
     
-    // Entferne veraltete jQuery UI-Skripte (ClassicPress Deprecation)
-    wp_dequeue_script( 'jquery-ui-core' );
-    wp_dequeue_script( 'jquery-ui-mouse' );
-    wp_dequeue_script( 'jquery-ui-sortable' );
-    wp_deregister_script( 'jquery-ui-core' );
-    wp_deregister_script( 'jquery-ui-mouse' );
-    wp_deregister_script( 'jquery-ui-sortable' );
-
     // ===== IMMER LADEN: Basis-Assets (notwendig auf allen CRM-Seiten) =====
     
     // Bootstrap & Theme

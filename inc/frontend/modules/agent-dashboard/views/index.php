@@ -7,8 +7,6 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
-
-$app_url = add_query_arg( 'app', '1' );
 ?>
 
 <div class="crm-agent-dashboard" style="padding: 20px; background: #f5f5f5; min-height: 100vh;">
@@ -55,8 +53,6 @@ $app_url = add_query_arg( 'app', '1' );
             <?php endif; ?>
         </div>
         <div class="crm-top-actions">
-            <a href="<?php echo esc_url( $app_url ); ?>" class="crm-top-action crm-top-action-primary">WebApp öffnen</a>
-            <button type="button" class="crm-top-action crm-top-action-install wpscrm-install-app-btn">Installieren</button>
             <?php if ( 'agent' === $user_type && $user_data['ID'] ) : ?>
                 <a href="<?php echo admin_url( 'user-edit.php?user_id=' . $user_data['ID'] ); ?>" class="crm-top-action">Profil bearbeiten</a>
             <?php endif; ?>

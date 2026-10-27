@@ -83,11 +83,6 @@
     color: #ffffff !important;
 }
 
-.crm-top-action-install {
-    background: #eef2f7;
-    border-color: #d7dde5;
-}
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

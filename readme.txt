@@ -5,7 +5,7 @@ Requires at least: 4.2
 Tested up to: 7.1.0
 Requires PHP: 7.4
 ClassicPress: 2.7.1
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,7 +60,6 @@ PS Smart Business ist modular aufgebaut und lässt sich an individuelle Anforder
 * Erweiterbare Integrationen
 * API- und Erweiterungsmodule
 * Frontend-Module
-* PWA-Komponenten
 * Projektspezifische Erweiterungen
 * Pluggable Architektur
 
@@ -92,6 +91,11 @@ ab.
 
 == Changelog ==
 
+= 1.1.5 =
+* Desktop-App- und PWA-System einschließlich Installationsoberfläche und Push-Resten vollständig entfernt
+* Veraltete PWA-Einstellungen, Benutzerdaten und Rewrite-Regeln werden einmalig bereinigt
+* Betragsplatzhalter für manuelle Einnahmen und Ausgaben auf `0,00` vereinheitlicht
+
 = 1.1.4 =
 * Parsley Fehler auf Einstellungsseite behoben
 * Dokumentationslinks auf neues PSOURCE Wiki umgelegt
@@ -119,7 +123,7 @@ ab.
 
 * Positionierung als Business Suite statt reinem CRM geschärft
 * Dokumentationsstruktur gestartet und Übersicht ausgebaut
-* Fokus auf modulare Bereiche: CRM, Dokumente, Buchhaltung, PWA und Integrationen
+* Fokus auf modulare Bereiche: CRM, Dokumente, Buchhaltung und Integrationen
 * Basis für weiteren Ausbau der Anwender- und Admin-Dokumentation gelegt
 
 = 1.0.1 =

@@ -264,47 +264,6 @@ class CRM_Options_Settings{
 		$sanitized['frontend_intranet_page'] = isset( $input['frontend_intranet_page'] ) ? absint( $input['frontend_intranet_page'] ) : 0;
 		$sanitized['frontend_customer_page'] = isset( $input['frontend_customer_page'] ) ? absint( $input['frontend_customer_page'] ) : 0;
 
-		foreach ( $checkbox_keys as $key ) {
-			$sanitized[ $key ] = isset( $input[ $key ] ) ? 1 : 0;
-		}
-
-		$sanitized['webapp_header_title'] = isset( $input['webapp_header_title'] ) ? sanitize_text_field( $input['webapp_header_title'] ) : '';
-		$sanitized['webapp_header_logo'] = isset( $input['webapp_header_logo'] ) ? esc_url_raw( $input['webapp_header_logo'] ) : '';
-		$sanitized['webapp_header_bg_color'] = isset( $input['webapp_header_bg_color'] ) ? sanitize_hex_color( $input['webapp_header_bg_color'] ) : '';
-		$sanitized['webapp_header_text_color'] = isset( $input['webapp_header_text_color'] ) ? sanitize_hex_color( $input['webapp_header_text_color'] ) : '';
-		$sanitized['webapp_content_bg_color'] = isset( $input['webapp_content_bg_color'] ) ? sanitize_hex_color( $input['webapp_content_bg_color'] ) : '';
-		$sanitized['webapp_container_bg_color'] = isset( $input['webapp_container_bg_color'] ) ? sanitize_hex_color( $input['webapp_container_bg_color'] ) : '';
-		$sanitized['webapp_app_name'] = isset( $input['webapp_app_name'] ) ? sanitize_text_field( $input['webapp_app_name'] ) : '';
-		$sanitized['webapp_app_short_name'] = isset( $input['webapp_app_short_name'] ) ? sanitize_text_field( $input['webapp_app_short_name'] ) : '';
-		$sanitized['webapp_app_description'] = isset( $input['webapp_app_description'] ) ? sanitize_textarea_field( $input['webapp_app_description'] ) : '';
-		$sanitized['webapp_theme_color'] = isset( $input['webapp_theme_color'] ) ? sanitize_hex_color( $input['webapp_theme_color'] ) : '';
-		$sanitized['webapp_background_color'] = isset( $input['webapp_background_color'] ) ? sanitize_hex_color( $input['webapp_background_color'] ) : '';
-		$sanitized['webapp_icon_512'] = isset( $input['webapp_icon_512'] ) ? esc_url_raw( $input['webapp_icon_512'] ) : '';
-		$sanitized['webapp_icon_192'] = isset( $input['webapp_icon_192'] ) ? esc_url_raw( $input['webapp_icon_192'] ) : '';
-		$sanitized['webapp_container_max_width'] = isset( $input['webapp_container_max_width'] ) ? absint( $input['webapp_container_max_width'] ) : 1200;
-		$sanitized['webapp_container_padding'] = isset( $input['webapp_container_padding'] ) ? absint( $input['webapp_container_padding'] ) : 16;
-		$sanitized['webapp_module_radius'] = isset( $input['webapp_module_radius'] ) ? absint( $input['webapp_module_radius'] ) : 8;
-		$sanitized['webapp_module_shadow'] = isset( $input['webapp_module_shadow'] ) ? sanitize_key( $input['webapp_module_shadow'] ) : 'soft';
-		$sanitized['webapp_footer_notice'] = isset( $input['webapp_footer_notice'] ) ? wp_kses_post( $input['webapp_footer_notice'] ) : '';
-
-		$role_keys = array(
-			'webapp_show_webview_roles',
-			'webapp_show_push_roles',
-			'webapp_show_bottom_nav_roles',
-		);
-
-		foreach ( $role_keys as $role_key ) {
-			$roles_raw = isset( $input[ $role_key ] ) && is_array( $input[ $role_key ] ) ? $input[ $role_key ] : array();
-			$roles = array();
-			foreach ( $roles_raw as $role ) {
-				$role = sanitize_key( $role );
-				if ( in_array( $role, array( 'agent', 'customer' ), true ) ) {
-					$roles[] = $role;
-				}
-			}
-			$sanitized[ $role_key ] = array_values( array_unique( $roles ) );
-		}
-
 		return $sanitized;
 	}
 	
@@ -1002,24 +961,6 @@ class CRM_Options_Settings{
             // Initial buttons state
             updatePageButtons('intranet', $('#crm-intranet-page-select').val());
             updatePageButtons('customer', $('#crm-customer-page-select').val());
-
-			// Logo aus Mediathek
-			$('.crm-webapp-logo-upload').on('click', function(e) {
-				e.preventDefault();
-				var frame = wp.media({
-					title: '<?php echo esc_js( __( 'WebApp Logo auswählen', 'cpsmartcrm' ) ); ?>',
-					button: { text: '<?php echo esc_js( __( 'Logo verwenden', 'cpsmartcrm' ) ); ?>' },
-					multiple: false,
-					library: { type: 'image' }
-				});
-
-				frame.on('select', function() {
-					var attachment = frame.state().get('selection').first().toJSON();
-					$('#crm-webapp-header-logo').val(attachment.url);
-				});
-
-				frame.open();
-			});
 
         });
         </script>

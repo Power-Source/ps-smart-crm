@@ -26,8 +26,6 @@ title: "PS Smart Business"
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
 - [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
-- [PWA & Frontend-Module](pwa-frontend-module.html)
-- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 - [PS-Bloghosting Integrations-README](README.html)
 - [Über das Projekt](about.html)
 
@@ -68,9 +66,8 @@ PS Smart Business ist nicht mehr nur ein CRM, sondern eine modulare Business Sui
 - Anbindung externer Plugin-Umsätze
 - Struktur für erweiterbare Buchhaltungsprozesse
 
-### Frontend, PWA & Integrationen
+### Frontend & Integrationen
 
-- PWA-Bausteine für app-nahe Nutzung
 - Frontend-Module für kundennahe Interaktionen
 - Integrationspunkte für Drittplugins und eigene Erweiterungen
 
@@ -84,8 +81,6 @@ PS Smart Business ist nicht mehr nur ein CRM, sondern eine modulare Business Sui
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
 - [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
-- [PWA & Frontend-Module](pwa-frontend-module.html)
-- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 - [Über das Projekt](about.html)
 - [GitHub Discussions](https://github.com/cp-psource/ps-smart-crm/discussions)
 - [Releases / Changelog](https://github.com/Power-Source/ps-smart-crm/releases)
@@ -100,8 +95,6 @@ Die Dokumentation wird ab jetzt schrittweise entlang der Suite-Module aufgebaut:
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API, Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
 - [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
-- [PWA- und Frontend-Bausteine](pwa-frontend-module.html)
-- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 
 ## Mitwirken
 
@@ -114,4 +107,3 @@ Wenn du Übersetzungen anpasst, lege eigene `.mo/.po` Dateien bitte unter `/wp-c
 ## Seiten-Navigation
 
 <p><a href="about.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="einrichtung-berechtigungen.html">Weiter ➡️</a></p>
-

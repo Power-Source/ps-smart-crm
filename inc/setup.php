@@ -802,6 +802,36 @@ function WPsCRM_update_db_check() {
 }
 add_action( 'plugins_loaded', 'WPsCRM_update_db_check',13 );
 
+function WPsCRM_remove_legacy_pwa_data() {
+  $cleanup_version = '1.1.5';
+
+  if ( version_compare( (string) get_option( 'WPsCRM_pwa_cleanup_version', '0' ), $cleanup_version, '>=' ) ) {
+    return;
+  }
+
+  delete_option( 'wpscrm_pwa_settings' );
+  delete_option( 'wpscrm_pwa_paths_fixed_20260305' );
+  delete_option( 'wpscrm_vapid_public_key' );
+  delete_option( 'wpscrm_vapid_private_key' );
+
+  $frontend_settings = get_option( 'CRM_frontend_settings', array() );
+  if ( is_array( $frontend_settings ) ) {
+    foreach ( array_keys( $frontend_settings ) as $key ) {
+      if ( 0 === strpos( $key, 'webapp_' ) ) {
+        unset( $frontend_settings[ $key ] );
+      }
+    }
+    update_option( 'CRM_frontend_settings', $frontend_settings );
+  }
+
+  delete_metadata( 'user', 0, '_wpscrm_push_subscriptions', '', true );
+  delete_metadata( 'user', 0, '_wpscrm_push_preferences', '', true );
+
+  flush_rewrite_rules( false );
+  update_option( 'WPsCRM_pwa_cleanup_version', $cleanup_version );
+}
+add_action( 'init', 'WPsCRM_remove_legacy_pwa_data', 99 );
+
 /**
  * Einmalige Migration: created_by in incomes/expenses hinzufügen und backfillen.
  */

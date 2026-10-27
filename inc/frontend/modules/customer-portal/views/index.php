@@ -7,8 +7,6 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
-
-$app_url = add_query_arg( 'app', '1' );
 ?>
 
 <div class="crm-customer-portal" style="padding: 20px; background: #f5f5f5; min-height: 100vh;">
@@ -28,8 +26,6 @@ $app_url = add_query_arg( 'app', '1' );
             </p>
         </div>
         <div class="crm-top-actions">
-            <a href="<?php echo esc_url( $app_url ); ?>" class="crm-top-action crm-top-action-primary">WebApp öffnen</a>
-            <button type="button" class="crm-top-action crm-top-action-install wpscrm-install-app-btn">Installieren</button>
             <?php if ( $user_data['ID'] ) : ?>
                 <a href="<?php echo wp_logout_url(); ?>" class="crm-top-action">Logout</a>
             <?php else : ?>

@@ -95,10 +95,6 @@ Stand: März 2026
 | `WPsCRM_wp_mail_content_type` | Content-Type für CRM-Mails | `inc/functions.php` |
 | `WPsCRM_p_mail_from` | Mail-Absenderadresse filtern | `inc/functions.php` |
 | `WPsCRM_wp_mail_from_name` | Mail-Absendername filtern | `inc/functions.php` |
-| `wpscrm_pwa_manifest` | PWA Manifest erweitern | `inc/pwa/class-pwa-manager.php` |
-| `wpscrm_pwa_shortcuts` | PWA Shortcuts erweitern | `inc/pwa/class-pwa-manager.php` |
-| `wpscrm_pwa_menu_location` | Menüposition im App-Template | `inc/pwa/class-app-template.php` |
-| `wpscrm_agent_role_slugs` | Agent-Rollenliste für App-Mode | `inc/pwa/class-app-template.php` |
 | `wpscrm_scheduler_sources` | Support als Scheduler-Quelle ergänzen | `inc/support-integration.php` |
 | `wpscrm_scheduler_data` | Scheduler-Daten erweitern | `inc/support-integration.php` |
 
@@ -182,15 +178,6 @@ Nopriv:
 
 Hinweis: Einige `crm_*` Hooks sind mehrfach registriert (API + Modulklasse) und sollten bei Refactoring auf Kollisionen geprüft werden.
 
-### PWA/WebApp AJAX
-
-- `wp_ajax_wpscrm_subscribe_push`
-- `wp_ajax_wpscrm_unsubscribe_push`
-- `wp_ajax_wpscrm_save_push_prefs`
-- `wp_ajax_wpscrm_create_ticket`
-- `wp_ajax_wpscrm_add_ticket_reply`
-- `wp_ajax_wpscrm_vote_faq` (+ `wp_ajax_nopriv_wpscrm_vote_faq`)
-
 ## 4) WordPress Lifecycle Hooks (Core Integration)
 
 Hauptsächlich verwendet: `plugins_loaded`, `init`, `admin_init`, `admin_menu`, `admin_head`, `admin_footer`, `template_redirect`, `wp_head`, `wp_footer`, `wp_enqueue_scripts`, `widgets_init`, `login_redirect`, `template_include`, `show_user_profile`, `edit_user_profile`, `personal_options_update`, `edit_user_profile_update`.
@@ -238,4 +225,4 @@ function my_sync_into_wpscrm($order) {
 
 ## Seiten-Navigation
 
-<p><a href="integrationen-api-erweiterbarkeit.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="pwa-frontend-module.html">Weiter ➡️</a></p>
+<p><a href="integrationen-api-erweiterbarkeit.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="dokumentation.html">Weiter ➡️</a></p>

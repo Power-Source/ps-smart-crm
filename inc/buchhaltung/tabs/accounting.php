@@ -920,7 +920,7 @@ foreach ($income_by_source as $source) {
                         </div>
                         <div>
                             <label for="income_amount"><small><?php _e('Betrag (netto)', 'cpsmartcrm'); ?></small></label>
-                            <input type="text" id="income_amount" name="income_amount" placeholder="90,45" 
+                            <input type="text" id="income_amount" name="income_amount" placeholder="0,00" 
                                    required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
                         </div>
                         <div>
@@ -1055,7 +1055,7 @@ foreach ($income_by_source as $source) {
                                     ?>
                                 </small>
                             </label>
-                            <input type="text" id="expense_amount" name="expense_amount" placeholder="90,45" 
+                            <input type="text" id="expense_amount" name="expense_amount" placeholder="0,00" 
                                    required style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
                         </div>
                         <?php if ( ! $is_kleinunternehmer ) : ?>

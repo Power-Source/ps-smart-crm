@@ -179,11 +179,6 @@
     color: #ffffff !important;
 }
 
-.crm-top-action-install {
-    background: #eef2f7;
-    border-color: #d7dde5;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .crm-agent-dashboard {
@@ -194,4 +189,3 @@
         padding: 15px !important;
     }
 }
-

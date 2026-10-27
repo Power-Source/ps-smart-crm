@@ -21,8 +21,6 @@ title: "PS Smart Business"
 - [Buchhaltung & Abrechnung](buchhaltung-abrechnung.html)
 - [Integrationen, API & Erweiterbarkeit](integrationen-api-erweiterbarkeit.html)
 - [Dev-Referenz: Integrationen, Hooks & Actions](dev-hooks-actions.html)
-- [PWA & Frontend-Module](pwa-frontend-module.html)
-- [WebApp-Funktion (PWA/App-Modus)](webapp-funktion.html)
 
 ## Bestanddokumentation
 
@@ -107,4 +105,4 @@ Es stehen 3 Arten von Taxonomien zur Verfügung: Kategorie (z. B. Kunden, Liefer
 
 ## Seiten-Navigation
 
-<p><a href="webapp-funktion.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="README.html">Weiter ➡️</a></p>
+<p><a href="dev-hooks-actions.html">⬅️ Zurück</a> · <a href="index.html">🏠 Übersicht</a> · <a href="README.html">Weiter ➡️</a></p>
