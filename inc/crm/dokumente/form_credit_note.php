@@ -99,7 +99,6 @@ else
 
 <?php
     $where="FK_aziende=$ID_azienda";
-
 ?>
 <style>
     
@@ -122,11 +121,14 @@ else
 <form name="form_insert" action="" method="post" id="form_insert">
     <!--<div class="modal_loader" style="background:#fff url(<?php echo WPsCRM_URL?>/css/img/loading-image.gif);background-repeat:no-repeat;background-position:center center"></div>-->
 	<input type="hidden" name="num_righe" id="num_righe" value="">
+    <input type="hidden" name="ID" id="ID" value="<?php echo (int) $ID ?>">
+    <input type="hidden" name="type" id="type" value="4">
     <h1 style="text-align:center"><?php _e('GUTSCHRIFT ERSTELLEN/BEARBEITEN','cpsmartcrm')?> <i class="glyphicon glyphicon-fire"></i></h1>
     <div id="tabstrip">
         <ul class="tabstrip">
             <li id="tab1"><?php _e('GUTSCHRIFT','cpsmartcrm')?></li>
             <li onclick="aggiornatot();"><?php _e('KOMMENTARE UND INTERNE DATEN','cpsmartcrm')?></li>
+            <li><?php _e('E-GUTSCHRIFT','cpsmartcrm')?></li>
         </ul>
         <div class="tab-content" style="display:block;">
             <h4 class="page-header" style="margin: 10px 0 20px;">
@@ -502,6 +504,55 @@ jQuery(document).ready(function ($) {
         successClass: 'is-valid'
     });
 
+    $('#_submit').on('click', function (e) {
+        e.preventDefault();
+        var $form = $('#form_insert');
+        if (!$form.parsley().validate() || $('.riga').length === 0) {
+            noty({
+                text: "<?php _e('Bitte Kundendaten und mindestens eine Gutschriftposition vollständig ausfüllen.','cpsmartcrm')?>",
+                layout: 'center',
+                type: 'error',
+                timeout: 2500
+            });
+            return false;
+        }
+
+        var nRow = $('#t_art > tbody > tr').length ? parseInt($('#t_art > tbody > tr').last().attr('id').split('_')[1], 10) : 0;
+        $('#num_righe').val(nRow);
+        showMouseLoader();
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'WPsCRM_save_document',
+                fields: $form.serialize(),
+                security: '<?php echo $update_nonce?>'
+            },
+            success: function (response) {
+                hideMouseLoader();
+                if (response.indexOf('OK') !== -1) {
+                    var id = response.split('~')[1];
+                    noty({
+                        text: "<?php _e('Gutschrift wurde gespeichert','cpsmartcrm')?>",
+                        layout: 'center',
+                        type: 'success',
+                        timeout: 1000
+                    });
+                    setTimeout(function () {
+                        location.href = "<?php echo admin_url('admin.php?page=smart-crm&p=dokumente/form_credit_note.php&type=4&ID=')?>" + id;
+                    }, 1000);
+                } else {
+                    noty({
+                        text: "<?php _e('Gutschrift konnte nicht gespeichert werden','cpsmartcrm')?>: " + response,
+                        layout: 'center',
+                        type: 'error',
+                        closeWith: ['button']
+                    });
+                }
+            }
+        });
+    });
+
     // Custom Parsley validators
     window.Parsley.addValidator('hasclient', {
         validateString: function(value) {
@@ -790,4 +841,3 @@ jQuery(document).ready(function ($) {
 });
 </script>
 <?php } ?>
-

@@ -1,0 +1,15 @@
+{
+  "name": "psource/einvoice-core",
+  "description": "Shared neutral E-invoice model, calculations and validation for PS Smart Business and MarketPress.",
+  "type": "library",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=8.5",
+    "horstoeko/invoicesuite": "0.0.37"
+  },
+  "autoload": {
+    "psr-4": {
+      "PSource\\EInvoice\\": "src/"
+    }
+  }
+}

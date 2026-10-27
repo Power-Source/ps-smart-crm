@@ -2864,7 +2864,26 @@ function WPsCRM_save_client() {
       );
     }
     $ID_ret = $ID ? $ID : $wpdb->insert_id;
-
+    try {
+      $customer_type = match ( (int) ( $fields['tipo_cliente'] ?? 1 ) ) {
+        2 => 'b2b',
+        3 => 'public',
+        default => 'b2c',
+      };
+      ( new WPsCRM_EInvoice_Customer_Data_Repository( $wpdb ) )->save(
+        $ID_ret,
+        array(
+          'customer_type' => $customer_type,
+          'buyer_reference' => $fields['einvoice_customer_buyer_reference'] ?? '',
+          'electronic_address' => $fields['einvoice_customer_electronic_address'] ?? '',
+          'electronic_address_scheme' => $fields['einvoice_customer_electronic_address_scheme'] ?? '',
+          'contact_name' => $fields['einvoice_customer_contact_name'] ?? '',
+        )
+      );
+    } catch ( Throwable $exception ) {
+      status_header( 422 );
+      wp_die( esc_html( $exception->getMessage() ) );
+    }
     // NOTE: We do NOT use ClassicPress taxonomies for customer data
     // Taxonomies are stored in the database columns (categoria, provenienza, interessi)
     // The form loads these values from the database columns, not from taxonomies
@@ -4977,19 +4996,23 @@ function WPsCRM_save_document() {
       $qta =  WPsCRM_numfmt($fields["qta_" . $i]);
       $sconto =  $fields["sconto_" . $i];
       $totale =  $fields["totale_" . $i];
-      $iva = (int) $fields["iva_" . $i];
+      $iva = WPsCRM_EInvoice_Line_Classification::is_small_business()
+        ? 0
+        : (int) ( $fields["iva_" . $i] ?? 0 );
+      $unit_code = WPsCRM_EInvoice_Line_Classification::normalize_unit_code( $fields["unit_code_" . $i] ?? 'C62' );
+      $tax_category = WPsCRM_EInvoice_Line_Classification::resolve_tax_category( $fields["tax_category_" . $i] ?? '', $iva );
       $delete = isset($fields["delete_" . $i]) ? (int) $fields["delete_" . $i] : 0;
       //echo "id_art=".$id_art."<br>";
       if ($id_art) {
         //se nuovo lo aggiungo, altrimenti lo modifico
         if ($idd) {
           $wpdb->update(
-                  $d_table, array('fk_dokumente' => $ID_ret, 'fk_artikel' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva), array('id' => $idd), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'fk_artikel' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'unit_code' => $unit_code, 'tax_category' => $tax_category), array('id' => $idd), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%s', '%s')
           );
           $id_dd = $idd;
         } else {
           $wpdb->insert(
-                  $d_table, array('fk_dokumente' => $ID_ret, 'fk_artikel' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%d', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'fk_artikel' => $id_art, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'unit_code' => $unit_code, 'tax_category' => $tax_category, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%s', '%s', '%d', '%d')
           );
 //		var_dump( $wpdb->last_query );
 
@@ -5006,12 +5029,12 @@ function WPsCRM_save_document() {
         //  		$q=mysql_query($sql);
         if ($res) {
           $wpdb->update(
-                  $d_table, array('fk_dokumente' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva), array('id' => $idd), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'unit_code' => $unit_code, 'tax_category' => $tax_category), array('id' => $idd), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%s', '%s')
           );
           $id_dd = $idd;
         } else {
           $wpdb->insert(
-                  $d_table, array('fk_dokumente' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%d', '%d')
+                  $d_table, array('fk_dokumente' => $ID_ret, 'prezzo' => WPsCRM_numfmt( $prezzo), 'sconto' => WPsCRM_numfmt( $sconto), 'qta' => $qta, 'totale' => WPsCRM_numfmt( $totale), 'n_riga' => $i, 'codice' => $codice, 'descrizione' => $descrizione, 'iva' => $iva, 'unit_code' => $unit_code, 'tax_category' => $tax_category, 'tipo' => $tipo, 'fk_subscriptionrules' => $subscriptionrules), array('%d', '%f', '%f', '%f', '%f', '%d', '%s', '%s', '%d', '%s', '%s', '%d', '%d')
           );
 //		var_dump( $wpdb->last_query );
           $id_dd = $wpdb->insert_id;
@@ -5149,6 +5172,25 @@ function WPsCRM_save_document() {
       );
 //	$ret= WPsCRM_create_pdf_document($ID_ret, $content, $attachment, $old_file, $type, $WOOmail);
       //include($plugin_dir."/inc/crm/dokumente/document_print2.php");
+    }
+    if ( 2 === (int) $type ) {
+      try {
+        ( new WPsCRM_EInvoice_Document_Metadata_Repository( $wpdb ) )->save(
+          $ID_ret,
+          array(
+            'enabled' => ! empty( $fields['einvoice_enabled'] ),
+            'buyer_reference' => $fields['einvoice_buyer_reference'] ?? '',
+            'service_start_date' => $fields['einvoice_service_start_date'] ?? '',
+            'service_end_date' => $fields['einvoice_service_end_date'] ?? '',
+            'order_reference' => $fields['einvoice_order_reference'] ?? '',
+            'contract_reference' => $fields['einvoice_contract_reference'] ?? '',
+            'project_reference' => $fields['einvoice_project_reference'] ?? '',
+          )
+        );
+      } catch ( Throwable $exception ) {
+        status_header( 422 );
+        wp_die( esc_html( $exception->getMessage() ) );
+      }
     }
     echo "OK~" . $ID_ret;
     die;

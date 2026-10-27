@@ -4,6 +4,7 @@ Plugin Name: PS Smart Business
 Plugin URI: https://psource.eimen.net/wiki/ps-smart-business/
 Description: PS Smart Business ist eine modulare Business-Suite für WordPress und ClassicPress. Verwalte Kunden, Aufgaben, Angebote, Rechnungen und Buchhaltung zentral in deinem eigenen System.
 Version: 1.1.5
+Requires PHP: 8.5
 Author: PSOURCE
 Author URI: https://psource.eimen.net/
 Text Domain: cpsmartcrm
@@ -63,6 +64,7 @@ require_once(__DIR__ . '/inc/classes/CRMcustomer.class.php');
 require_once(__DIR__ . '/inc/classes/CRMdocument.class.php');
 require_once(__DIR__ . '/inc/classes/CRMmail.class.php');
 require_once(__DIR__ . '/inc/classes/CRMpmIntegration.class.php');
+require_once(__DIR__ . '/inc/einvoice/bootstrap.php');
 require_once(__DIR__ . '/inc/newsletter-integration.php');
 require_once(__DIR__ . '/inc/support-integration.php');
 require_once(__DIR__ . '/inc/classes/CRMtimetracking.class.php');

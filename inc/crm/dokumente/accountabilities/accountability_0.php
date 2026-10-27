@@ -1,4 +1,9 @@
 <!-- accountability standard -->
+<?php
+$einvoice_unit_options = WPsCRM_EInvoice_Line_Classification::unit_options();
+$einvoice_tax_category_options = WPsCRM_EInvoice_Line_Classification::tax_category_options();
+$einvoice_small_business = WPsCRM_EInvoice_Line_Classification::is_small_business();
+?>
 <div class="row form-group">
     <div class="col-md-12">
         <span id="btn_manual" class="btn btn-sm btn-add_desc_row _flat" onclick="add_manual_row();" style="margin-left:0px">
@@ -32,6 +37,9 @@
                     <?php _e('Menge', 'cpsmartcrm') ?>
                 </th>
                 <th>
+                    <?php _e('Einheit', 'cpsmartcrm') ?>
+                </th>
+                <th>
                     <?php _e('Einzelpreis', 'cpsmartcrm') ?>
                 </th>
                 <th style="min-width:68px">
@@ -42,6 +50,9 @@
                 </th>
                 <th>
                     <?php _e('MwSt', 'cpsmartcrm') ?>
+                </th>
+                <th>
+                    <?php _e('Steuerart', 'cpsmartcrm') ?>
                 </th>
                 <th>
                     <?php _e('Total', 'cpsmartcrm') ?>
@@ -63,7 +74,7 @@
                 if ($tipo_riga = $rigad["tipo"] == 3) {
                   ?>
                   <tr class="riga" id="r_<?php echo $i ?>">
-                      <td colspan="8">
+                      <td colspan="10">
                           <input type="hidden" size="10" name="idd_<?php echo $i ?>" id="idd_<?php echo $i ?>" value="<?php echo $rigad["id"] ?>" />
                           <input type="hidden" size="10" name="id_<?php echo $i ?>" id="id_<?php echo $i ?>" value="<?php echo $art_id ?>" />
                           <input type="hidden" size="10" name="tipo_<?php echo $i ?>" id="tipo_<?php echo $i ?>" value="<?php echo $tipo_riga ?>" />
@@ -104,13 +115,28 @@
                           <input class="numeric" name="qta_<?php echo $i ?>" id="qta_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["qta"]) ?>" oninput="aggiornatot();" onblur="aggiornatot()" style="width:80px" />
                       </td>
                       <td>
+                          <select name="unit_code_<?php echo $i ?>" id="unit_code_<?php echo esc_attr($i) ?>">
+                              <?php foreach ($einvoice_unit_options as $unit_code => $unit_label) { ?>
+                                  <option value="<?php echo esc_attr($unit_code) ?>"<?php selected($rigad['unit_code'] ?? 'C62', $unit_code) ?>><?php echo esc_html($unit_label) ?></option>
+                              <?php } ?>
+                          </select>
+                      </td>
+                      <td>
                           <input class="numeric" name="prezzo_<?php echo $i ?>" id="prezzo_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["prezzo"]) ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:130px" />
                       </td>
                       <td>
                           <input class="numeric" name="sconto_<?php echo $i ?>" id="sconto_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["sconto"]) ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:80px" />
                       </td>
                       <td>
-                          <input class="numeric" name="iva_<?php echo $i ?>" id="iva_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["iva"]) ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:80px" />
+                          <input class="numeric" name="iva_<?php echo $i ?>" id="iva_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($einvoice_small_business ? 0 : $rigad["iva"]) ?>" oninput="aggiornatot()" onblur="aggiornatot()" style="width:80px" />
+                      </td>
+                      <td>
+                          <?php $selected_tax_category = WPsCRM_EInvoice_Line_Classification::resolve_tax_category($rigad['tax_category'] ?? '', $rigad['iva']); ?>
+                          <select name="tax_category_<?php echo $i ?>" id="tax_category_<?php echo esc_attr($i) ?>">
+                              <?php foreach ($einvoice_tax_category_options as $tax_category => $tax_label) { ?>
+                                  <option value="<?php echo esc_attr($tax_category) ?>"<?php selected($selected_tax_category, $tax_category) ?>><?php echo esc_html($tax_label) ?></option>
+                              <?php } ?>
+                          </select>
                       </td>
                       <td>
                           <input class="numeric" size="10" name="totale_<?php echo $i ?>" id="totale_<?php echo esc_attr($i) ?>" value="<?php echo esc_attr($rigad["totale"]) ?>" style="width:130px" />
@@ -162,6 +188,43 @@
   };
 
   var def_iva = "<?php if (isset($def_iva)) echo $def_iva ?>", cassa = "<?php if (isset($cassa)) echo $cassa ?>", rit_acconto = "<?php if (isset($rit_acconto)) echo $rit_acconto ?>";
+  const einvoiceUnitOptions = <?php echo wp_json_encode($einvoice_unit_options) ?>;
+  const einvoiceTaxCategoryOptions = <?php echo wp_json_encode($einvoice_tax_category_options) ?>;
+  const einvoiceSmallBusiness = <?php echo $einvoice_small_business ? 'true' : 'false' ?>;
+
+  function einvoiceOptionEscape(value) {
+      return jQuery('<div>').text(value).html();
+  }
+
+  function einvoiceSelectHtml(name, options, selected) {
+      var html = '<select name="' + name + '" id="' + name + '">';
+      Object.keys(options).forEach(function (value) {
+          html += '<option value="' + einvoiceOptionEscape(value) + '"' + (value === selected ? ' selected' : '') + '>' + einvoiceOptionEscape(options[value]) + '</option>';
+      });
+      return html + '</select>';
+  }
+
+  function einvoiceUnitSelectHtml(row) {
+      return einvoiceSelectHtml('unit_code_' + row, einvoiceUnitOptions, 'C62');
+  }
+
+  function einvoiceTaxSelectHtml(row, taxRate) {
+      var selected = einvoiceSmallBusiness ? 'E' : (parseFloat(taxRate) > 0 ? 'S' : 'Z');
+      return einvoiceSelectHtml('tax_category_' + row, einvoiceTaxCategoryOptions, selected);
+  }
+
+  function syncEinvoiceTaxCategory(row) {
+      var category = jQuery('#tax_category_' + row);
+      if (!category.length) return;
+      if (einvoiceSmallBusiness) {
+          category.val('E');
+          setNumeric('iva_' + row, 0);
+      } else if (getNumeric('iva_' + row) > 0) {
+          category.val('S');
+      } else if (category.val() === 'S') {
+          category.val('Z');
+      }
+  }
   jQuery(document).ready(function ($) {
       // Tooltip ggf. ersetzen, z.B. mit Bootstrap
       // $(".glyphicon-info-sign").tooltip({ ... });
@@ -191,7 +254,7 @@
                   success: function (result) {
                       result = parseFloat(result).toFixed(2);
                       var n_row = (jQuery('#t_art > tbody > tr').length) ? parseInt(jQuery('#t_art > tbody > tr').last().attr("id").split("_")[1]) + 1 : 1;
-                      jQuery('#t_art').append('<tr class="riga" id="r_' + n_row + '"><td><input type="hidden" name="tipo_' + n_row + '"  id="tipo_' + n_row + '" value="2"><input type="text" size="10" name="codice_' + n_row + '" id="codice_' + n_row + '" value=""></td><td><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td>' + s_select + '</td><td><input class="numeric" size="4" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="10" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '" value=""  onblur="aggiornatot()"  oninput="aggiornatot()"  style="width:130px"></td><td><input class="numeric" size="4" name="sconto_' + n_row + '" id="sconto_' + n_row + '" size="5"  onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="4" name="iva_' + n_row + '" id="iva_' + n_row + '" value="' + iva + '" size="5"  onblur="aggiornatot()" oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="4" name="totale_' + n_row + '" id="totale_' + n_row + '" style="width:130px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')">Löschen</button></td></tr>');
+                      jQuery('#t_art').append('<tr class="riga" id="r_' + n_row + '"><td><input type="hidden" name="tipo_' + n_row + '"  id="tipo_' + n_row + '" value="2"><input type="text" size="10" name="codice_' + n_row + '" id="codice_' + n_row + '" value=""></td><td><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td>' + s_select + '</td><td><input class="numeric" size="4" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td>' + einvoiceUnitSelectHtml(n_row) + '</td><td><input class="numeric" size="10" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '" value=""  onblur="aggiornatot()"  oninput="aggiornatot()"  style="width:130px"></td><td><input class="numeric" size="4" name="sconto_' + n_row + '" id="sconto_' + n_row + '" size="5"  onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="4" name="iva_' + n_row + '" id="iva_' + n_row + '" value="' + (einvoiceSmallBusiness ? 0 : iva) + '" size="5"  onblur="aggiornatot()" oninput="aggiornatot()" style="width:80px"></td><td>' + einvoiceTaxSelectHtml(n_row, iva) + '</td><td><input class="numeric" size="4" name="totale_' + n_row + '" id="totale_' + n_row + '" style="width:130px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')">Löschen</button></td></tr>');
                       // AutoNumeric für neue Felder initialisieren
                       jQuery("#r_" + n_row + " .numeric").each(function () {
                           new AutoNumeric(this, autoNumericOptions);
@@ -200,7 +263,7 @@
                       window.sessionStorage.setItem('ref_row', n_row);
                       if (refund) {
                           n_row = (jQuery('#t_art > tbody > tr').length) ? parseInt(jQuery('#t_art > tbody > tr').last().attr("id").split("_")[1]) + 1 : 1;
-                          jQuery('#t_art').append('<tr class="riga riga_refund" id="r_' + n_row + '"><td colspan="3"><input type="hidden" name="tipo_' + n_row + '" id="tipo_' + n_row + '" value="4"><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td><input class="numeric" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()" oninput="aggiornatot()" value="1"  style="width:80px"></td><td><input class="numeric" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '"  value="' + refund + '" onblur="aggiornatot()"  oninput="aggiornatot()"  style="width:130px"></td><td></td><td></td><td><input class="numeric" name="totale_' + n_row + '" id="totale_' + n_row + '" value="' + refund + '"  style="width:80px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
+                          jQuery('#t_art').append('<tr class="riga riga_refund" id="r_' + n_row + '"><td colspan="3"><input type="hidden" name="tipo_' + n_row + '" id="tipo_' + n_row + '" value="4"><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td><input class="numeric" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()" oninput="aggiornatot()" value="1"  style="width:80px"></td><td>' + einvoiceUnitSelectHtml(n_row) + '</td><td><input class="numeric" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '"  value="' + refund + '" onblur="aggiornatot()"  oninput="aggiornatot()"  style="width:130px"></td><td></td><td></td><td></td><td><input class="numeric" name="totale_' + n_row + '" id="totale_' + n_row + '" value="' + refund + '"  style="width:80px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
                           jQuery("#r_" + n_row + " .numeric").each(function () {
                               new AutoNumeric(this, autoNumericOptions);
                           });
@@ -225,6 +288,7 @@
 
   function aggiorna(riga) {
       var tipo_sconto = jQuery('#tipo_sconto0').is(':checked') ? 0 : 1;
+      syncEinvoiceTaxCategory(riga);
       var qta = getNumeric("qta_" + riga);
       var pre = getNumeric("prezzo_" + riga);
       var sconto = document.getElementById("sconto_" + riga) ? getNumeric("sconto_" + riga) : 0;
@@ -339,7 +403,7 @@
                       s_select += '<option value="' + arr_rules[i].ID + '">' + arr_rules[i].name + '</option>';
                   }
               s_select += '</select>';
-              jQuery('#t_art').append('<tr class="riga" id="r_' + n_row + '"><td><input type="hidden" name="tipo_' + n_row + '"  id="tipo_' + n_row + '" value="2"><input type="text" size="10" name="codice_' + n_row + '" id="codice_' + n_row + '" value=""></td><td><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td>' + s_select + '</td><td><input class="numeric" size="4" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="10" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '" value=""  onblur="aggiornatot()"  oninput="aggiornatot()"  style="width:130px"></td><td><input class="numeric" size="4" name="sconto_' + n_row + '" id="sconto_' + n_row + '" size="5"  onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="4" name="iva_' + n_row + '" id="iva_' + n_row + '" value="' + iva + '" size="5"  onblur="aggiornatot()" oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="4" name="totale_' + n_row + '" id="totale_' + n_row + '" style="width:130px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
+              jQuery('#t_art').append('<tr class="riga" id="r_' + n_row + '"><td><input type="hidden" name="tipo_' + n_row + '"  id="tipo_' + n_row + '" value="2"><input type="text" size="10" name="codice_' + n_row + '" id="codice_' + n_row + '" value=""></td><td><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td>' + s_select + '</td><td><input class="numeric" size="4" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td>' + einvoiceUnitSelectHtml(n_row) + '</td><td><input class="numeric" size="10" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '" value=""  onblur="aggiornatot()"  oninput="aggiornatot()"  style="width:130px"></td><td><input class="numeric" size="4" name="sconto_' + n_row + '" id="sconto_' + n_row + '" size="5"  onblur="aggiornatot()"  oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" size="4" name="iva_' + n_row + '" id="iva_' + n_row + '" value="' + (einvoiceSmallBusiness ? 0 : iva) + '" size="5"  onblur="aggiornatot()" oninput="aggiornatot()" style="width:80px"></td><td>' + einvoiceTaxSelectHtml(n_row, iva) + '</td><td><input class="numeric" size="4" name="totale_' + n_row + '" id="totale_' + n_row + '" style="width:130px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
               jQuery("#r_" + n_row + " .numeric").each(function () {
                   new AutoNumeric(this, autoNumericOptions);
               });
@@ -352,7 +416,7 @@
 
   function add_descriptive_row() {
       var n_row = (jQuery('#t_art > tbody > tr').length) ? parseInt(jQuery('#t_art > tbody > tr').last().attr("id").split("_")[1]) + 1 : 1;
-      jQuery('#t_art').append('<tr class="riga" id="r_' + n_row + '"><td colspan="7"><input type="hidden" name="tipo_' + n_row + '" value="3"><textarea  rows="1" style="width:93%" name="descrizione_' + n_row + '" id="descrizione_' + n_row + '"  class="descriptive_row"></textarea></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
+      jQuery('#t_art').append('<tr class="riga" id="r_' + n_row + '"><td colspan="10"><input type="hidden" name="tipo_' + n_row + '" value="3"><textarea  rows="1" style="width:93%" name="descrizione_' + n_row + '" id="descrizione_' + n_row + '"  class="descriptive_row"></textarea></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
   }
 
   function annulla() {
@@ -361,7 +425,7 @@
 
   function add_refund_row(e) {
       var n_row = (jQuery('#t_art > tbody > tr').length) ? parseInt(jQuery('#t_art > tbody > tr').last().attr("id").split("_")[1]) + 1 : 1;
-      jQuery('#t_art').append('<tr class="riga refund_row" id="r_' + n_row + '"><td colspan="3"><input type="hidden" name="tipo_' + n_row + '" id="tipo_' + n_row + '" value="4"><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td><input class="numeric" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()" oninput="aggiornatot()" style="width:80px"></td><td><input class="numeric" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '" value=""  onblur="aggiornatot()"  oninput="aggiornatot()" style="width:130px"></td><td></td><td></td><td><input class="numeric" name="totale_' + n_row + '" id="totale_' + n_row + '" style="width:130px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
+      jQuery('#t_art').append('<tr class="riga refund_row" id="r_' + n_row + '"><td colspan="3"><input type="hidden" name="tipo_' + n_row + '" id="tipo_' + n_row + '" value="4"><textarea rows="1" style="width:93%"  name="descrizione_' + n_row + '" id="descrizione_' + n_row + '" class="descriptive_row"></textarea></td><td><input class="numeric" name="qta_' + n_row + '" id="qta_' + n_row + '" onblur="aggiornatot()" oninput="aggiornatot()" style="width:80px"></td><td>' + einvoiceUnitSelectHtml(n_row) + '</td><td><input class="numeric" name="prezzo_' + n_row + '" id="prezzo_' + n_row + '" value=""  onblur="aggiornatot()"  oninput="aggiornatot()" style="width:130px"></td><td></td><td></td><td></td><td><input class="numeric" name="totale_' + n_row + '" id="totale_' + n_row + '" style="width:130px"></td><td><button type="button"  onclick="elimina_riga(0,' + n_row + ')"><?php _e('Löschen', 'cpsmartcrm') ?></button></td></tr>');
       $("#r_" + n_row + " .numeric").each(function () {
           new AutoNumeric(this, autoNumericOptions);
       });

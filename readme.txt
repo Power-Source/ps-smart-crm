@@ -3,7 +3,7 @@ Contributors: PSOURCE
 Tags: crm, invoices, accounting, business, customers, quotes
 Requires at least: 4.2
 Tested up to: 7.1.0
-Requires PHP: 7.4
+Requires PHP: 8.5
 ClassicPress: 2.7.1
 Stable tag: 1.1.5
 License: GPLv2 or later
@@ -95,6 +95,8 @@ ab.
 * Desktop-App- und PWA-System einschließlich Installationsoberfläche und Push-Resten vollständig entfernt
 * Veraltete PWA-Einstellungen, Benutzerdaten und Rewrite-Regeln werden einmalig bereinigt
 * Betragsplatzhalter für manuelle Einnahmen und Ausgaben auf `0,00` vereinheitlicht
+* Technisches Fundament für XRechnung und weitere E-Rechnungsformate ergänzt
+* PHP 8.5 als neue Mindestversion festgelegt
 
 = 1.1.4 =
 * Parsley Fehler auf Einstellungsseite behoben

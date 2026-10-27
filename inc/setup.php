@@ -1,7 +1,7 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
 //global $WPsCRM_db_version;
-$WPsCRM_db_version = '1.6.7';
+$WPsCRM_db_version = '1.7.4';
 
 function WPsCRM_table_exists( $table_name ) {
   global $wpdb;
@@ -269,6 +269,8 @@ function WPsCRM_crm_install() {
   `n_riga` int(10) unsigned NOT NULL,
   `sconto` float(9,2) unsigned NOT NULL,
   `iva` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `unit_code` varchar(3) NOT NULL DEFAULT 'C62',
+  `tax_category` varchar(4) NOT NULL DEFAULT '',
   `prezzo` float(9,2) unsigned NOT NULL,
   `totale` float(9,2) unsigned NOT NULL,
   `tipo` tinyint(3) unsigned NOT NULL COMMENT '1=prodotto, 2=articolo manuale, 3=descrizione, 4=rimborso',
@@ -278,6 +280,33 @@ function WPsCRM_crm_install() {
   `fk_subscriptionrules` int(10) unsigned NOT NULL ,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM ".$charset_collate." AUTO_INCREMENT=1";
+
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."einvoice_document_data` (
+  `document_id` bigint(20) unsigned NOT NULL,
+  `enabled` tinyint(1) unsigned DEFAULT NULL,
+  `buyer_reference` varchar(191) NOT NULL DEFAULT '',
+  `service_start_date` date DEFAULT NULL,
+  `service_end_date` date DEFAULT NULL,
+  `order_reference` varchar(191) NOT NULL DEFAULT '',
+  `contract_reference` varchar(191) NOT NULL DEFAULT '',
+  `project_reference` varchar(191) NOT NULL DEFAULT '',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`document_id`)
+) ENGINE=InnoDB ".$charset_collate;
+
+	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."einvoice_customer_data` (
+  `customer_id` bigint(20) unsigned NOT NULL,
+  `customer_type` varchar(16) NOT NULL DEFAULT 'b2c',
+  `buyer_reference` varchar(191) NOT NULL DEFAULT '',
+  `electronic_address` varchar(255) NOT NULL DEFAULT '',
+  `electronic_address_scheme` varchar(10) NOT NULL DEFAULT '',
+  `contact_name` varchar(191) NOT NULL DEFAULT '',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`customer_id`),
+  KEY `customer_type` (`customer_type`)
+) ENGINE=InnoDB ".$charset_collate;
 
 	$sql[]="CREATE TABLE `".WPsCRM_SETUP_TABLE."emails` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -778,8 +807,18 @@ function WPsCRM_upgrade_taxonomies()
 function WPsCRM_update_db_check() {
   global $wpdb;
     global $WPsCRM_db_version;
-    if ( get_option( 'WPsCRM_db_version' ) != $WPsCRM_db_version ) {
+    $installed_db_version = get_option( 'WPsCRM_db_version', '0' );
+    if ( $installed_db_version != $WPsCRM_db_version ) {
         WPsCRM_crm_install();
+        if ( version_compare( $installed_db_version, '1.7.4', '<' ) ) {
+          $wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'smartcrm_einvoice_snapshots' );
+          $metadata_table = $wpdb->prefix . 'smartcrm_einvoice_document_data';
+          foreach ( array( 'preceding_invoice_id', 'correction_kind', 'correction_reason' ) as $obsolete_column ) {
+            if ( $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$metadata_table} LIKE %s", $obsolete_column ) ) ) {
+              $wpdb->query( "ALTER TABLE {$metadata_table} DROP COLUMN {$obsolete_column}" );
+            }
+          }
+        }
     }
 
   $roles_table = WPsCRM_TABLE . 'agent_roles';

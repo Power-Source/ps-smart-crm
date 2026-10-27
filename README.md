@@ -131,6 +131,20 @@ PS Smart Business funktioniert mit:
 
 - **WordPress**
 - **ClassicPress**
+- **PHP 8.5 oder neuer**
 
 Damit kannst du das CRM auf deiner eigenen Installation betreiben und selbst entscheiden, wo deine Daten gespeichert werden.
 
+## Entwicklung aus dem Quellcode
+
+Die E-Rechnungsunterstützung verwendet Composer-Abhängigkeiten. Nach dem Klonen müssen die Produktionsabhängigkeiten installiert werden:
+
+```bash
+composer install --no-dev --prefer-dist
+```
+
+Veröffentlichte Plugin-Pakete müssen den erzeugten Ordner `vendor/` enthalten.
+
+E-Rechnungen sind kein separater Dokumenttyp: Bei B2B-Kunden ist die zusätzliche XML-Ausgabe im normalen Rechnungsformular standardmäßig aktiviert und kann pro Rechnung abgeschaltet werden. PDF und XML basieren auf denselben gespeicherten Rechnungs-, Positions- und Steuerdaten.
+
+Für die Ausstellung auf einem normalen WordPress-Hosting ist keine Java-Laufzeit erforderlich. Die erzeugte XML-Datei wird direkt im Plugin auf Konsistenz und gegen das UBL-Schema geprüft.

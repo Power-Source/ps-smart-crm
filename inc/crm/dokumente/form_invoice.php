@@ -94,6 +94,13 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
     $ritenuta_acconto = 0;
     $totale_netto = 0;
   }
+
+  $einvoice_metadata_repository = new WPsCRM_EInvoice_Document_Metadata_Repository();
+  $einvoice_metadata = $einvoice_metadata_repository->get($ID);
+  $einvoice_uses_customer_default = null === $einvoice_metadata['enabled'];
+  $einvoice_enabled = $einvoice_uses_customer_default
+    ? in_array((int) ($tipo_cliente ?? 0), array(2, 3), true)
+    : (bool) $einvoice_metadata['enabled'];
   ?>
 
   <style>
@@ -371,6 +378,52 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
             }
             ?>
 
+              <h4 class="page-header"><?php _e('E-Rechnung', 'cpsmartcrm') ?></h4>
+              <div class="row form-group">
+                  <label class="col-sm-2 control-label" for="einvoice_enabled"><?php _e('Zusätzlich als E-Rechnung', 'cpsmartcrm') ?></label>
+                  <div class="col-sm-4">
+                      <input type="hidden" name="einvoice_enabled" value="0">
+                      <label>
+                          <input type="checkbox" id="einvoice_enabled" name="einvoice_enabled" value="1"<?php checked($einvoice_enabled) ?>>
+                          <?php _e('XML für diese Rechnung erzeugen', 'cpsmartcrm') ?>
+                      </label>
+                      <p class="help-block"><?php _e('Bei B2B-Kunden automatisch aktiviert und je Rechnung abschaltbar.', 'cpsmartcrm') ?></p>
+                  </div>
+              </div>
+              <div id="einvoice_fields"<?php echo $einvoice_enabled ? '' : ' style="display:none"' ?>>
+                  <div class="row form-group">
+                      <label class="col-sm-2 control-label" for="einvoice_buyer_reference"><?php _e('Buyer Reference / Leitweg-ID', 'cpsmartcrm') ?></label>
+                      <div class="col-sm-4">
+                          <input type="text" class="form-control" id="einvoice_buyer_reference" name="einvoice_buyer_reference" maxlength="191" value="<?php echo esc_attr($einvoice_metadata['buyer_reference']) ?>">
+                      </div>
+                  </div>
+                  <div class="row form-group">
+                      <label class="col-sm-2 control-label" for="einvoice_service_start_date"><?php _e('Leistungszeitraum von', 'cpsmartcrm') ?></label>
+                      <div class="col-sm-2">
+                          <input type="date" class="form-control" id="einvoice_service_start_date" name="einvoice_service_start_date" value="<?php echo esc_attr($einvoice_metadata['service_start_date']) ?>">
+                      </div>
+                      <label class="col-sm-1 control-label" for="einvoice_service_end_date"><?php _e('bis', 'cpsmartcrm') ?></label>
+                      <div class="col-sm-2">
+                          <input type="date" class="form-control" id="einvoice_service_end_date" name="einvoice_service_end_date" value="<?php echo esc_attr($einvoice_metadata['service_end_date']) ?>">
+                      </div>
+                  </div>
+                  <div class="row form-group">
+                      <label class="col-sm-2 control-label" for="einvoice_order_reference"><?php _e('Bestellreferenz', 'cpsmartcrm') ?></label>
+                      <div class="col-sm-3">
+                          <input type="text" class="form-control" id="einvoice_order_reference" name="einvoice_order_reference" maxlength="191" value="<?php echo esc_attr($einvoice_metadata['order_reference']) ?>">
+                      </div>
+                      <label class="col-sm-2 control-label" for="einvoice_contract_reference"><?php _e('Vertragsreferenz', 'cpsmartcrm') ?></label>
+                      <div class="col-sm-3">
+                          <input type="text" class="form-control" id="einvoice_contract_reference" name="einvoice_contract_reference" maxlength="191" value="<?php echo esc_attr($einvoice_metadata['contract_reference']) ?>">
+                      </div>
+                  </div>
+                  <div class="row form-group">
+                      <label class="col-sm-2 control-label" for="einvoice_project_reference"><?php _e('Projektreferenz', 'cpsmartcrm') ?></label>
+                      <div class="col-sm-3">
+                          <input type="text" class="form-control" id="einvoice_project_reference" name="einvoice_project_reference" maxlength="191" value="<?php echo esc_attr($einvoice_metadata['project_reference']) ?>">
+                      </div>
+                  </div>
+              </div>
 
           </div>
           <!--fine primo tab -->
@@ -416,6 +469,24 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
                   <b> <?php _e('Druckbare Version', 'cpsmartcrm') ?></b>
               </li>
 
+              <?php
+            }
+            if ($einvoice_enabled) {
+              $einvoice_download_url = wp_nonce_url(
+                add_query_arg(
+                  array(
+                    'action' => 'wpscrm_download_einvoice',
+                    'document_id' => $ID,
+                  ),
+                  admin_url('admin-post.php')
+                ),
+                'wpscrm_download_einvoice_' . $ID
+              );
+              ?>
+              <li class="btn btn-sm btn-primary _flat" onclick="location.href='<?php echo esc_url($einvoice_download_url) ?>'">
+                  <i class="glyphicon glyphicon-download-alt"></i>
+                  <b><?php _e('E-Rechnung herunterladen', 'cpsmartcrm') ?></b>
+              </li>
               <?php
             }
           }
@@ -550,6 +621,26 @@ jQuery(document).ready(function ($) {
     $("#fk_kunde").append(new Option("<?php echo addslashes($cliente); ?>", "<?php echo $fk_kunde; ?>", true, true)).trigger('change');
     <?php } ?>
 
+    var einvoiceUsesCustomerDefault = <?php echo $einvoice_uses_customer_default ? 'true' : 'false' ?>;
+
+    function showEinvoiceFields() {
+        $("#einvoice_fields").toggle($("#einvoice_enabled").is(":checked"));
+    }
+
+    function applyEinvoiceCustomerDefault(customerType) {
+        if (!einvoiceUsesCustomerDefault) {
+            return;
+        }
+        $("#einvoice_enabled").prop("checked", $.inArray(parseInt(customerType, 10), [2, 3]) !== -1);
+        showEinvoiceFields();
+    }
+
+    $("#einvoice_enabled").on("change", function () {
+        einvoiceUsesCustomerDefault = false;
+        showEinvoiceFields();
+    });
+    showEinvoiceFields();
+
     $("#fk_kunde").on('select2:select', function (e) {
         var id_kunde = $(this).val();
         if (id_kunde) {
@@ -568,6 +659,7 @@ jQuery(document).ready(function ($) {
                     $("#cod_fis").val(parseData.cod_fis);
                     $("#p_iva").val(parseData.p_iva);
                     $("#tipo_cliente").val(parseData.tipo_cliente);
+                    applyEinvoiceCustomerDefault(parseData.tipo_cliente);
                 }
             });
         }
@@ -694,7 +786,9 @@ jQuery(document).ready(function ($) {
             return false;
         }
         showMouseLoader();
-        var form = jQuery('form');
+        var nRow = $('#t_art > tbody > tr').length ? parseInt($('#t_art > tbody > tr').last().attr('id').split('_')[1], 10) : 0;
+        $('#num_righe').val(nRow);
+        var form = $('#form_insert');
         jQuery.ajax({
             url: ajaxurl,
             data: {
@@ -788,4 +882,3 @@ jQuery(document).ready(function ($) {
 });
 </script>
 <?php } ?>
-
