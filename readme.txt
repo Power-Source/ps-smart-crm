@@ -1,8 +1,9 @@
 ﻿=== PS Smart Business ===
 Contributors: PSOURCE
 Tags: crm, invoices, accounting, business, customers, quotes
-Requires at least: 4.2
-Tested up to: 7.1.0
+Requires at least: 5.0
+Requires CP: 2.7
+Tested up to: 7.1.4
 Requires PHP: 8.5
 ClassicPress: 2.7.1
 Stable tag: 1.1.5
