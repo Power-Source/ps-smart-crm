@@ -1,35 +1,24 @@
-# E-Rechnung: Standards und Technik
+# B2B-Rechnungs-XML: Technik
 
 ## Ausgabeformat
 
-Der erste unterstützte Export ist:
+Der Export erzeugt ein leichtgewichtiges, eigenes `B2BInvoice`-XML. Es enthält die vorhandene Rechnungsnummer, Daten, Verkäufer- und Käuferdaten, Positionen, Summen, Zahlungsinformationen und Referenzen.
 
-- XRechnung 3.0
-- UBL 2.1
-- Rechnungsart `380`
+Das Format ist absichtlich keine XRechnung-, UBL-, Peppol-, ZUGFeRD- oder Factur-X-Implementierung. Es ist für einfache B2B-Austauschprozesse gedacht, deren Empfänger dieses Format vereinbart haben.
 
-## Prüfung
+## Erzeugung
 
-Vor dem Download erfolgen:
+Der Export verwendet ausschließlich bereits im CRM gespeicherte Daten:
 
-1. Prüfung der benötigten Rechnungs-, Verkäufer- und Käuferdaten,
-2. Prüfung von Positionen, Steuern und Summen,
-3. Erzeugung der UBL-XML,
-4. XSD-Prüfung der erzeugten XML,
-5. erneuter Vergleich der serialisierten Summen.
-
-Ein Exportfehler erzeugt keine scheinbar erfolgreiche XML-Datei.
+1. Rechnung, Kundendaten und Positionen,
+2. Verkäufer- und Zahlungsdaten aus den CRM-Einstellungen,
+3. vorhandene Rechnungs- und Positionssummen,
+4. optionale Bestell-, Vertrags- und Projektreferenzen.
 
 ## Hosting und Sicherheit
 
+- Keine externen PHP-Pakete oder Validatoren erforderlich.
 - Keine Java-Laufzeit erforderlich.
-- Keine dynamisch heruntergeladenen Validator-Programme.
 - Keine automatische Übertragung von Rechnungsdaten an Dritte.
 - Download nur für Benutzer mit CRM-Berechtigung.
 - Download mit WordPress-Nonce gegen unbeabsichtigte Aufrufe geschützt.
-- XML wird mit `LIBXML_NONET` ohne externe Netzwerkzugriffe verarbeitet.
-
-## Abgrenzung
-
-Die lokale Prüfung stellt sicher, dass das Plugin intern konsistente und XSD-gültige XML erzeugt. Sie wird nicht als Nachweis einer externen Zertifizierung bezeichnet.
-

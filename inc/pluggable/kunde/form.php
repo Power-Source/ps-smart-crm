@@ -78,8 +78,6 @@ if ( $ID )
     $custom_tax = maybe_unserialize( isset($riga['custom_tax']) ? $riga['custom_tax'] : "" );
 }
 
-$einvoice_customer_data = ( new WPsCRM_EInvoice_Customer_Data_Repository( $wpdb ) )->get( $ID );
-
 if ( ! empty ( $custom_tax ) )
 	$_tax=json_encode($custom_tax);
 else{
@@ -1128,27 +1126,6 @@ jQuery(document).ready(function ($) {
 					<div class="col-sm-4">
 						<input type="text" name="fax" size="20" maxlength='50' value="<?php if(isset($riga)) echo $riga["fax"]?>" class="form-control" />
 					</div>
-                </div>
-                <h4 class="page-header"><?php _e('E-Rechnungsstammdaten','cpsmartcrm')?></h4>
-                <div class="row form-group">
-                    <label class="col-sm-2 control-label" for="einvoice_customer_buyer_reference"><?php _e('Standard Buyer Reference / Leitweg-ID','cpsmartcrm')?></label>
-                    <div class="col-sm-3">
-                        <input type="text" id="einvoice_customer_buyer_reference" name="einvoice_customer_buyer_reference" maxlength="191" value="<?php echo esc_attr($einvoice_customer_data['buyer_reference']) ?>" class="form-control">
-                    </div>
-                    <label class="col-sm-2 control-label" for="einvoice_customer_contact_name"><?php _e('E-Rechnungs-Ansprechpartner','cpsmartcrm')?></label>
-                    <div class="col-sm-3">
-                        <input type="text" id="einvoice_customer_contact_name" name="einvoice_customer_contact_name" maxlength="191" value="<?php echo esc_attr($einvoice_customer_data['contact_name']) ?>" class="form-control">
-                    </div>
-                </div>
-                <div class="row form-group">
-                    <label class="col-sm-2 control-label" for="einvoice_customer_electronic_address"><?php _e('Elektronische Empfängeradresse','cpsmartcrm')?></label>
-                    <div class="col-sm-3">
-                        <input type="text" id="einvoice_customer_electronic_address" name="einvoice_customer_electronic_address" maxlength="255" value="<?php echo esc_attr($einvoice_customer_data['electronic_address']) ?>" placeholder="<?php esc_attr_e('Leer = Kunden-E-Mail verwenden','cpsmartcrm')?>" class="form-control">
-                    </div>
-                    <label class="col-sm-2 control-label" for="einvoice_customer_electronic_address_scheme"><?php _e('Empfänger-Schema','cpsmartcrm')?></label>
-                    <div class="col-sm-2">
-                        <input type="text" id="einvoice_customer_electronic_address_scheme" name="einvoice_customer_electronic_address_scheme" maxlength="4" value="<?php echo esc_attr($einvoice_customer_data['electronic_address_scheme']) ?>" placeholder="EM" class="form-control">
-                    </div>
                 </div>
                 <div class="row form-group">
                     <label class="col-sm-1 control-label"><?php _e('Mobil','cpsmartcrm')?></label>

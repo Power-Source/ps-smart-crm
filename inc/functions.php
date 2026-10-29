@@ -2864,26 +2864,6 @@ function WPsCRM_save_client() {
       );
     }
     $ID_ret = $ID ? $ID : $wpdb->insert_id;
-    try {
-      $customer_type = match ( (int) ( $fields['tipo_cliente'] ?? 1 ) ) {
-        2 => 'b2b',
-        3 => 'public',
-        default => 'b2c',
-      };
-      ( new WPsCRM_EInvoice_Customer_Data_Repository( $wpdb ) )->save(
-        $ID_ret,
-        array(
-          'customer_type' => $customer_type,
-          'buyer_reference' => $fields['einvoice_customer_buyer_reference'] ?? '',
-          'electronic_address' => $fields['einvoice_customer_electronic_address'] ?? '',
-          'electronic_address_scheme' => $fields['einvoice_customer_electronic_address_scheme'] ?? '',
-          'contact_name' => $fields['einvoice_customer_contact_name'] ?? '',
-        )
-      );
-    } catch ( Throwable $exception ) {
-      status_header( 422 );
-      wp_die( esc_html( $exception->getMessage() ) );
-    }
     // NOTE: We do NOT use ClassicPress taxonomies for customer data
     // Taxonomies are stored in the database columns (categoria, provenienza, interessi)
     // The form loads these values from the database columns, not from taxonomies

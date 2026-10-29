@@ -18,11 +18,9 @@ PS Smart Business ergänzt bestehende Rechnungen um ein strukturiertes XML-Forma
 ### CRM-Ausgangsrechnungen
 
 - [x] B2B/B2C/Behörde am Kunden speichern.
-- [x] E-Rechnungs-Empfängerangaben am Kunden speichern.
 - [x] E-Rechnung im normalen Rechnungsformular aktivieren.
-- [x] Vorhandene CRM-Rechnung nach XRechnung 3.0 / UBL 2.1 abbilden.
+- [x] Vorhandene CRM-Rechnung als schlankes B2B-Rechnungs-XML ausgeben.
 - [x] Vorhandene Steuerregeln übernehmen.
-- [x] XML intern prüfen und gegen das UBL-Schema validieren.
 - [x] XML über einen berechtigungs- und noncegeschützten Download erzeugen.
 - [ ] Vollständigen Ablauf mit realen B2B-Testrechnungen im Browser prüfen.
 
@@ -46,9 +44,9 @@ PS Smart Business ergänzt bestehende Rechnungen um ein strukturiertes XML-Forma
 ## Nicht Bestandteil
 
 - Java- oder KoSIT-Laufzeit auf dem WordPress-Server
+- XRechnung-, UBL-, Peppol-, ZUGFeRD- oder Factur-X-Kompatibilität
 - parallele Steuerberechnung
 - parallele Rechnungsverwaltung
 - eigener Ausstellungsstatus für XML
 - persistente XML-Snapshots oder Validierungsberichte
 - ungefragte Übertragung an externe Validatoren
-

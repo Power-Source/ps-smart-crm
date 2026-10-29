@@ -13,7 +13,6 @@ $accOptions = get_option("CRM_acc_settings");
 if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
 
 
-//	include(WPsCRM_DIR."/inc/crm/mpdf/mpdf.php");
 //	$stylesheet = file_get_contents(WPsCRM_DIR.'/css/documents/pdf_documents.css');
 //	include(WPsCRM_DIR."/inc/templates/print_invoice.php");
 } else {

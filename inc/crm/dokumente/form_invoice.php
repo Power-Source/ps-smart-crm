@@ -378,25 +378,19 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
             }
             ?>
 
-              <h4 class="page-header"><?php _e('E-Rechnung', 'cpsmartcrm') ?></h4>
+              <h4 class="page-header"><?php _e('B2B-Rechnungs-XML', 'cpsmartcrm') ?></h4>
               <div class="row form-group">
-                  <label class="col-sm-2 control-label" for="einvoice_enabled"><?php _e('Zusätzlich als E-Rechnung', 'cpsmartcrm') ?></label>
+                  <label class="col-sm-2 control-label" for="einvoice_enabled"><?php _e('Zusätzlich als XML', 'cpsmartcrm') ?></label>
                   <div class="col-sm-4">
                       <input type="hidden" name="einvoice_enabled" value="0">
                       <label>
                           <input type="checkbox" id="einvoice_enabled" name="einvoice_enabled" value="1"<?php checked($einvoice_enabled) ?>>
-                          <?php _e('XML für diese Rechnung erzeugen', 'cpsmartcrm') ?>
+                          <?php _e('B2B-Rechnungs-XML für diese Rechnung erzeugen', 'cpsmartcrm') ?>
                       </label>
                       <p class="help-block"><?php _e('Bei B2B-Kunden automatisch aktiviert und je Rechnung abschaltbar.', 'cpsmartcrm') ?></p>
                   </div>
               </div>
               <div id="einvoice_fields"<?php echo $einvoice_enabled ? '' : ' style="display:none"' ?>>
-                  <div class="row form-group">
-                      <label class="col-sm-2 control-label" for="einvoice_buyer_reference"><?php _e('Buyer Reference / Leitweg-ID', 'cpsmartcrm') ?></label>
-                      <div class="col-sm-4">
-                          <input type="text" class="form-control" id="einvoice_buyer_reference" name="einvoice_buyer_reference" maxlength="191" value="<?php echo esc_attr($einvoice_metadata['buyer_reference']) ?>">
-                      </div>
-                  </div>
                   <div class="row form-group">
                       <label class="col-sm-2 control-label" for="einvoice_service_start_date"><?php _e('Leistungszeitraum von', 'cpsmartcrm') ?></label>
                       <div class="col-sm-2">
@@ -485,7 +479,7 @@ if (isset($_GET["id_invoice"]) && ($ID = $_GET["id_invoice"])) {
               ?>
               <li class="btn btn-sm btn-primary _flat" onclick="location.href='<?php echo esc_url($einvoice_download_url) ?>'">
                   <i class="glyphicon glyphicon-download-alt"></i>
-                  <b><?php _e('E-Rechnung herunterladen', 'cpsmartcrm') ?></b>
+                  <b><?php _e('B2B-Rechnungs-XML herunterladen', 'cpsmartcrm') ?></b>
               </li>
               <?php
             }
